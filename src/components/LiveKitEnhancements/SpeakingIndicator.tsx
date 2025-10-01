@@ -1,14 +1,15 @@
-import { useAudioWaveform, useIsSpeaking } from '@livekit/components-react'
-import { Participant } from 'livekit-client'
+import { TrackReferenceOrPlaceholder, useAudioWaveform, useIsSpeaking } from '@livekit/components-react'
+import { LocalAudioTrack, Participant, RemoteAudioTrack } from 'livekit-client'
+import { useTranslation } from '../../modules/translation'
 import { SpeakingCircle } from './SpeakingIndicator.styled'
 
 interface SpeakingIndicatorProps {
   participant?: Participant
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  trackRef?: any
+  trackRef?: LocalAudioTrack | RemoteAudioTrack | TrackReferenceOrPlaceholder
 }
 
 export function SpeakingIndicator({ participant, trackRef }: SpeakingIndicatorProps) {
+  const { t } = useTranslation()
   const isSpeaking = useIsSpeaking(participant)
 
   // Get audio waveform for intensity (experimental)
@@ -32,5 +33,7 @@ export function SpeakingIndicator({ participant, trackRef }: SpeakingIndicatorPr
     })
   }
 
-  return <SpeakingCircle isSpeaking={isSpeaking} intensity={intensity} title={isSpeaking ? 'Speaking' : 'Not speaking'} />
+  return (
+    <SpeakingCircle isSpeaking={isSpeaking} intensity={intensity} title={isSpeaking ? t('status.speaking') : t('status.not_speaking')} />
+  )
 }

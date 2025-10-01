@@ -1,8 +1,10 @@
 import { useRemoteParticipants } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'
+import { useTranslation } from '../../modules/translation'
 import { IconWrapper, OverlayContainer, StatusBadge } from './WatcherStatusOverlay.styled'
 
 export function WatcherStatusOverlay() {
+  const { t } = useTranslation()
   const remoteParticipants = useRemoteParticipants()
 
   // Get the first remote participant (streamer)
@@ -21,7 +23,7 @@ export function WatcherStatusOverlay() {
           <IconWrapper>
             <MicOffIcon />
           </IconWrapper>
-          Streamer Muted
+          {t('status.streamer_muted')}
         </StatusBadge>
       )}
     </OverlayContainer>

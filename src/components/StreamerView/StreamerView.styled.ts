@@ -1,3 +1,5 @@
+import { Card } from 'decentraland-ui2'
+import { keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
 
 const StreamerContainer = styled.div`
@@ -10,31 +12,28 @@ const StreamerContainer = styled.div`
 
 const StreamerLayout = styled.div`
   display: flex;
-  flex: 1;
+  height: calc(100vh - 60px);
   gap: 16px;
   padding: 16px;
-  height: calc(100vh - 76px); // Match watcher view with consistent height
-  min-height: calc(100vh - 76px); // Ensure minimum viewport height
-  overflow: hidden;
+  box-sizing: border-box;
 `
 
 const MainContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px; // Reduced from 16px to save space
-  min-height: 0;
+  gap: 16px;
 `
 
 const StreamingHeader = styled.div`
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 12px 16px; // Reduced padding
-  background: rgba(255, 255, 255, 0.08);
+  align-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
-  backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 `
 
 const StreamTitle = styled.div`
@@ -45,44 +44,60 @@ const StreamTitle = styled.div`
 
 const VideoArea = styled.div`
   flex: 1;
-  min-height: 300px; // Reduced from auto to save space
   background: rgba(0, 0, 0, 0.4);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   overflow: hidden;
-  position: relative; // For status overlay positioning
+  position: relative;
+  min-height: 400px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  // Make video content fit properly with object-fit: contain
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 `
 
 const Sidebar = styled.div`
   width: 320px;
   display: flex;
   flex-direction: column;
-  height: 100%; // Full height
+  gap: 12px;
+  height: 100%; // Full height for chat
 
   @media (max-width: 1200px) {
     width: 280px;
   }
 `
 
-const ErrorMessage = styled.div`
-  color: var(--error);
-  text-align: center;
-  margin-top: 20px;
+const ErrorContainer = styled(Card)`
+  && {
+    padding: 24px;
+    margin: 20px;
+    background: rgba(255, 77, 77, 0.1);
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    color: white;
+  }
 `
 
-const ErrorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-grow: 1;
-  padding: 20px;
-  text-align: center;
-  color: white;
-  gap: 16px;
+const pulseAnimation = keyframes`
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
 `
 
 const LiveStreamingTitle = styled.div`
@@ -100,22 +115,11 @@ const LiveStreamingTitle = styled.div`
   gap: 8px;
 `
 
-const PulseIcon = styled.span`
-  color: #ff2d55;
-  font-size: 20px;
-  animation: pulse 2s infinite;
+const PulseIcon = styled.div`
+  color: #ff2d55; // Red color for the pulse
+  animation: ${pulseAnimation} 1.5s infinite;
   display: flex;
   align-items: center;
-
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
 `
 
 const StatsSpacer = styled.div`
@@ -127,20 +131,23 @@ const AuthPrompt = styled.div`
   padding: 12px;
   background: rgba(0, 0, 0, 0.6);
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
 `
 
 export {
   AuthPrompt,
   ErrorContainer,
-  ErrorMessage,
   LiveStreamingTitle,
   MainContent,
   PulseIcon,
   Sidebar,
   StatsSpacer,
-  StreamTitle,
   StreamerContainer,
   StreamerLayout,
   StreamingHeader,
+  StreamTitle,
   VideoArea
 }

@@ -1,88 +1,82 @@
 import { useConnectionState, useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
-import BarChartIcon from '@mui/icons-material/BarChart'
+import PeopleIcon from '@mui/icons-material/People'
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt'
-import VideocamIcon from '@mui/icons-material/Videocam'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import { ConnectionState } from 'livekit-client'
-import {
-  ConnectionQuality,
-  FullWidthStatItem,
-  SmallStatValue,
-  StatItem,
-  StatLabel,
-  StatValue,
-  StatsContainer,
-  StatsHeader,
-  StatsList,
-  StatsTitle,
-  StatusWrapper
-} from './RoomStats.styled'
+import WifiIcon from '@mui/icons-material/Wifi'
+import { ConnectionQuality, ConnectionState } from 'livekit-client'
+import { useTranslation } from '../../modules/translation'
+import { StatItem, StatLabel, StatValue, StatsContainer, StatsHeader, StatsList, StatusWrapper } from './RoomStats.styled'
 
 interface RoomStatsProps {
-  isStreamer?: boolean
+  isStreamer: boolean
 }
 
-export function RoomStats({ isStreamer = false }: RoomStatsProps) {
+export function RoomStats({ isStreamer }: RoomStatsProps) {
+  const { t } = useTranslation()
   const connectionState = useConnectionState()
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
 
-  // For streamers: show viewers (remote participants only)
-  // For watchers: show viewers including themselves
-  const viewerCount = isStreamer ? remoteParticipants.length : remoteParticipants.length + 1
+  // For streamer: only count viewers (remote participants)
+  // For viewer: only count viewers (remote participants, excluding the viewer themselves)
+  const totalParticipants = remoteParticipants.length
   const connectionQuality = localParticipant?.connectionQuality || 'unknown'
 
   const getConnectionString = (state: ConnectionState) => {
     switch (state) {
       case ConnectionState.Connected:
-        return 'Connected'
+        return t('room_stats.connected')
       case ConnectionState.Connecting:
-        return 'Connecting...'
-      case ConnectionState.Disconnected:
-        return 'Disconnected'
       case ConnectionState.Reconnecting:
-        return 'Reconnecting...'
+        return t('room_stats.connecting')
+      case ConnectionState.Disconnected:
+        return t('room_stats.disconnected')
       default:
-        return 'Unknown'
+        return t('room_stats.unknown')
+    }
+  }
+
+  const getQualityString = (quality: ConnectionQuality | 'unknown'): string => {
+    switch (quality) {
+      case ConnectionQuality.Excellent:
+        return t('room_stats.excellent')
+      case ConnectionQuality.Good:
+        return t('room_stats.good')
+      case ConnectionQuality.Poor:
+        return t('room_stats.poor')
+      default:
+        return t('room_stats.unknown')
     }
   }
 
   return (
     <StatsContainer>
       <StatsHeader>
-        <StatsTitle variant="h6">
-          <BarChartIcon fontSize="small" />
-          Stats
-        </StatsTitle>
+        <StatLabel style={{ textTransform: 'none', fontSize: '1rem', fontWeight: 600 }}>{t('room_stats.title')}</StatLabel>
       </StatsHeader>
-
       <StatsList>
         <StatItem>
           <StatusWrapper>
-            <VisibilityIcon fontSize="small" />
-            <StatLabel>Viewers</StatLabel>
+            <PeopleIcon fontSize="small" />
+            <StatLabel>{isStreamer ? t('room_stats.people') : t('room_stats.viewers')}</StatLabel>
           </StatusWrapper>
-          <StatValue>{viewerCount}</StatValue>
+          <StatValue>{totalParticipants}</StatValue>
         </StatItem>
 
         <StatItem>
           <StatusWrapper>
-            <VideocamIcon fontSize="small" />
-            <StatLabel>Streams</StatLabel>
+            <WifiIcon fontSize="small" />
+            <StatLabel>{t('room_stats.connection')}</StatLabel>
           </StatusWrapper>
-          <StatValue>{isStreamer ? 1 : remoteParticipants.length}</StatValue>
+          <StatValue>{getConnectionString(connectionState)}</StatValue>
         </StatItem>
 
-        <FullWidthStatItem>
+        <StatItem>
           <StatusWrapper>
             <SignalCellularAltIcon fontSize="small" />
-            <StatLabel>Status</StatLabel>
+            <StatLabel>{t('room_stats.quality')}</StatLabel>
           </StatusWrapper>
-          <StatusWrapper>
-            <ConnectionQuality quality={connectionQuality} />
-            <SmallStatValue>{getConnectionString(connectionState)}</SmallStatValue>
-          </StatusWrapper>
-        </FullWidthStatItem>
+          <StatValue>{getQualityString(connectionQuality)}</StatValue>
+        </StatItem>
       </StatsList>
     </StatsContainer>
   )

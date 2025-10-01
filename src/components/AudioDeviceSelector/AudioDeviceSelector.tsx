@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { InputLabel, Select } from 'decentraland-ui2'
+import { useTranslation } from '../../modules/translation'
 import { LoadingText, NoDevicesText, SelectorContainer, StyledFormControl, StyledMenuItem } from './AudioDeviceSelector.styled'
 
 interface AudioDevice {
@@ -14,6 +15,7 @@ interface AudioDeviceSelectorProps {
 }
 
 export function AudioDeviceSelector({ selectedDeviceId, onDeviceSelect }: AudioDeviceSelectorProps) {
+  const { t } = useTranslation()
   const [audioDevices, setAudioDevices] = useState<AudioDevice[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -63,7 +65,7 @@ export function AudioDeviceSelector({ selectedDeviceId, onDeviceSelect }: AudioD
   if (loading) {
     return (
       <SelectorContainer>
-        <LoadingText variant="body2">Loading audio devices...</LoadingText>
+        <LoadingText variant="body2">{t('device_selector.loading', { type: 'audio' })}</LoadingText>
       </SelectorContainer>
     )
   }
@@ -71,7 +73,7 @@ export function AudioDeviceSelector({ selectedDeviceId, onDeviceSelect }: AudioD
   if (audioDevices.length === 0) {
     return (
       <SelectorContainer>
-        <NoDevicesText variant="body2">No audio devices found</NoDevicesText>
+        <NoDevicesText variant="body2">{t('device_selector.no_devices', { type: 'audio' })}</NoDevicesText>
       </SelectorContainer>
     )
   }
@@ -79,16 +81,16 @@ export function AudioDeviceSelector({ selectedDeviceId, onDeviceSelect }: AudioD
   return (
     <SelectorContainer>
       <StyledFormControl variant="outlined" size="small">
-        <InputLabel>Audio Input</InputLabel>
+        <InputLabel>{t('device_selector.audio_input')}</InputLabel>
         <Select
           value={selectedDeviceId && audioDevices.some(d => d.deviceId === selectedDeviceId) ? selectedDeviceId : ''}
           onChange={e => onDeviceSelect(e.target.value)}
-          label="Audio Input"
+          label={t('device_selector.audio_input')}
           displayEmpty
         >
           {!selectedDeviceId && (
             <StyledMenuItem value="">
-              <em>Select Audio Device</em>
+              <em>{t('device_selector.select_device', { type: 'Audio' })}</em>
             </StyledMenuItem>
           )}
           {audioDevices.map(device => (

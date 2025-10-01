@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button, Typography } from 'decentraland-ui2'
+import { useTranslation } from '../../modules/translation'
 import { AuthContent, AuthError, AuthNote, AuthPromptCard } from './AuthPrompt.styled'
 
 interface EthereumProvider {
@@ -15,6 +16,7 @@ interface AuthPromptProps {
 }
 
 export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
+  const { t } = useTranslation()
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,7 +29,7 @@ export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
       const windowWithEth = window as WindowWithEthereum
 
       if (!windowWithEth.ethereum) {
-        throw new Error('No wallet found. Please install MetaMask or similar.')
+        throw new Error(t('auth.no_wallet'))
       }
 
       // Request account access
@@ -36,7 +38,7 @@ export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
       })) as string[]
 
       if (!accounts || accounts.length === 0) {
-        throw new Error('No accounts found. Please connect your wallet.')
+        throw new Error(t('auth.no_accounts'))
       }
 
       const walletAddress = accounts[0]
@@ -52,7 +54,7 @@ export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
 
       await onAuthenticate(walletAddress, signature)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed')
+      setError(err instanceof Error ? err.message : t('auth.auth_failed'))
     } finally {
       setIsConnecting(false)
     }
@@ -61,8 +63,8 @@ export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
   return (
     <AuthPromptCard>
       <AuthContent>
-        <Typography variant="h6">🔐 Join the Conversation</Typography>
-        <Typography variant="body2">Connect your wallet to send messages in chat and participate in the discussion.</Typography>
+        <Typography variant="h6">🔐 {t('auth.join_conversation')}</Typography>
+        <Typography variant="body2">{t('auth.connect_prompt')}</Typography>
 
         {error && (
           <AuthError>
@@ -73,10 +75,10 @@ export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
         )}
 
         <Button onClick={handleConnect} disabled={isConnecting} variant="contained">
-          {isConnecting ? '🔄 Connecting...' : '🦊 Connect Wallet'}
+          {isConnecting ? `🔄 ${t('auth.connecting')}` : `🦊 ${t('auth.connect_wallet')}`}
         </Button>
 
-        <AuthNote variant="body2">We'll never store your private keys. This signature is only used to verify your identity.</AuthNote>
+        <AuthNote variant="body2">{t('auth.privacy_note')}</AuthNote>
       </AuthContent>
     </AuthPromptCard>
   )

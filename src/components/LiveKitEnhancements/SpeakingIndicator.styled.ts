@@ -1,34 +1,52 @@
 import { keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
 
-const pulseAnimation = keyframes`
+const waveAnimation = keyframes`
   0% {
     transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.2);
     opacity: 1;
   }
   100% {
-    transform: scale(1);
-    opacity: 0.8;
+    transform: scale(2.5);
+    opacity: 0;
   }
 `
 
 const SpeakingCircle = styled.div<{ isSpeaking: boolean; intensity: number }>`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 20px;
-  height: 20px;
+  position: relative;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: ${({ intensity }) =>
-    `radial-gradient(circle, rgba(255, 45, 85, ${Math.min(intensity * 2, 1)}) 0%, rgba(255, 45, 85, 0.6) 100%)`};
-  border: 2px solid rgba(255, 45, 85, 0.8);
-  display: ${({ isSpeaking }) => (isSpeaking ? 'block' : 'none')};
-  animation: ${({ isSpeaking }) => (isSpeaking ? pulseAnimation : 'none')} 1s ease-in-out infinite;
-  z-index: 5;
+  background-color: ${props => (props.isSpeaking ? '#1e90ff' : 'rgba(255, 255, 255, 0.3)')};
+  transition: all 0.2s ease;
+  opacity: ${props => (props.isSpeaking ? 1 : 0.5)};
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Inner core */
+  &::before {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: white;
+    opacity: ${props => (props.isSpeaking ? 0.8 : 0.3)};
+  }
+
+  /* Wave effect - only when speaking */
+  &::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #1e90ff;
+    opacity: ${props => (props.isSpeaking ? 0.6 : 0)};
+    animation: ${props => (props.isSpeaking ? waveAnimation : 'none')} 1.5s ease-out infinite;
+  }
 `
 
 export { SpeakingCircle }

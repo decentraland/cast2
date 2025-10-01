@@ -3,6 +3,7 @@ import ChatIcon from '@mui/icons-material/Chat'
 import SendIcon from '@mui/icons-material/Send'
 import { Typography } from 'decentraland-ui2'
 import { ReceivedChatMessage, useChat } from '../../hooks/useChat'
+import { useTranslation } from '../../modules/translation'
 import {
   AuthSection,
   ChatContainer,
@@ -27,6 +28,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ canSendMessages, authPrompt }: ChatPanelProps) {
+  const { t } = useTranslation()
   const { chatMessages, sendMessage, isSending } = useChat()
   const [messageInput, setMessageInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -76,24 +78,23 @@ export function ChatPanel({ canSendMessages, authPrompt }: ChatPanelProps) {
     </ChatMessage>
   )
 
+  const messageCountKey = chatMessages.length === 1 ? 'chat.messages_count' : 'chat.messages_count_plural'
+  const emptyAction = canSendMessages ? t('chat.start_conversation') : t('chat.sign_in_to_participate')
+
   return (
     <ChatContainer>
       <ChatHeader>
         <Typography variant="h6">
           <ChatIcon sx={{ fontSize: '18px', marginRight: '4px', verticalAlign: 'middle' }} />
-          Chat
+          {t('chat.title')}
         </Typography>
-        <MessageCount variant="body2">
-          {chatMessages.length} {chatMessages.length === 1 ? 'message' : 'messages'}
-        </MessageCount>
+        <MessageCount variant="body2">{t(messageCountKey, { count: chatMessages.length.toString() })}</MessageCount>
       </ChatHeader>
 
       <ChatMessages>
         {chatMessages.length === 0 ? (
           <EmptyChat>
-            <Typography variant="body2">
-              No messages yet. {canSendMessages ? 'Start the conversation!' : 'Sign in to participate.'}
-            </Typography>
+            <Typography variant="body2">{t('chat.no_messages', { action: emptyAction })}</Typography>
           </EmptyChat>
         ) : (
           <>
@@ -111,7 +112,7 @@ export function ChatPanel({ canSendMessages, authPrompt }: ChatPanelProps) {
               value={messageInput}
               onChange={e => setMessageInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type a message..."
+              placeholder={t('chat.type_message')}
               disabled={isSending}
             />
             <SendButton onClick={handleSendMessage} disabled={!messageInput.trim() || isSending} size="small" variant="contained">
@@ -119,7 +120,7 @@ export function ChatPanel({ canSendMessages, authPrompt }: ChatPanelProps) {
             </SendButton>
           </ChatInputContainer>
         ) : (
-          <AuthSection>{authPrompt || <Typography variant="body2">Sign in to send messages in chat</Typography>}</AuthSection>
+          <AuthSection>{authPrompt || <Typography variant="body2">{t('chat.sign_in_prompt')}</Typography>}</AuthSection>
         )}
       </ChatInputSection>
     </ChatContainer>

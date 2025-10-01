@@ -1,27 +1,33 @@
-// React 18 JSX Transform - no need to import React
-import { TrackReferenceOrPlaceholder, VideoTrack, useTracks } from '@livekit/components-react'
+import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } from '@livekit/components-react'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { Track } from 'livekit-client'
-import { NoParticipants, NoParticipantsIcon, ParticipantGridContainer, ParticipantTileContainer } from './ParticipantGrid.styled'
+import { useTranslation } from '../../modules/translation'
+import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
+import {
+  NoParticipants,
+  NoParticipantsIcon,
+  ParticipantGridContainer,
+  ParticipantTileContainer,
+  SpeakingIndicatorWrapper
+} from './ParticipantGrid.styled'
 
 interface ParticipantGridProps {
   localParticipantVisible?: boolean
 }
 
-export function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProps) {
-  // Get all video tracks (camera and screen share)
-  const tracks = useTracks(
-    [
-      { source: Track.Source.Camera, withPlaceholder: true },
-      { source: Track.Source.ScreenShare, withPlaceholder: false }
-    ],
-    { onlySubscribed: false }
-  )
+function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProps) {
+  const { t } = useTranslation()
+  // Get video and screen share tracks
+  const videoTracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], {
+    updateOnlyOn: []
+  })
 
-  // Filter tracks based on localParticipantVisible setting
-  const filteredTracks = localParticipantVisible ? tracks : tracks.filter(track => !track.participant.isLocal)
+  // Filter out tracks based on whether local participant should be visible
+  const filteredTracks = localParticipantVisible
+    ? videoTracks
+    : videoTracks.filter((track: TrackReferenceOrPlaceholder) => track.participant.isLocal === false)
 
-  // Also filter placeholder tracks for better display
+  // Only show tracks that have actual publications
   const finalTracks = filteredTracks.filter((track: TrackReferenceOrPlaceholder) => track.publication !== undefined)
 
   if (finalTracks.length === 0) {
@@ -31,7 +37,7 @@ export function ParticipantGrid({ localParticipantVisible = true }: ParticipantG
           <NoParticipantsIcon>
             <VideocamOffIcon sx={{ fontSize: '48px' }} />
           </NoParticipantsIcon>
-          <div>{localParticipantVisible ? 'No video streams' : 'Waiting for participants...'}</div>
+          <div>{localParticipantVisible ? t('empty_state.no_video_streams') : t('empty_state.waiting_participants')}</div>
         </NoParticipants>
       </ParticipantGridContainer>
     )
@@ -39,14 +45,30 @@ export function ParticipantGrid({ localParticipantVisible = true }: ParticipantG
 
   return (
     <ParticipantGridContainer>
-      {finalTracks.map((track, index) => (
-        <ParticipantTileContainer key={`${track.participant.identity}-${track.source}-${index}`}>
-          <VideoTrack trackRef={track} />
-          <div className="participant-info">
-            <span className="participant-name">{track.participant.name || track.participant.identity}</span>
-          </div>
-        </ParticipantTileContainer>
+      {finalTracks.map(trackRef => (
+        <ParticipantTile key={trackRef.participant.sid + trackRef.source} trackRef={trackRef} />
       ))}
     </ParticipantGridContainer>
   )
 }
+
+function ParticipantTile({ trackRef }: { trackRef: TrackReferenceOrPlaceholder }) {
+  const participant = trackRef.participant
+  const isSpeaking = useIsSpeaking(participant)
+
+  // Only render if publication exists
+  if (!trackRef.publication) {
+    return null
+  }
+
+  return (
+    <ParticipantTileContainer isSpeaking={isSpeaking}>
+      <VideoTrack trackRef={trackRef} />
+      <SpeakingIndicatorWrapper>
+        <SpeakingIndicator participant={participant} />
+      </SpeakingIndicatorWrapper>
+    </ParticipantTileContainer>
+  )
+}
+
+export { ParticipantGrid }

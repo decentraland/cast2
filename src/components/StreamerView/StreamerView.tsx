@@ -5,7 +5,8 @@ import '@livekit/components-styles'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
 import { useAuth } from '../../context/AuthContext'
-import { LiveKitCredentials } from '../../types'
+import { useLiveKitCredentials } from '../../context/LiveKitContext'
+import { useTranslation } from '../../modules/translation'
 import { getStreamerToken } from '../../utils/api'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import { StreamerStatusOverlay } from '../LiveKitEnhancements/StreamerStatusOverlay'
@@ -30,10 +31,11 @@ import {
 } from './StreamerView.styled'
 
 export function StreamerView() {
+  const { t } = useTranslation()
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const { isConnected, address, disconnectWallet } = useAuth()
-  const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
+  const { credentials, setCredentials } = useLiveKitCredentials()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,7 +66,7 @@ export function StreamerView() {
   }
 
   if (loading) {
-    return <LoadingScreen message="Connecting to stream..." />
+    return <LoadingScreen message={t('streamer.connecting')} />
   }
 
   if (error) {
@@ -73,10 +75,10 @@ export function StreamerView() {
         <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
-            Error: {error}
+            {t('streamer.error_connection')}
           </Typography>
-          <Typography variant="body1">Please ensure your streaming link is valid and active.</Typography>
-          <button onClick={() => navigate('/')}>Go to Home</button>
+          <Typography variant="body1">{t('streamer.error_invalid_token')}</Typography>
+          <button onClick={() => navigate('/')}>{t('not_found.go_home')}</button>
         </ErrorContainer>
       </StreamerContainer>
     )
@@ -103,9 +105,14 @@ export function StreamerView() {
         serverUrl={credentials.url}
         connect={true}
         onConnected={handleRoomConnect}
-        audio={false} // Don't auto-start audio
-        video={false} // Don't auto-start video
-        screen={false} // Don't auto-prompt for screen share
+        audio={{
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000 // High quality audio (48kHz)
+        }}
+        video={false}
+        screen={false}
       >
         <StreamerLayout>
           <MainContent>
@@ -116,7 +123,7 @@ export function StreamerView() {
                     <FiberManualRecordIcon />
                   </PulseIcon>
                   <Typography variant="h4" component="span">
-                    Live Streaming
+                    {t('streamer.title')}
                   </Typography>
                 </LiveStreamingTitle>
               </StreamTitle>
@@ -138,6 +145,9 @@ export function StreamerView() {
               authPrompt={
                 !isConnected ? (
                   <AuthPrompt>
+                    <Typography variant="body2" style={{ marginBottom: '8px' }}>
+                      {t('streamer.connect_wallet_prompt')}
+                    </Typography>
                     <WalletButton />
                   </AuthPrompt>
                 ) : undefined

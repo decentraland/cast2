@@ -51,9 +51,17 @@ const VideoArea = styled.div`
   backdrop-filter: blur(10px);
   overflow: hidden;
   position: relative;
-
-  // Ensure proper aspect ratio
   min-height: 400px;
+  max-height: calc(100vh - 200px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
 `
 
 const Sidebar = styled.div`

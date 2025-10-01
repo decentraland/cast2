@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { InputLabel, Select } from 'decentraland-ui2'
+import { useTranslation } from '../../modules/translation'
 import { LoadingText, NoDevicesText, SelectorContainer, StyledFormControl, StyledMenuItem } from './VideoDeviceSelector.styled'
 
 interface VideoDevice {
@@ -14,6 +15,7 @@ interface VideoDeviceSelectorProps {
 }
 
 export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoDeviceSelectorProps) {
+  const { t } = useTranslation()
   const [videoDevices, setVideoDevices] = useState<VideoDevice[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -63,7 +65,7 @@ export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoD
   if (loading) {
     return (
       <SelectorContainer>
-        <LoadingText variant="body2">Loading video devices...</LoadingText>
+        <LoadingText variant="body2">{t('device_selector.loading', { type: 'video' })}</LoadingText>
       </SelectorContainer>
     )
   }
@@ -71,7 +73,7 @@ export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoD
   if (videoDevices.length === 0) {
     return (
       <SelectorContainer>
-        <NoDevicesText variant="body2">No video devices found</NoDevicesText>
+        <NoDevicesText variant="body2">{t('device_selector.no_devices', { type: 'video' })}</NoDevicesText>
       </SelectorContainer>
     )
   }
@@ -79,16 +81,16 @@ export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoD
   return (
     <SelectorContainer>
       <StyledFormControl variant="outlined" size="small">
-        <InputLabel>Video Input</InputLabel>
+        <InputLabel>{t('device_selector.video_input')}</InputLabel>
         <Select
           value={selectedDeviceId && videoDevices.some(d => d.deviceId === selectedDeviceId) ? selectedDeviceId : ''}
           onChange={e => onDeviceSelect(e.target.value)}
-          label="Video Input"
+          label={t('device_selector.video_input')}
           displayEmpty
         >
           {!selectedDeviceId && (
             <StyledMenuItem value="">
-              <em>Select Video Device</em>
+              <em>{t('device_selector.select_device', { type: 'Video' })}</em>
             </StyledMenuItem>
           )}
           {videoDevices.map(device => (

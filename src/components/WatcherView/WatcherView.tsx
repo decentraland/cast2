@@ -5,6 +5,7 @@ import '@livekit/components-styles'
 import GroupIcon from '@mui/icons-material/GroupOutlined'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
 import { useAuth } from '../../context/AuthContext'
+import { useTranslation } from '../../modules/translation'
 import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
 import { createLiveKitIdentity } from '../../utils/identity'
@@ -29,6 +30,7 @@ import {
 } from './WatcherView.styled'
 
 export function WatcherView() {
+  const { t } = useTranslation()
   const { roomId } = useParams<{ roomId: string }>()
   const { isConnected, address, disconnectWallet } = useAuth()
 
@@ -69,10 +71,6 @@ export function WatcherView() {
   }
 
   // Participant count will be managed by LiveKit hooks if needed
-
-  const handleUpgradePermissions = async () => {
-    // Placeholder for upgrading anonymous user to authenticated user
-  }
 
   if (loading) {
     return <LoadingScreen message="Connecting to stream..." />
@@ -117,7 +115,7 @@ export function WatcherView() {
                 <LiveWatchingTitle>
                   <GroupIcon />
                   <Typography variant="h4" component="span">
-                    Watching Live Stream
+                    {t('watcher.title')}
                   </Typography>
                 </LiveWatchingTitle>
               </StreamTitle>
@@ -136,9 +134,8 @@ export function WatcherView() {
               authPrompt={
                 !isConnected ? (
                   <AuthPromptStyled>
-                    <div className="auth-message">Connect your Decentraland wallet to send messages</div>
+                    <div className="auth-message">{t('watcher.connect_wallet_prompt')}</div>
                     <WalletButton />
-                    {isConnected && <button onClick={handleUpgradePermissions}>Enable Chat</button>}
                   </AuthPromptStyled>
                 ) : undefined
               }

@@ -9,7 +9,7 @@ const OverlayContainer = styled.div`
   gap: 8px;
 `
 
-const StatusBadge = styled.div<{ $isActive: boolean; $type: 'muted' | 'camera' }>`
+const StatusBadge = styled.div<{ $isActive: boolean; $type: 'muted' | 'camera' | 'speaking' }>`
   display: flex;
   align-items: center;
   gap: 4px;
@@ -20,6 +20,9 @@ const StatusBadge = styled.div<{ $isActive: boolean; $type: 'muted' | 'camera' }
   background: ${({ $isActive, $type }) => {
     if ($type === 'muted') {
       return $isActive ? 'rgba(255, 71, 87, 0.9)' : 'rgba(46, 204, 113, 0.9)'
+    }
+    if ($type === 'speaking') {
+      return 'rgba(46, 204, 113, 0.9)'
     }
     return $isActive ? 'rgba(46, 204, 113, 0.9)' : 'rgba(149, 165, 166, 0.9)'
   }};

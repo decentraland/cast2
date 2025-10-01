@@ -7,12 +7,12 @@ const StatsContainer = styled(Card)`
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
-    padding: 12px;
+    padding: 16px;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    min-height: 200px; /* Increased height for better visibility */
+    gap: 12px;
+    min-height: 280px;
   }
 `
 
@@ -22,14 +22,14 @@ const StatsHeader = styled.div`
   justify-content: space-between;
   margin-bottom: 4px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 `
 
 const StatsTitle = styled(Typography)`
   && {
-    color: white;
+    color: white !important;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -37,9 +37,9 @@ const StatsTitle = styled(Typography)`
 `
 
 const StatsList = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `
 
 const StatItem = styled.div`
@@ -47,24 +47,19 @@ const StatItem = styled.div`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  min-height: 48px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  min-height: 52px;
   text-align: left;
-  gap: 8px;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-  }
+  gap: 12px;
 `
 
 const StatLabel = styled(Typography)`
   && {
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 0.75rem;
     font-weight: 500;
     margin: 0;
     line-height: 1.2;
@@ -75,9 +70,9 @@ const StatLabel = styled(Typography)`
 
 const StatValue = styled(Typography)`
   && {
-    color: white;
+    color: white !important;
     font-weight: bold;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
     margin: 0;
     line-height: 1;
   }
@@ -123,7 +118,11 @@ const ConnectionQuality = styled.div<{ quality: string }>`
 const StatusWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+
+  svg {
+    color: rgba(255, 255, 255, 0.9);
+  }
 `
 
 const SmallStatValue = styled(Typography)`

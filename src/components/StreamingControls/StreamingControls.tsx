@@ -9,11 +9,14 @@ import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { ConnectionState, Track } from 'livekit-client'
 import { Button } from 'decentraland-ui2'
+import { useLiveKitCredentials } from '../../context/LiveKitContext'
+import { useTranslation } from '../../modules/translation'
 import { AudioDeviceSelector } from '../AudioDeviceSelector/AudioDeviceSelector'
 import { VideoDeviceSelector } from '../VideoDeviceSelector/VideoDeviceSelector'
 import { ControlGroup, ControlsContainer, ControlsRow, DeviceSelectorWrapper } from './StreamingControls.styled'
 
 export function StreamingControls() {
+  const { t } = useTranslation()
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
   const connectionState = useConnectionState()
@@ -21,11 +24,26 @@ export function StreamingControls() {
   const [selectedAudioDevice, setSelectedAudioDevice] = useState<string>('')
   const [selectedVideoDevice, setSelectedVideoDevice] = useState<string>('')
 
-  const { enabled: isMicEnabled } = useTrackToggle({
+  const { enabled: isMicEnabled, toggle: toggleMic } = useTrackToggle({
     source: Track.Source.Microphone
   })
 
-  const { enabled: isCameraEnabled } = useTrackToggle({
+  // Debug audio issues
+  useEffect(() => {
+    if (isMicEnabled && localParticipant) {
+      const audioTrack = Array.from(localParticipant.audioTrackPublications.values())[0]
+      if (audioTrack) {
+        console.log('[StreamingControls] Audio track state:', {
+          enabled: isMicEnabled,
+          isMuted: audioTrack.isMuted,
+          isSubscribed: audioTrack.isSubscribed,
+          track: audioTrack.track
+        })
+      }
+    }
+  }, [isMicEnabled, localParticipant])
+
+  const { enabled: isCameraEnabled, toggle: toggleCamera } = useTrackToggle({
     source: Track.Source.Camera
   })
 
@@ -54,89 +72,77 @@ export function StreamingControls() {
       try {
         await localParticipant.setScreenShareEnabled(true)
         setIsScreenSharing(true)
-      } catch {
+      } catch (error) {
+        // User cancelled or error occurred
         setIsScreenSharing(false)
       }
     }
   }
 
-  // Function to toggle camera, fixing the re-enable bug after End Stream
-  const handleToggleCamera = async () => {
-    if (!localParticipant) return
-
-    try {
-      if (isCameraEnabled) {
-        await localParticipant.setCameraEnabled(false)
-      } else {
-        await localParticipant.setCameraEnabled(true)
-
-        // Force refresh of camera track if it's still not working
-        const existingCameraTrack = localParticipant.getTrackPublication(Track.Source.Camera)
-        if (existingCameraTrack && !existingCameraTrack.track) {
-          // Unpublish and republish to force new track
-          await localParticipant.unpublishTrack(existingCameraTrack.track!)
-          setTimeout(async () => {
-            await localParticipant.setCameraEnabled(true)
-          }, 100)
-        }
-      }
-    } catch {
-      // Try to force a fresh camera start
-      setTimeout(async () => {
-        try {
-          await localParticipant.setCameraEnabled(true)
-        } catch {
-          // Camera retry failed
-        }
-      }, 500)
-    }
-  }
-
-  // Function to toggle microphone
-  const handleToggleMic = async () => {
-    if (!localParticipant) return
-    try {
-      await localParticipant.setMicrophoneEnabled(!isMicEnabled)
-    } catch {
-      // Microphone toggle error
-    }
-  }
-
-  // Handle audio device selection
   const handleAudioDeviceSelect = async (deviceId: string) => {
     setSelectedAudioDevice(deviceId)
-    if (localParticipant && isMicEnabled) {
+
+    // Switch audio device by disabling and re-enabling with new device
+    if (localParticipant) {
       try {
-        await localParticipant.setMicrophoneEnabled(false)
-        await localParticipant.setMicrophoneEnabled(true, { deviceId })
-      } catch {
-        // Failed to switch audio device
+        const wasEnabled = localParticipant.isMicrophoneEnabled
+        if (wasEnabled) {
+          await localParticipant.setMicrophoneEnabled(false)
+          await localParticipant.setMicrophoneEnabled(true, { deviceId })
+          console.log('[StreamingControls] Audio device switched to:', deviceId)
+        }
+      } catch (error) {
+        console.error('[StreamingControls] Failed to switch audio device:', error)
       }
     }
   }
 
-  // Handle video device selection
   const handleVideoDeviceSelect = async (deviceId: string) => {
     setSelectedVideoDevice(deviceId)
-    if (localParticipant && isCameraEnabled) {
+
+    // Switch video device by disabling and re-enabling with new device
+    if (localParticipant) {
       try {
-        await localParticipant.setCameraEnabled(false)
-        await localParticipant.setCameraEnabled(true, { deviceId })
-      } catch {
-        // Failed to switch video device
+        const wasEnabled = localParticipant.isCameraEnabled
+        if (wasEnabled) {
+          await localParticipant.setCameraEnabled(false)
+          await localParticipant.setCameraEnabled(true, { deviceId })
+          console.log('[StreamingControls] Video device switched to:', deviceId)
+        }
+      } catch (error) {
+        console.error('[StreamingControls] Failed to switch video device:', error)
       }
     }
   }
 
-  // Check if we're disconnected to show "Stream" button instead of "End Stream"
   const isDisconnected = connectionState === ConnectionState.Disconnected
+
+  const { credentials } = useLiveKitCredentials()
+
+  const handleReconnect = async () => {
+    if (!room || !credentials) {
+      console.error('[StreamingControls] Cannot reconnect: missing room or credentials')
+      window.location.reload()
+      return
+    }
+
+    try {
+      console.log('[StreamingControls] Reconnecting to room...', credentials.url)
+      await room.connect(credentials.url, credentials.token)
+      console.log('[StreamingControls] Reconnected successfully')
+    } catch (error) {
+      console.error('[StreamingControls] Reconnect failed:', error)
+      // Fallback to reload if reconnect fails
+      window.location.reload()
+    }
+  }
 
   return (
     <ControlsContainer>
       <ControlsRow>
         <ControlGroup>
-          <Button onClick={handleToggleMic} variant="contained" startIcon={isMicEnabled ? <MicIcon /> : <MicOffIcon />}>
-            {isMicEnabled ? 'Mute Mic' : 'Unmute Mic'}
+          <Button onClick={() => toggleMic()} variant="contained" startIcon={isMicEnabled ? <MicIcon /> : <MicOffIcon />}>
+            {isMicEnabled ? t('streaming_controls.mute_mic') : t('streaming_controls.unmute_mic')}
           </Button>
           <DeviceSelectorWrapper>
             <AudioDeviceSelector selectedDeviceId={selectedAudioDevice} onDeviceSelect={handleAudioDeviceSelect} />
@@ -144,25 +150,28 @@ export function StreamingControls() {
         </ControlGroup>
 
         <ControlGroup>
-          <Button onClick={handleToggleCamera} variant="contained" startIcon={isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}>
-            {isCameraEnabled ? 'Stop Cam' : 'Start Cam'}
+          <Button onClick={() => toggleCamera()} variant="contained" startIcon={isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}>
+            {isCameraEnabled ? t('streaming_controls.stop_cam') : t('streaming_controls.start_cam')}
           </Button>
           <DeviceSelectorWrapper>
             <VideoDeviceSelector selectedDeviceId={selectedVideoDevice} onDeviceSelect={handleVideoDeviceSelect} />
           </DeviceSelectorWrapper>
+          <Button
+            onClick={handleScreenShare}
+            variant="contained"
+            startIcon={isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+          >
+            {isScreenSharing ? t('streaming_controls.stop_share') : t('streaming_controls.share_screen')}
+          </Button>
         </ControlGroup>
 
-        <Button onClick={handleScreenShare} variant="contained" startIcon={isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}>
-          {isScreenSharing ? 'Stop Share' : 'Share Screen'}
-        </Button>
-
         {isDisconnected ? (
-          <Button onClick={() => window.location.reload()} variant="contained">
-            Reconnect
+          <Button onClick={handleReconnect} variant="contained">
+            {t('streaming_controls.reconnect')}
           </Button>
         ) : (
           <Button onClick={() => room?.disconnect()} variant="contained" startIcon={<CallEndIcon />}>
-            End Stream
+            {t('streaming_controls.end_stream')}
           </Button>
         )}
       </ControlsRow>
