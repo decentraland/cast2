@@ -1,5 +1,5 @@
-import { Button, Input, Typography } from 'decentraland-ui2'
 import styled from '@emotion/styled'
+import { Button, Input, Typography } from 'decentraland-ui2'
 
 const ChatContainer = styled.div`
   height: 100%;

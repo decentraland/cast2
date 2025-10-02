@@ -1,6 +1,6 @@
 /* eslint-env node */
 module.exports = {
-  extends: ['@dcl/eslint-config/dapps'],
+  extends: ['@dcl/eslint-config/ui'],
   parserOptions: {
     project: ['tsconfig.json', 'tsconfig.test.json']
   },

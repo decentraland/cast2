@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
+import { StreamerViewContent } from './StreamerViewContent'
 import { useAuth } from '../../context/AuthContext'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
@@ -23,7 +24,6 @@ import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
 import { WalletButton } from '../WalletButton/WalletButton'
-import { StreamerViewContent } from './StreamerViewContent'
 
 export function StreamerView() {
   const { t } = useTranslation()

@@ -1,5 +1,5 @@
-import { FormControl, MenuItem, Typography } from 'decentraland-ui2'
 import styled from '@emotion/styled'
+import { FormControl, MenuItem, Typography } from 'decentraland-ui2'
 
 const SelectorContainer = styled.div`
   margin: 8px 0;

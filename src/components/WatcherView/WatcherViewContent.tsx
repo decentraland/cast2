@@ -1,10 +1,10 @@
 import { useRemoteParticipants } from '@livekit/components-react'
 import { Track } from 'livekit-client'
+import { WatcherStatusOverlay } from './WatcherStatusOverlay'
 import { useTranslation } from '../../modules/translation'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
-import { WatcherStatusOverlay } from './WatcherStatusOverlay'
 import { ContentWrapper } from './WatcherViewContent.styled'
 
 export function WatcherViewContent() {

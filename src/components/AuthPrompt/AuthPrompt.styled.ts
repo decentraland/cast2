@@ -1,5 +1,5 @@
-import { Card, Typography } from 'decentraland-ui2'
 import styled from '@emotion/styled'
+import { Card, Typography } from 'decentraland-ui2'
 
 const AuthPromptCard = styled(Card)`
   && {

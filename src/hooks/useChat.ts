@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRoomContext } from '@livekit/components-react'
-import { DataPacket_Kind, Participant, RoomEvent } from 'livekit-client'
+import { Participant, RoomEvent } from 'livekit-client'
 
 // Simple chat message format (instead of DCL Protocol for now)
 interface ChatPacket {
@@ -28,7 +28,7 @@ function useChat() {
     const messages: ReceivedChatMessage[] = []
 
     // Listen for data messages
-    const handleDataReceived = (payload: Uint8Array, participant?: Participant, _kind?: DataPacket_Kind, _topic?: string) => {
+    const handleDataReceived = (payload: Uint8Array, participant?: Participant) => {
       try {
         // Decode simple JSON chat message
         const text = new TextDecoder().decode(payload)

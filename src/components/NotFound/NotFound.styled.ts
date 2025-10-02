@@ -1,5 +1,5 @@
-import { Button } from 'decentraland-ui2'
 import styled from '@emotion/styled'
+import { Button } from 'decentraland-ui2'
 
 const NotFoundContainer = styled.div`
   display: flex;

@@ -1,6 +1,6 @@
-import { Typography } from 'decentraland-ui2'
 import { keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
+import { Typography } from 'decentraland-ui2'
 
 const fadeInOut = keyframes`
   0%, 100% { opacity: 0.6; }

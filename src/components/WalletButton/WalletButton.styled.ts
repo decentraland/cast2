@@ -1,5 +1,5 @@
-import { Button, Typography } from 'decentraland-ui2'
 import styled from '@emotion/styled'
+import { Button, Typography } from 'decentraland-ui2'
 
 const WalletContainer = styled.div`
   display: flex;

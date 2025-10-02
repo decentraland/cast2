@@ -3,6 +3,7 @@ import { AuthIdentity } from '@dcl/crypto'
 import { config } from '../config'
 
 // Enhanced debug logging for auth flow
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const logAuth = (_message: string, _data?: unknown) => {
   // Debug logging disabled in production
 }

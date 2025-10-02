@@ -1,6 +1,6 @@
-import { Card } from 'decentraland-ui2'
 import { keyframes } from '@emotion/react'
 import styled from '@emotion/styled'
+import { Card } from 'decentraland-ui2'
 
 const slideInFromRight = keyframes`
   from {

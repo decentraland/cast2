@@ -1,5 +1,5 @@
-import { Typography } from 'decentraland-ui2'
 import styled from '@emotion/styled'
+import { Typography } from 'decentraland-ui2'
 
 const SidebarContainer = styled.div`
   height: 100%;
