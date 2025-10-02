@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "Decentraland Cast 2.0 - Browser-native streaming with sub-second latency",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "init": "./start.sh && npm run husky-setup",
     "dev": "vite",
@@ -29,7 +28,7 @@
   "bugs": {
     "url": "https://github.com/decentraland/dapps-template/issues"
   },
-  "homepage": "https://github.com/decentraland/dapps-template#readme",
+  "homepage": "",
   "engines": {
     "node": "20.*",
     "npm": "8.* || 9.*"
@@ -42,7 +41,8 @@
     "@livekit/components-react": "^2.5.0",
     "@livekit/components-styles": "^1.0.12",
     "classnames": "^2.5.1",
-    "decentraland-ui2": "^0.23.3",
+    "decentraland-ui2": "^0.28.1",
+    "dotenv": "^17.2.3",
     "ethers": "^6.15.0",
     "livekit-client": "^2.6.0",
     "react": "^18.3.1",
