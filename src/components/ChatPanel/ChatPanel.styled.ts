@@ -1,31 +1,33 @@
-import { Button, Card, Input, Typography } from 'decentraland-ui2'
+import { Button, Input, Typography } from 'decentraland-ui2'
 import styled from '@emotion/styled'
 
-const ChatContainer = styled(Card)`
-  && {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.08) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(20px);
-    color: white;
-    border-radius: 12px;
-    overflow: hidden;
-  }
+const ChatContainer = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  color: white;
+  overflow: hidden;
 `
 
 const ChatHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 
   .MuiTypography-root {
     color: white !important;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
   }
 `
 
@@ -39,8 +41,7 @@ const MessageCount = styled(Typography)`
 const ChatMessages = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-  max-height: calc(100vh - 200px);
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -63,6 +64,10 @@ const ChatMessages = styled.div`
       background: rgba(255, 255, 255, 0.3);
     }
   }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `
 
 const EmptyChat = styled.div`
@@ -79,8 +84,8 @@ const EmptyChat = styled.div`
 `
 
 const ChatMessage = styled.div`
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  background: rgba(236, 235, 237, 0.15);
   border-radius: 8px;
   border-left: 3px solid var(--participant-color, rgba(255, 255, 255, 0.3));
 `
@@ -89,7 +94,7 @@ const MessageHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.25rem;
+  margin-bottom: 4px;
 `
 
 const ParticipantName = styled.span`
@@ -108,18 +113,22 @@ const MessageContent = styled.div`
   line-height: 1.4;
   color: white !important;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
 `
 
 const ChatInputSection = styled.div`
-  padding: 1rem;
+  padding: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 `
 
 const ChatInputContainer = styled.div`
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
   align-items: flex-end;
 `
 
@@ -130,8 +139,8 @@ const StyledInput = styled(Input)`
     .MuiInputBase-input {
       color: white !important;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 20px;
+      padding: 12px 16px;
       font-size: 14px;
 
       &::placeholder {
@@ -141,6 +150,7 @@ const StyledInput = styled(Input)`
 
     .MuiOutlinedInput-notchedOutline {
       border-color: rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
     }
 
     &:hover .MuiOutlinedInput-notchedOutline {
@@ -164,12 +174,17 @@ const StyledInput = styled(Input)`
 
 const SendButton = styled(Button)`
   && {
-    min-width: 60px;
-    padding: 12px 16px;
+    min-width: 48px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
     background: var(--primary) !important;
     border-color: var(--primary) !important;
-    color: var(--text-on-primary) !important;
-    font-size: 16px;
+    color: white !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover {
       background: var(--primary-hover) !important;
@@ -180,6 +195,10 @@ const SendButton = styled(Button)`
       background: rgba(255, 255, 255, 0.1) !important;
       border-color: rgba(255, 255, 255, 0.1) !important;
       color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    svg {
+      font-size: 20px;
     }
   }
 `
@@ -192,6 +211,26 @@ const AuthSection = styled.div`
   }
 `
 
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: white;
+  }
+
+  svg {
+    font-size: 20px;
+  }
+`
+
 export {
   AuthSection,
   ChatContainer,
@@ -200,6 +239,7 @@ export {
   ChatInputSection,
   ChatMessage,
   ChatMessages,
+  CloseButton,
   EmptyChat,
   MessageContent,
   MessageCount,

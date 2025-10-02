@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import GroupIcon from '@mui/icons-material/GroupOutlined'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
 import { useAuth } from '../../context/AuthContext'
 import { useTranslation } from '../../modules/translation'
@@ -10,24 +9,23 @@ import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
 import { createLiveKitIdentity } from '../../utils/identity'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
-import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
-import { RoomStats } from '../RoomStats/RoomStats'
-import { WalletButton } from '../WalletButton/WalletButton'
-import { WatcherViewContent } from './WatcherViewContent'
 import {
-  AuthPromptStyled,
-  BackLink,
+  AuthPrompt as AuthPromptStyled,
+  ControlsArea,
   ErrorContainer,
-  LiveWatchingTitle,
   MainContent,
   Sidebar,
-  StatsSpacer,
-  StreamTitle,
-  StreamingHeader,
   VideoArea,
-  WatcherContainer,
-  WatcherLayout
-} from './WatcherView.styled'
+  VideoContainer,
+  ViewContainer as WatcherContainer,
+  ViewLayout as WatcherLayout
+} from '../CommonView/CommonView.styled'
+import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
+import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
+import { StreamingControls } from '../StreamingControls/StreamingControls'
+import { WalletButton } from '../WalletButton/WalletButton'
+import { WatcherViewContent } from './WatcherViewContent'
+import { BackLink } from './WatcherView.styled'
 
 export function WatcherView() {
   const { t } = useTranslation()
@@ -37,6 +35,8 @@ export function WatcherView() {
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [peopleOpen, setPeopleOpen] = useState(false)
 
   useEffect(() => {
     if (!roomId) {
@@ -57,23 +57,31 @@ export function WatcherView() {
 
         setCredentials(liveKitCredentials)
       } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to connect to stream. Please try again.')
+        setError(error instanceof Error ? error.message : t('watcher.error_connection'))
       } finally {
         setLoading(false)
       }
     }
 
     initializeWatcher()
-  }, [roomId])
+  }, [roomId, t])
 
   const handleRoomConnect = () => {
     // Watcher connected to LiveKit room
   }
 
-  // Participant count will be managed by LiveKit hooks if needed
+  const handleToggleChat = () => {
+    if (peopleOpen) setPeopleOpen(false)
+    setChatOpen(!chatOpen)
+  }
+
+  const handleTogglePeople = () => {
+    if (chatOpen) setChatOpen(false)
+    setPeopleOpen(!peopleOpen)
+  }
 
   if (loading) {
-    return <LoadingScreen message="Connecting to stream..." />
+    return <LoadingScreen message={t('watcher.connecting')} />
   }
 
   if (error) {
@@ -81,7 +89,7 @@ export function WatcherView() {
       <WatcherContainer>
         <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
         <ErrorContainer>
-          <Typography variant="h6">Connection Error</Typography>
+          <Typography variant="h6">{t('watcher.error_connection')}</Typography>
           <Typography variant="body1">{error}</Typography>
           <Typography variant="body2">
             <BackLink href="/cast">← Back to Cast</BackLink>
@@ -92,11 +100,13 @@ export function WatcherView() {
   }
 
   if (!credentials) {
-    return <LoadingScreen message="Preparing stream..." />
+    return <LoadingScreen message={t('watcher.connecting')} />
   }
 
+  const sidebarOpen = chatOpen || peopleOpen
+
   return (
-    <WatcherContainer className="with-navbar">
+    <WatcherContainer>
       <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
 
       <LiveKitRoom
@@ -110,37 +120,42 @@ export function WatcherView() {
       >
         <WatcherLayout>
           <MainContent>
-            <StreamingHeader>
-              <StreamTitle>
-                <LiveWatchingTitle>
-                  <GroupIcon />
-                  <Typography variant="h4" component="span">
-                    {t('watcher.title')}
-                  </Typography>
-                </LiveWatchingTitle>
-              </StreamTitle>
-            </StreamingHeader>
+            <VideoContainer $sidebarOpen={sidebarOpen}>
+              <VideoArea $sidebarOpen={sidebarOpen}>
+                <WatcherViewContent />
+              </VideoArea>
 
-            <VideoArea>
-              <WatcherViewContent />
-            </VideoArea>
+              {sidebarOpen && (
+                <Sidebar $isOpen={sidebarOpen}>
+                  {chatOpen && (
+                    <ChatPanel
+                      canSendMessages={isConnected}
+                      onClose={handleToggleChat}
+                      authPrompt={
+                        !isConnected ? (
+                          <AuthPromptStyled>
+                            <div className="auth-message">{t('watcher.connect_wallet_prompt')}</div>
+                            <WalletButton />
+                          </AuthPromptStyled>
+                        ) : undefined
+                      }
+                    />
+                  )}
+                  {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
+                </Sidebar>
+              )}
+            </VideoContainer>
+
+            <ControlsArea>
+              <StreamingControls
+                onToggleChat={handleToggleChat}
+                onTogglePeople={handleTogglePeople}
+                chatOpen={chatOpen}
+                peopleOpen={peopleOpen}
+                isStreamer={false}
+              />
+            </ControlsArea>
           </MainContent>
-
-          <Sidebar>
-            <RoomStats isStreamer={false} />
-            <StatsSpacer />
-            <ChatPanel
-              canSendMessages={isConnected}
-              authPrompt={
-                !isConnected ? (
-                  <AuthPromptStyled>
-                    <div className="auth-message">{t('watcher.connect_wallet_prompt')}</div>
-                    <WalletButton />
-                  </AuthPromptStyled>
-                ) : undefined
-              }
-            />
-          </Sidebar>
         </WatcherLayout>
 
         <RoomAudioRenderer />

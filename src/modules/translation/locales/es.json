@@ -36,7 +36,8 @@
     "start_cam": "Iniciar Cámara",
     "stop_share": "Detener Compartir",
     "share_screen": "Compartir Pantalla",
-    "end_stream": "Finalizar Transmisión",
+    "end_streaming": "Finalizar Transmisión",
+    "leave": "Salir",
     "reconnect": "Reconectar",
     "disconnected": "Desconectado",
     "connecting": "Conectando...",
@@ -59,6 +60,12 @@
     "type_message": "Escribe un mensaje...",
     "sign_in_prompt": "Inicia sesión para enviar mensajes en el chat",
     "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
+  },
+  "live_counter": {
+    "live": "EN VIVO",
+    "participant_streaming": "Persona transmitiendo",
+    "participants_streaming": "Personas transmitiendo",
+    "you": "Tú"
   },
   "room_stats": {
     "title": "Estadísticas de Transmisión",

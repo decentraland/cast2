@@ -36,7 +36,8 @@
     "start_cam": "Start Cam",
     "stop_share": "Stop Share",
     "share_screen": "Share Screen",
-    "end_stream": "End Stream",
+    "end_streaming": "End Streaming",
+    "leave": "Leave",
     "reconnect": "Reconnect",
     "disconnected": "Disconnected",
     "connecting": "Connecting...",
@@ -59,6 +60,12 @@
     "type_message": "Type a message...",
     "sign_in_prompt": "Sign in to send messages in chat",
     "connect_wallet_prompt": "Connect your Decentraland wallet to send messages"
+  },
+  "live_counter": {
+    "live": "LIVE",
+    "participant_streaming": "Person streaming",
+    "participants_streaming": "People streaming",
+    "you": "You"
   },
   "room_stats": {
     "title": "Stream Stats",

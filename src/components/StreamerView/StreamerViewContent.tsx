@@ -2,8 +2,9 @@ import { useConnectionState, useLocalParticipant } from '@livekit/components-rea
 import { ConnectionState, Track } from 'livekit-client'
 import { useTranslation } from '../../modules/translation'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
+import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
-import { EmptyStateWrapper } from './StreamerViewContent.styled'
+import { ContentWrapper } from './StreamerViewContent.styled'
 
 export function StreamerViewContent() {
   const { t } = useTranslation()
@@ -14,30 +15,34 @@ export function StreamerViewContent() {
   const isDisconnected = connectionState === ConnectionState.Disconnected
 
   // Check if there are any active video tracks (camera or screen share) from the LOCAL participant
-  const hasLocalVideo = localParticipant?.videoTrackPublications.size > 0
+  const hasLocalCamera = Array.from(localParticipant?.videoTrackPublications.values() || []).some(
+    pub => pub.source === Track.Source.Camera && pub.track && !pub.isMuted
+  )
   const hasLocalScreenShare = Array.from(localParticipant?.videoTrackPublications.values() || []).some(
-    pub => pub.source === Track.Source.ScreenShare && pub.track
+    pub => pub.source === Track.Source.ScreenShare && pub.track && !pub.isMuted
   )
 
-  // For streamer, we only care if THEY are sharing something, not if there are viewers
-  const hasAnyVideo = hasLocalVideo || hasLocalScreenShare
+  // For streamer, we only care if THEY are sharing something
+  const hasAnyVideo = hasLocalCamera || hasLocalScreenShare
 
   // If disconnected, show reconnection message
   if (isDisconnected) {
     return (
-      <EmptyStateWrapper>
-        <EmptyStreamState type="streamer" message={t('empty_state.streamer_disconnected')} />
-      </EmptyStateWrapper>
+      <ContentWrapper>
+        <EmptyStreamState type="watcher" message={t('empty_state.streamer_disconnected')} />
+      </ContentWrapper>
     )
   }
 
-  if (!hasAnyVideo) {
-    return (
-      <EmptyStateWrapper>
-        <EmptyStreamState type="streamer" message={t('empty_state.streamer_action')} />
-      </EmptyStateWrapper>
-    )
-  }
-
-  return <ParticipantGrid localParticipantVisible={true} />
+  // Always show the LiveStreamCounter when connected as streamer
+  return (
+    <ContentWrapper>
+      <LiveStreamCounter isStreamer={true} />
+      {hasAnyVideo ? (
+        <ParticipantGrid localParticipantVisible={true} />
+      ) : (
+        <EmptyStreamState type="streamer" message={t('empty_state.streamer_action')} participantName={localParticipant?.identity} />
+      )}
+    </ContentWrapper>
+  )
 }

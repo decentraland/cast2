@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import ChatIcon from '@mui/icons-material/Chat'
+import CloseIcon from '@mui/icons-material/Close'
 import SendIcon from '@mui/icons-material/Send'
 import { Typography } from 'decentraland-ui2'
 import { ReceivedChatMessage, useChat } from '../../hooks/useChat'
@@ -12,6 +13,7 @@ import {
   ChatInputSection,
   ChatMessage,
   ChatMessages,
+  CloseButton,
   EmptyChat,
   MessageContent,
   MessageCount,
@@ -25,9 +27,10 @@ import {
 interface ChatPanelProps {
   canSendMessages: boolean
   authPrompt?: React.ReactNode
+  onClose?: () => void
 }
 
-export function ChatPanel({ canSendMessages, authPrompt }: ChatPanelProps) {
+export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelProps) {
   const { t } = useTranslation()
   const { chatMessages, sendMessage, isSending } = useChat()
   const [messageInput, setMessageInput] = useState('')
@@ -88,7 +91,14 @@ export function ChatPanel({ canSendMessages, authPrompt }: ChatPanelProps) {
           <ChatIcon sx={{ fontSize: '18px', marginRight: '4px', verticalAlign: 'middle' }} />
           {t('chat.title')}
         </Typography>
-        <MessageCount variant="body2">{t(messageCountKey, { count: chatMessages.length.toString() })}</MessageCount>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <MessageCount variant="body2">{t(messageCountKey, { count: chatMessages.length.toString() })}</MessageCount>
+          {onClose && (
+            <CloseButton onClick={onClose}>
+              <CloseIcon />
+            </CloseButton>
+          )}
+        </div>
       </ChatHeader>
 
       <ChatMessages>

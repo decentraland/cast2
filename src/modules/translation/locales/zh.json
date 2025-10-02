@@ -36,7 +36,8 @@
     "start_cam": "启动摄像头",
     "stop_share": "停止共享",
     "share_screen": "共享屏幕",
-    "end_stream": "结束直播",
+    "end_streaming": "结束直播",
+    "leave": "离开",
     "reconnect": "重新连接",
     "disconnected": "已断开",
     "connecting": "连接中...",
@@ -59,6 +60,12 @@
     "type_message": "输入消息...",
     "sign_in_prompt": "登录以在聊天中发送消息",
     "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息"
+  },
+  "live_counter": {
+    "live": "直播中",
+    "participant_streaming": "人正在直播",
+    "participants_streaming": "人正在直播",
+    "you": "你"
   },
   "room_stats": {
     "title": "直播统计",

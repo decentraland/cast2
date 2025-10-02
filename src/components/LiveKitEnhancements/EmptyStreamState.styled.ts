@@ -15,11 +15,47 @@ const EmptyContainer = styled.div`
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 227, 194, 0.1) 100%);
-  border-radius: 12px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
   text-align: center;
   padding: 40px 20px;
   box-sizing: border-box;
+`
+
+const StreamerEmptyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(102, 73, 127, 0.6) 0%, rgba(63, 35, 87, 0.6) 100%);
+  padding: 40px 20px;
+  box-sizing: border-box;
+  border: 1px solid #a24bf3;
+  border-radius: 12px;
+  position: relative;
+`
+
+const AvatarImage = styled.img`
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  animation: ${fadeInOut} 2s ease-in-out infinite;
+`
+
+const ParticipantNameOverlay = styled.div`
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 8px;
+  z-index: 2;
 `
 
 const EmptyIconWrapper = styled.div`
@@ -54,4 +90,4 @@ const EmptySubtitle = styled(Typography)`
   }
 `
 
-export { EmptyContainer, EmptyIconWrapper, EmptySubtitle, EmptyTitle }
+export { AvatarImage, EmptyContainer, EmptyIconWrapper, EmptySubtitle, EmptyTitle, ParticipantNameOverlay, StreamerEmptyContainer }

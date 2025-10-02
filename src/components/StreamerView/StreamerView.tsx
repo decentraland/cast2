@@ -2,33 +2,28 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
 import { useAuth } from '../../context/AuthContext'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
 import { getStreamerToken } from '../../utils/api'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
-import { StreamerStatusOverlay } from '../LiveKitEnhancements/StreamerStatusOverlay'
+import {
+  AuthPrompt,
+  ControlsArea,
+  ErrorContainer,
+  MainContent,
+  Sidebar,
+  ViewContainer as StreamerContainer,
+  ViewLayout as StreamerLayout,
+  VideoArea,
+  VideoContainer
+} from '../CommonView/CommonView.styled'
 import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
-import { RoomStats } from '../RoomStats/RoomStats'
+import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
 import { WalletButton } from '../WalletButton/WalletButton'
 import { StreamerViewContent } from './StreamerViewContent'
-import {
-  AuthPrompt,
-  ErrorContainer,
-  LiveStreamingTitle,
-  MainContent,
-  PulseIcon,
-  Sidebar,
-  StatsSpacer,
-  StreamTitle,
-  StreamerContainer,
-  StreamerLayout,
-  StreamingHeader,
-  VideoArea
-} from './StreamerView.styled'
 
 export function StreamerView() {
   const { t } = useTranslation()
@@ -38,6 +33,8 @@ export function StreamerView() {
   const { credentials, setCredentials } = useLiveKitCredentials()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [chatOpen, setChatOpen] = useState(false)
+  const [peopleOpen, setPeopleOpen] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -52,17 +49,27 @@ export function StreamerView() {
         setCredentials(creds)
         setError(null)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to initialize streaming')
+        setError(err instanceof Error ? err.message : t('streamer.error_initialize_streaming'))
       } finally {
         setLoading(false)
       }
     }
 
     initializeStreamer()
-  }, [token])
+  }, [token, t, setCredentials])
 
   const handleRoomConnect = () => {
     // Streamer connected to LiveKit room
+  }
+
+  const handleToggleChat = () => {
+    if (peopleOpen) setPeopleOpen(false)
+    setChatOpen(!chatOpen)
+  }
+
+  const handleTogglePeople = () => {
+    if (chatOpen) setChatOpen(false)
+    setPeopleOpen(!peopleOpen)
   }
 
   if (loading) {
@@ -90,12 +97,14 @@ export function StreamerView() {
         <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
-            Error: No streaming credentials available.
+            {t('streamer.error_no_credentials')}
           </Typography>
         </ErrorContainer>
       </StreamerContainer>
     )
   }
+
+  const sidebarOpen = chatOpen || peopleOpen
 
   return (
     <StreamerContainer>
@@ -105,55 +114,50 @@ export function StreamerView() {
         serverUrl={credentials.url}
         connect={true}
         onConnected={handleRoomConnect}
-        audio={{
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000 // High quality audio (48kHz)
-        }}
+        audio={false} // Start with audio disabled - user must enable manually
         video={false}
         screen={false}
       >
         <StreamerLayout>
           <MainContent>
-            <StreamingHeader>
-              <StreamTitle>
-                <LiveStreamingTitle>
-                  <PulseIcon>
-                    <FiberManualRecordIcon />
-                  </PulseIcon>
-                  <Typography variant="h4" component="span">
-                    {t('streamer.title')}
-                  </Typography>
-                </LiveStreamingTitle>
-              </StreamTitle>
-            </StreamingHeader>
+            <VideoContainer $sidebarOpen={sidebarOpen}>
+              <VideoArea $sidebarOpen={sidebarOpen}>
+                <StreamerViewContent />
+              </VideoArea>
 
-            <VideoArea>
-              <StreamerViewContent />
-              <StreamerStatusOverlay />
-            </VideoArea>
+              {sidebarOpen && (
+                <Sidebar $isOpen={sidebarOpen}>
+                  {chatOpen && (
+                    <ChatPanel
+                      canSendMessages={isConnected}
+                      onClose={handleToggleChat}
+                      authPrompt={
+                        !isConnected ? (
+                          <AuthPrompt>
+                            <Typography variant="body2" style={{ marginBottom: '8px' }}>
+                              {t('streamer.connect_wallet_prompt')}
+                            </Typography>
+                            <WalletButton />
+                          </AuthPrompt>
+                        ) : undefined
+                      }
+                    />
+                  )}
+                  {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
+                </Sidebar>
+              )}
+            </VideoContainer>
 
-            <StreamingControls />
+            <ControlsArea>
+              <StreamingControls
+                onToggleChat={handleToggleChat}
+                onTogglePeople={handleTogglePeople}
+                chatOpen={chatOpen}
+                peopleOpen={peopleOpen}
+                isStreamer={true}
+              />
+            </ControlsArea>
           </MainContent>
-
-          <Sidebar>
-            <RoomStats isStreamer={true} />
-            <StatsSpacer />
-            <ChatPanel
-              canSendMessages={isConnected}
-              authPrompt={
-                !isConnected ? (
-                  <AuthPrompt>
-                    <Typography variant="body2" style={{ marginBottom: '8px' }}>
-                      {t('streamer.connect_wallet_prompt')}
-                    </Typography>
-                    <WalletButton />
-                  </AuthPrompt>
-                ) : undefined
-              }
-            />
-          </Sidebar>
         </StreamerLayout>
 
         <RoomAudioRenderer />

@@ -2,8 +2,8 @@ import styled from '@emotion/styled'
 
 const OverlayContainer = styled.div`
   position: absolute;
-  top: 16px;
-  left: 16px;
+  bottom: 16px;
+  right: 16px;
   z-index: 10;
   display: flex;
   gap: 8px;

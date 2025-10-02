@@ -1,24 +1,44 @@
 import TvIcon from '@mui/icons-material/Tv'
-import VideocamIcon from '@mui/icons-material/Videocam'
 import { useTranslation } from '../../modules/translation'
-import { EmptyContainer, EmptyIconWrapper, EmptySubtitle, EmptyTitle } from './EmptyStreamState.styled'
+import {
+  AvatarImage,
+  EmptyContainer,
+  EmptyIconWrapper,
+  EmptySubtitle,
+  EmptyTitle,
+  ParticipantNameOverlay,
+  StreamerEmptyContainer
+} from './EmptyStreamState.styled'
 
 interface EmptyStreamStateProps {
   type: 'streamer' | 'watcher'
   message?: string
+  participantName?: string
 }
 
-export function EmptyStreamState({ type, message }: EmptyStreamStateProps) {
+export function EmptyStreamState({ type, message, participantName }: EmptyStreamStateProps) {
   const { t } = useTranslation()
   const isStreamer = type === 'streamer'
 
   const defaultMessage = isStreamer ? t('empty_state.streamer_message') : t('empty_state.watcher_message')
-
   const title = isStreamer ? t('empty_state.streamer_title') : t('empty_state.watcher_title')
 
+  // For streamer, show gradient background with avatar
+  if (isStreamer) {
+    return (
+      <StreamerEmptyContainer>
+        <AvatarImage src="/images/avatar.png" alt="Default Avatar" />
+        {participantName && <ParticipantNameOverlay>{participantName}</ParticipantNameOverlay>}
+      </StreamerEmptyContainer>
+    )
+  }
+
+  // For watcher, show the icon and text
   return (
     <EmptyContainer>
-      <EmptyIconWrapper>{isStreamer ? <VideocamIcon /> : <TvIcon />}</EmptyIconWrapper>
+      <EmptyIconWrapper>
+        <TvIcon />
+      </EmptyIconWrapper>
 
       <EmptyTitle variant="h5">{title}</EmptyTitle>
 
