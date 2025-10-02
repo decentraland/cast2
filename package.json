@@ -42,7 +42,6 @@
     "@livekit/components-react": "^2.5.0",
     "@livekit/components-styles": "^1.0.12",
     "classnames": "^2.5.1",
-    "decentraland-ui": "^5.8.0",
     "decentraland-ui2": "^0.23.3",
     "ethers": "^6.15.0",
     "livekit-client": "^2.6.0",

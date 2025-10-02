@@ -147,13 +147,7 @@ export function WatcherView() {
             </VideoContainer>
 
             <ControlsArea>
-              <StreamingControls
-                onToggleChat={handleToggleChat}
-                onTogglePeople={handleTogglePeople}
-                chatOpen={chatOpen}
-                peopleOpen={peopleOpen}
-                isStreamer={false}
-              />
+              <StreamingControls onToggleChat={handleToggleChat} onTogglePeople={handleTogglePeople} isStreamer={false} />
             </ControlsArea>
           </MainContent>
         </WatcherLayout>

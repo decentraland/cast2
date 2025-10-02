@@ -19,8 +19,17 @@ const renderWithTranslation = (component: React.ReactElement) => {
 }
 
 describe('ChatPanel', () => {
+  let mockSendMessage: jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSendMessage = jest.fn()
+    // Default mock setup
+    mockUseChat.mockReturnValue({
+      chatMessages: [],
+      sendMessage: mockSendMessage,
+      isSending: false
+    })
   })
 
   it('should render chat title', () => {
@@ -59,7 +68,7 @@ describe('ChatPanel', () => {
 
     mockUseChat.mockReturnValue({
       chatMessages: mockMessages,
-      sendMessage: jest.fn(),
+      sendMessage: mockSendMessage,
       isSending: false
     })
 
@@ -72,14 +81,6 @@ describe('ChatPanel', () => {
   })
 
   it('should call sendMessage when user sends a message', () => {
-    const mockSendMessage = jest.fn()
-
-    mockUseChat.mockReturnValue({
-      chatMessages: [],
-      sendMessage: mockSendMessage,
-      isSending: false
-    })
-
     renderWithTranslation(<ChatPanel canSendMessages={true} />)
 
     const input = screen.getByPlaceholderText(/type.*message/i)
@@ -92,14 +93,6 @@ describe('ChatPanel', () => {
   })
 
   it('should not send empty messages', () => {
-    const mockSendMessage = jest.fn()
-
-    mockUseChat.mockReturnValue({
-      chatMessages: [],
-      sendMessage: mockSendMessage,
-      isSending: false
-    })
-
     renderWithTranslation(<ChatPanel canSendMessages={true} />)
 
     const sendButton = screen.getByRole('button')
@@ -110,14 +103,6 @@ describe('ChatPanel', () => {
   })
 
   it('should clear input after sending message', () => {
-    const mockSendMessage = jest.fn()
-
-    mockUseChat.mockReturnValue({
-      chatMessages: [],
-      sendMessage: mockSendMessage,
-      isSending: false
-    })
-
     renderWithTranslation(<ChatPanel canSendMessages={true} />)
 
     const input = screen.getByPlaceholderText(/type.*message/i) as HTMLInputElement
@@ -132,7 +117,7 @@ describe('ChatPanel', () => {
   it('should disable input and button when sending', () => {
     mockUseChat.mockReturnValue({
       chatMessages: [],
-      sendMessage: jest.fn(),
+      sendMessage: mockSendMessage,
       isSending: true
     })
 

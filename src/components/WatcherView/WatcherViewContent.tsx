@@ -54,7 +54,7 @@ export function WatcherViewContent() {
   // Always show LiveStreamCounter and grid when there are streamers
   return (
     <ContentWrapper>
-      <LiveStreamCounter isStreamer={false} />
+      <LiveStreamCounter />
       {hasActiveVideo ? (
         <ParticipantGrid localParticipantVisible={false} />
       ) : (

@@ -149,13 +149,7 @@ export function StreamerView() {
             </VideoContainer>
 
             <ControlsArea>
-              <StreamingControls
-                onToggleChat={handleToggleChat}
-                onTogglePeople={handleTogglePeople}
-                chatOpen={chatOpen}
-                peopleOpen={peopleOpen}
-                isStreamer={true}
-              />
+              <StreamingControls onToggleChat={handleToggleChat} onTogglePeople={handleTogglePeople} isStreamer={true} />
             </ControlsArea>
           </MainContent>
         </StreamerLayout>

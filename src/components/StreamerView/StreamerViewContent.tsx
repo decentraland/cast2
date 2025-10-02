@@ -37,7 +37,7 @@ export function StreamerViewContent() {
   // Always show the LiveStreamCounter when connected as streamer
   return (
     <ContentWrapper>
-      <LiveStreamCounter isStreamer={true} />
+      <LiveStreamCounter />
       {hasAnyVideo ? (
         <ParticipantGrid localParticipantVisible={true} />
       ) : (

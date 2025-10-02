@@ -29,21 +29,26 @@ const renderWithTranslation = (component: React.ReactElement) => {
 }
 
 describe('WalletButton', () => {
+  let mockConnectWallet: jest.Mock
+  let mockDisconnectWallet: jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
-  })
-
-  it('should render connect button when not connected', () => {
+    mockConnectWallet = jest.fn()
+    mockDisconnectWallet = jest.fn()
+    // Default mock setup - disconnected state
     mockUseAuth.mockReturnValue({
       isConnected: false,
       address: null,
-      connectWallet: jest.fn(),
-      disconnectWallet: jest.fn(),
+      connectWallet: mockConnectWallet,
+      disconnectWallet: mockDisconnectWallet,
       isConnecting: false,
       error: null,
       identity: null
     })
+  })
 
+  it('should render connect button when not connected', () => {
     renderWithTranslation(<WalletButton />)
 
     const button = screen.getByRole('button', { name: /connect wallet/i })
@@ -55,8 +60,8 @@ describe('WalletButton', () => {
     mockUseAuth.mockReturnValue({
       isConnected: false,
       address: null,
-      connectWallet: jest.fn(),
-      disconnectWallet: jest.fn(),
+      connectWallet: mockConnectWallet,
+      disconnectWallet: mockDisconnectWallet,
       isConnecting: true,
       error: null,
       identity: null
@@ -73,8 +78,8 @@ describe('WalletButton', () => {
     mockUseAuth.mockReturnValue({
       isConnected: true,
       address: '0x1234567890abcdef1234567890abcdef12345678',
-      connectWallet: jest.fn(),
-      disconnectWallet: jest.fn(),
+      connectWallet: mockConnectWallet,
+      disconnectWallet: mockDisconnectWallet,
       isConnecting: false,
       error: null,
       identity: null
@@ -90,8 +95,8 @@ describe('WalletButton', () => {
     mockUseAuth.mockReturnValue({
       isConnected: true,
       address: '0xabcdef1234567890abcdef1234567890abcdef12',
-      connectWallet: jest.fn(),
-      disconnectWallet: jest.fn(),
+      connectWallet: mockConnectWallet,
+      disconnectWallet: mockDisconnectWallet,
       isConnecting: false,
       error: null,
       identity: null
