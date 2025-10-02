@@ -1,5 +1,5 @@
 {
-  "name": "@dcl/cast2",
+  "name": "@dcl/cast2-site",
   "version": "0.1.0",
   "description": "Decentraland Cast 2.0 - Browser-native streaming with sub-second latency",
   "main": "index.js",
