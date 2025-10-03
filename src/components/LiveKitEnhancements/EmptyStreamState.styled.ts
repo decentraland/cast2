@@ -31,9 +31,9 @@ const StreamerEmptyContainer = styled('div', {
   padding: '40px 20px',
   boxSizing: 'border-box',
   border: $isSpeaking ? '3px solid #1e90ff' : '1px solid #a24bf3',
-  borderRadius: 12,
+  borderRadius: 16,
   position: 'relative',
-  transition: 'border-color 0.3s ease'
+  transition: 'border 0.3s ease'
 }))
 
 const AvatarImage = styled('img')({

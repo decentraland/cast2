@@ -81,7 +81,8 @@ const ParticipantTileContainer = styled('div', {
     background: '#000',
     ...sizeStyles,
     border: $isSpeaking ? '3px solid #1e90ff' : 'none',
-    transition: 'border-color 0.3s ease, transform 0.2s ease',
+    borderRadius: 16,
+    transition: 'border 0.3s ease, transform 0.2s ease',
     cursor: $clickable ? 'pointer' : 'default',
     ...($clickable && {
       '&:hover': {
@@ -98,7 +99,8 @@ const ParticipantTileContainer = styled('div', {
       margin: '0.5rem'
     },
     '& .lk-participant-media-video': {
-      objectFit: 'contain'
+      objectFit: 'contain',
+      borderRadius: 16
     }
   }
 })
