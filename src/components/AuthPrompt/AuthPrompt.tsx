@@ -1,19 +1,8 @@
 import { useState } from 'react'
 import { Button, Typography } from 'decentraland-ui2'
 import { useTranslation } from '../../modules/translation'
+import { AuthPromptProps, WindowWithEthereum } from './AuthPrompt.types'
 import { AuthContent, AuthError, AuthNote, AuthPromptCard } from './AuthPrompt.styled'
-
-interface EthereumProvider {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
-}
-
-interface WindowWithEthereum extends Window {
-  ethereum?: EthereumProvider
-}
-
-interface AuthPromptProps {
-  onAuthenticate: (walletAddress: string, signature: string) => Promise<void>
-}
 
 export function AuthPrompt({ onAuthenticate }: AuthPromptProps) {
   const { t } = useTranslation()

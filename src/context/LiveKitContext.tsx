@@ -1,14 +1,5 @@
 import { ReactNode, createContext, useContext, useState } from 'react'
-
-interface LiveKitCredentials {
-  token: string
-  url: string
-}
-
-interface LiveKitContextValue {
-  credentials: LiveKitCredentials | null
-  setCredentials: (credentials: LiveKitCredentials | null) => void
-}
+import { LiveKitContextValue, LiveKitCredentials } from './LiveKitContext.types'
 
 const LiveKitContext = createContext<LiveKitContextValue | undefined>(undefined)
 

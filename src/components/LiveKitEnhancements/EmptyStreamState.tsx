@@ -1,5 +1,6 @@
 import TvIcon from '@mui/icons-material/Tv'
 import { useTranslation } from '../../modules/translation'
+import { EmptyStreamStateProps } from './EmptyStreamState.types'
 import {
   AvatarImage,
   EmptyContainer,
@@ -9,12 +10,6 @@ import {
   ParticipantNameOverlay,
   StreamerEmptyContainer
 } from './EmptyStreamState.styled'
-
-interface EmptyStreamStateProps {
-  type: 'streamer' | 'watcher'
-  message?: string
-  participantName?: string
-}
 
 export function EmptyStreamState({ type, message, participantName }: EmptyStreamStateProps) {
   const { t } = useTranslation()

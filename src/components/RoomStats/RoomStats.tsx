@@ -4,11 +4,8 @@ import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt'
 import WifiIcon from '@mui/icons-material/Wifi'
 import { ConnectionQuality, ConnectionState } from 'livekit-client'
 import { useTranslation } from '../../modules/translation'
-import { StatItem, StatLabel, StatValue, StatsContainer, StatsHeader, StatsList, StatusWrapper } from './RoomStats.styled'
-
-interface RoomStatsProps {
-  isStreamer: boolean
-}
+import { RoomStatsProps } from './RoomStats.types'
+import { StatItem, StatLabel, StatValue, StatsContainer, StatsHeader, StatsList, StatsTitle, StatusWrapper } from './RoomStats.styled'
 
 export function RoomStats({ isStreamer }: RoomStatsProps) {
   const { t } = useTranslation()
@@ -51,7 +48,7 @@ export function RoomStats({ isStreamer }: RoomStatsProps) {
   return (
     <StatsContainer>
       <StatsHeader>
-        <StatLabel style={{ textTransform: 'none', fontSize: '1rem', fontWeight: 600 }}>{t('room_stats.title')}</StatLabel>
+        <StatsTitle>{t('room_stats.title')}</StatsTitle>
       </StatsHeader>
       <StatsList>
         <StatItem>

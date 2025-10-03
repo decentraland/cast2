@@ -13,6 +13,7 @@ import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { ConnectionState, Track } from 'livekit-client'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
+import { StreamingControlsProps } from './StreamingControls.types'
 import {
   ButtonWithMenu,
   ChevronButton,
@@ -26,12 +27,6 @@ import {
   IconButton,
   NotificationBadge
 } from './StreamingControls.styled'
-
-interface StreamingControlsProps {
-  onToggleChat?: () => void
-  onTogglePeople?: () => void
-  isStreamer?: boolean
-}
 
 export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = false }: StreamingControlsProps) {
   const { t } = useTranslation()

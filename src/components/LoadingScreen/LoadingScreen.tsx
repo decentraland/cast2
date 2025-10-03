@@ -1,9 +1,5 @@
-// React 18 JSX Transform - React import not needed
+import { LoadingScreenProps } from './LoadingScreen.types'
 import { LoadingContainer, LoadingSpinner, LoadingText } from './LoadingScreen.styled'
-
-interface LoadingScreenProps {
-  message?: string
-}
 
 export function LoadingScreen({ message = 'Loading...' }: LoadingScreenProps) {
   return (

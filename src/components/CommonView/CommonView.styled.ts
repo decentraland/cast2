@@ -1,148 +1,146 @@
-import { keyframes } from '@emotion/react'
-import styled from '@emotion/styled'
-import { Card } from 'decentraland-ui2'
+import { Card, keyframes, styled } from 'decentraland-ui2'
 
-const slideInFromRight = keyframes`
-  from {
-    transform: translateX(100%);
+const slideInFromRight = keyframes({
+  from: {
+    transform: 'translateX(100%)'
+  },
+  to: {
+    transform: 'translateX(0)'
   }
-  to {
-    transform: translateX(0);
+})
+
+const slideOutToRight = keyframes({
+  from: {
+    transform: 'translateX(0)'
+  },
+  to: {
+    transform: 'translateX(100%)'
   }
-`
+})
 
-const slideOutToRight = keyframes`
-  from {
-    transform: translateX(0);
+const ViewContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: '100vh',
+  background: '#301646',
+  paddingTop: 60
+})
+
+const ViewLayout = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  height: 'calc(100vh - 60px)',
+  width: '100%',
+  position: 'relative',
+  overflow: 'hidden',
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column'
   }
-  to {
-    transform: translateX(100%);
+}))
+
+const MainContent = styled('div')({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  position: 'relative',
+  minHeight: 0,
+  transition: 'all 0.3s ease-in-out',
+  padding: 24
+})
+
+const VideoContainer = styled('div')<{ $sidebarOpen: boolean }>(() => ({
+  flex: 1,
+  display: 'flex',
+  position: 'relative',
+  minHeight: 0,
+  transition: 'all 0.3s ease-in-out'
+}))
+
+const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => ({
+  flex: 1,
+  background: '#1a0b2e',
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  boxSizing: 'border-box',
+  transition: 'flex 0.3s ease-in-out',
+  borderRadius: 12,
+  '& video': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain'
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: 16,
+    margin: 8
   }
-`
+}))
 
-const ViewContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: #301646;
-  padding-top: 60px;
-`
-
-const ViewLayout = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 60px);
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`
-
-const MainContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  min-height: 0;
-  transition: all 0.3s ease-in-out;
-  padding: 24px;
-`
-
-const VideoContainer = styled.div<{ $sidebarOpen: boolean }>`
-  flex: 1;
-  display: flex;
-  position: relative;
-  min-height: 0;
-  transition: all 0.3s ease-in-out;
-`
-
-const VideoArea = styled.div<{ $sidebarOpen: boolean }>`
-  flex: 1;
-  background: #1a0b2e;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-sizing: border-box;
-  transition: flex 0.3s ease-in-out;
-  border-radius: 12px;
-
-  video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  @media (max-width: 768px) {
-    padding: 16px;
-    margin: 8px;
-  }
-`
-
-const Sidebar = styled.div<{ $isOpen: boolean; $isClosing?: boolean }>`
-  width: ${({ $isOpen }) => ($isOpen ? '400px' : '0')};
-  display: flex;
-  flex-direction: column;
-  transition: width 0.3s ease-in-out;
-  overflow: hidden;
-  background: linear-gradient(135deg, #66497f 0%, #3f2357 100%);
-  border-radius: 12px;
-  flex-shrink: 0;
-  animation: ${({ $isOpen, $isClosing }) => {
-      if ($isClosing) return slideOutToRight
-      if ($isOpen) return slideInFromRight
-      return 'none'
-    }}
-    0.3s ease-out;
-  margin-left: 18px;
-  box-sizing: border-box;
-
-  @media (max-width: 1200px) {
-    width: ${({ $isOpen }) => ($isOpen ? '320px' : '0')};
+const Sidebar = styled('div')<{ $isOpen: boolean; $isClosing?: boolean }>(({ theme, $isOpen, $isClosing }) => {
+  let animationValue = 'none'
+  if ($isClosing) {
+    animationValue = `${slideOutToRight} 0.3s ease-out`
+  } else if ($isOpen) {
+    animationValue = `${slideInFromRight} 0.3s ease-out`
   }
 
-  @media (max-width: 768px) {
-    position: fixed;
-    top: 60px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    height: ${({ $isOpen }) => ($isOpen ? '40vh' : '0')};
-    margin: 8px;
-    padding: 16px;
-    z-index: 100;
+  return {
+    width: $isOpen ? '400px' : '0',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'width 0.3s ease-in-out',
+    overflow: 'hidden',
+    background: 'linear-gradient(135deg, #66497f 0%, #3f2357 100%)',
+    borderRadius: 12,
+    flexShrink: 0,
+    animation: animationValue,
+    marginLeft: 18,
+    boxSizing: 'border-box',
+    [theme.breakpoints.down('lg')]: {
+      width: $isOpen ? '320px' : '0'
+    },
+    [theme.breakpoints.down('sm')]: {
+      position: 'fixed',
+      top: 60,
+      left: 0,
+      right: 0,
+      width: '100%',
+      height: $isOpen ? '40vh' : '0',
+      margin: 8,
+      padding: 16,
+      zIndex: 100
+    }
   }
-`
+})
 
-const ControlsArea = styled.div`
-  width: 100%;
-  background: transparent;
-  flex-shrink: 0;
-`
+const ControlsArea = styled('div')({
+  width: '100%',
+  background: 'transparent',
+  flexShrink: 0
+})
 
-const ErrorContainer = styled(Card)`
-  && {
-    padding: 24px;
-    margin: 20px;
-    background: rgba(255, 77, 77, 0.1);
-    border: 1px solid rgba(255, 77, 77, 0.3);
-    color: white;
+const ErrorContainer = styled(Card)(() => ({
+  padding: 24,
+  margin: 20,
+  background: 'rgba(255, 77, 77, 0.1)',
+  border: '1px solid rgba(255, 77, 77, 0.3)',
+  color: 'white'
+}))
+
+const AuthPrompt = styled('div')({
+  marginTop: 12,
+  padding: 12,
+  background: 'rgba(0, 0, 0, 0.6)',
+  borderRadius: 8,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  alignItems: 'center',
+  '& .MuiTypography-root': {
+    marginBottom: 8
   }
-`
-
-const AuthPrompt = styled.div`
-  margin-top: 12px;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-`
+})
 
 export { AuthPrompt, ControlsArea, ErrorContainer, MainContent, Sidebar, VideoArea, VideoContainer, ViewContainer, ViewLayout }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
@@ -58,19 +58,19 @@ export function StreamerView() {
     initializeStreamer()
   }, [token, t, setCredentials])
 
-  const handleRoomConnect = () => {
+  const handleRoomConnect = useCallback(() => {
     // Streamer connected to LiveKit room
-  }
+  }, [])
 
-  const handleToggleChat = () => {
+  const handleToggleChat = useCallback(() => {
     if (peopleOpen) setPeopleOpen(false)
     setChatOpen(!chatOpen)
-  }
+  }, [peopleOpen, chatOpen])
 
-  const handleTogglePeople = () => {
+  const handleTogglePeople = useCallback(() => {
     if (chatOpen) setChatOpen(false)
     setPeopleOpen(!peopleOpen)
-  }
+  }, [chatOpen, peopleOpen])
 
   if (loading) {
     return <LoadingScreen message={t('streamer.connecting')} />
@@ -134,9 +134,7 @@ export function StreamerView() {
                       authPrompt={
                         !isConnected ? (
                           <AuthPrompt>
-                            <Typography variant="body2" style={{ marginBottom: '8px' }}>
-                              {t('streamer.connect_wallet_prompt')}
-                            </Typography>
+                            <Typography variant="body2">{t('streamer.connect_wallet_prompt')}</Typography>
                             <WalletButton />
                           </AuthPrompt>
                         ) : undefined

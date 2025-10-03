@@ -1,12 +1,7 @@
-import { TrackReferenceOrPlaceholder, useAudioWaveform, useIsSpeaking } from '@livekit/components-react'
-import { LocalAudioTrack, Participant, RemoteAudioTrack } from 'livekit-client'
+import { useAudioWaveform, useIsSpeaking } from '@livekit/components-react'
 import { useTranslation } from '../../modules/translation'
+import { SpeakingIndicatorProps } from './SpeakingIndicator.types'
 import { SpeakingCircle } from './SpeakingIndicator.styled'
-
-interface SpeakingIndicatorProps {
-  participant?: Participant
-  trackRef?: LocalAudioTrack | RemoteAudioTrack | TrackReferenceOrPlaceholder
-}
 
 export function SpeakingIndicator({ participant, trackRef }: SpeakingIndicatorProps) {
   const { t } = useTranslation()

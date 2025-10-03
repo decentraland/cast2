@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react'
 import { RoomStats } from './RoomStats'
 import { TranslationProvider } from '../../modules/translation'
 
-// Mock LiveKit hooks
 jest.mock('@livekit/components-react', () => ({
   useConnectionState: jest.fn(),
   useLocalParticipant: jest.fn(),
@@ -19,124 +18,248 @@ const renderWithTranslation = (component: React.ReactElement) => {
 }
 
 describe('RoomStats', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    mockUseConnectionState.mockReturnValue('connected')
-    mockUseLocalParticipant.mockReturnValue({
-      localParticipant: {
-        connectionQuality: 'excellent'
-      }
-    })
-    mockUseRemoteParticipants.mockReturnValue([])
-  })
-
-  it('should render room stats container with connection info', () => {
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    // Check that connection info is rendered
-    expect(screen.getByText(/connection/i)).toBeInTheDocument()
-    expect(screen.getByText(/quality/i)).toBeInTheDocument()
-  })
-
-  it('should show "People" label for streamer', () => {
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    expect(screen.getByText(/people/i)).toBeInTheDocument()
-  })
-
-  it('should show "Viewers" label for watcher', () => {
-    renderWithTranslation(<RoomStats isStreamer={false} />)
-
-    expect(screen.getByText(/viewers/i)).toBeInTheDocument()
-  })
-
-  it('should display correct participant count for streamer', () => {
-    // 2 remote participants
-    mockUseRemoteParticipants.mockReturnValue([{ identity: 'viewer1' }, { identity: 'viewer2' }])
-
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    expect(screen.getByText('2')).toBeInTheDocument()
-  })
-
-  it('should display correct viewer count (excluding local)', () => {
-    // 1 remote participant + local participant should show 1 viewer
-    mockUseRemoteParticipants.mockReturnValue([{ identity: 'viewer1' }])
-
-    renderWithTranslation(<RoomStats isStreamer={false} />)
-
-    expect(screen.getByText('1')).toBeInTheDocument()
-  })
-
-  it('should show connection state', () => {
-    mockUseConnectionState.mockReturnValue('connected')
-
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    expect(screen.getByText(/connected/i)).toBeInTheDocument()
-  })
-
-  it('should show connecting state', () => {
-    mockUseConnectionState.mockReturnValue('connecting')
-
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    expect(screen.getByText(/connecting/i)).toBeInTheDocument()
-  })
-
-  it('should show disconnected state', () => {
-    mockUseConnectionState.mockReturnValue('disconnected')
-
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    expect(screen.getByText(/disconnected/i)).toBeInTheDocument()
-  })
-
-  it('should show connection quality', () => {
-    mockUseLocalParticipant.mockReturnValue({
-      localParticipant: {
-        connectionQuality: 'excellent'
-      }
+  describe('when rendered', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
     })
 
-    renderWithTranslation(<RoomStats isStreamer={true} />)
-
-    expect(screen.getByText(/excellent/i)).toBeInTheDocument()
-  })
-
-  it('should show good quality', () => {
-    mockUseLocalParticipant.mockReturnValue({
-      localParticipant: {
-        connectionQuality: 'good'
-      }
+    afterEach(() => {
+      jest.clearAllMocks()
     })
 
-    renderWithTranslation(<RoomStats isStreamer={true} />)
+    it('should render room stats container with connection info', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
 
-    expect(screen.getByText(/good/i)).toBeInTheDocument()
+      expect(screen.getByText(/connection/i)).toBeInTheDocument()
+      expect(screen.getByText(/quality/i)).toBeInTheDocument()
+    })
   })
 
-  it('should show poor quality', () => {
-    mockUseLocalParticipant.mockReturnValue({
-      localParticipant: {
-        connectionQuality: 'poor'
-      }
+  describe('when isStreamer is true', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
     })
 
-    renderWithTranslation(<RoomStats isStreamer={true} />)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    expect(screen.getByText(/poor/i)).toBeInTheDocument()
+    it('should show "People" label', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/people/i)).toBeInTheDocument()
+    })
+
+    describe('and there are 2 remote participants', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([{ identity: 'viewer1' }, { identity: 'viewer2' }])
+      })
+
+      it('should display correct participant count', () => {
+        renderWithTranslation(<RoomStats isStreamer={true} />)
+
+        expect(screen.getByText('2')).toBeInTheDocument()
+      })
+    })
   })
 
-  it('should show unknown quality when not available', () => {
-    mockUseLocalParticipant.mockReturnValue({
-      localParticipant: {
-        connectionQuality: undefined
-      }
+  describe('when isStreamer is false', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
     })
 
-    renderWithTranslation(<RoomStats isStreamer={true} />)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    expect(screen.getByText(/unknown/i)).toBeInTheDocument()
+    it('should show "Viewers" label', () => {
+      renderWithTranslation(<RoomStats isStreamer={false} />)
+
+      expect(screen.getByText(/viewers/i)).toBeInTheDocument()
+    })
+
+    describe('and there is 1 remote participant', () => {
+      beforeEach(() => {
+        mockUseRemoteParticipants.mockReturnValue([{ identity: 'viewer1' }])
+      })
+
+      it('should display correct viewer count', () => {
+        renderWithTranslation(<RoomStats isStreamer={false} />)
+
+        expect(screen.getByText('1')).toBeInTheDocument()
+      })
+    })
+  })
+
+  describe('when connection state is connected', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show connected state', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/connected/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('when connection state is connecting', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connecting')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show connecting state', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/connecting/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('when connection state is disconnected', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('disconnected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show disconnected state', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/disconnected/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('when connection quality is excellent', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'excellent'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show excellent quality', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/excellent/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('when connection quality is good', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'good'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show good quality', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/good/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('when connection quality is poor', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: 'poor'
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show poor quality', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/poor/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('when connection quality is not available', () => {
+    beforeEach(() => {
+      mockUseConnectionState.mockReturnValue('connected')
+      mockUseLocalParticipant.mockReturnValue({
+        localParticipant: {
+          connectionQuality: undefined
+        }
+      })
+      mockUseRemoteParticipants.mockReturnValue([])
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should show unknown quality', () => {
+      renderWithTranslation(<RoomStats isStreamer={true} />)
+
+      expect(screen.getByText(/unknown/i)).toBeInTheDocument()
+    })
   })
 })

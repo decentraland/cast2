@@ -1,240 +1,226 @@
-import styled from '@emotion/styled'
-import { Button, Input, Typography } from 'decentraland-ui2'
+import { Button, Input, Typography, styled } from 'decentraland-ui2'
 
-const ChatContainer = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: transparent;
-  color: white;
-  overflow: hidden;
-`
+const ChatContainer = styled('div')({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'transparent',
+  color: 'white',
+  overflow: 'hidden'
+})
 
-const ChatHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-
-  .MuiTypography-root {
-    color: white !important;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+const ChatHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: 16,
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  flexShrink: 0,
+  '& .MuiTypography-root': {
+    color: 'white',
+    fontWeight: 600,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: 12
   }
+}))
 
-  @media (max-width: 768px) {
-    padding: 12px;
+const ChatHeaderActions = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12
+})
+
+const ChatIcon = styled('span')({
+  fontSize: 18,
+  marginRight: 4,
+  verticalAlign: 'middle',
+  display: 'flex',
+  alignItems: 'center'
+})
+
+const MessageCount = styled(Typography)(() => ({
+  color: 'rgba(255, 255, 255, 0.7)',
+  fontSize: '0.875rem'
+}))
+
+const ChatMessages = styled('div')(({ theme }) => ({
+  flex: 1,
+  overflowY: 'auto',
+  padding: 16,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
+  '&::-webkit-scrollbar': {
+    width: 6
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 3
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.3)'
+    }
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: 12
   }
-`
+}))
 
-const MessageCount = styled(Typography)`
-  && {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.875rem;
+const EmptyChat = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  height: '100%',
+  color: 'rgba(255, 255, 255, 0.5)',
+  textAlign: 'center',
+  '& .MuiTypography-root': {
+    color: 'rgba(255, 255, 255, 0.5)'
   }
-`
+})
 
-const ChatMessages = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+const ChatMessage = styled('div')<{ $participantColor?: string }>(({ $participantColor }) => ({
+  padding: 12,
+  background: 'rgba(236, 235, 237, 0.15)',
+  borderRadius: 8,
+  borderLeft: `3px solid ${$participantColor || 'rgba(255, 255, 255, 0.3)'}`
+}))
 
-  /* Custom scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
+const MessageHeader = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 4
+})
+
+const ParticipantName = styled('span')<{ $color?: string }>(({ $color }) => ({
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  color: $color || 'white'
+}))
+
+const MessageTime = styled('span')({
+  color: 'rgba(255, 255, 255, 0.5)',
+  fontSize: '0.75rem'
+})
+
+const MessageContent = styled('div')({
+  wordWrap: 'break-word',
+  lineHeight: 1.4,
+  color: 'white',
+  fontSize: 14,
+  fontWeight: 400
+})
+
+const ChatInputSection = styled('div')(({ theme }) => ({
+  padding: 16,
+  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+  flexShrink: 0,
+  [theme.breakpoints.down('sm')]: {
+    padding: 12
   }
+}))
 
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-  }
+const ChatInputContainer = styled('div')({
+  display: 'flex',
+  gap: 8,
+  alignItems: 'flex-end'
+})
 
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
+const StyledInput = styled(Input)(({ theme }) => ({
+  flex: 1,
+  '& .MuiInputBase-input': {
+    color: 'white',
+    background: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    padding: '12px 16px',
+    fontSize: 14,
+    '&::placeholder': {
+      color: 'rgba(255, 255, 255, 0.5)'
+    }
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(255, 255, 255, 0.3)'
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: theme.palette.primary.main,
+    borderWidth: 2
+  },
+  '&.Mui-disabled': {
+    opacity: 0.6,
+    '& .MuiInputBase-input': {
+      color: 'rgba(255, 255, 255, 0.3)'
     }
   }
+}))
 
-  @media (max-width: 768px) {
-    padding: 12px;
+const SendButton = styled(Button)(({ theme }) => ({
+  minWidth: 48,
+  width: 48,
+  height: 48,
+  padding: 0,
+  background: theme.palette.primary.main,
+  borderColor: theme.palette.primary.main,
+  color: 'white',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '&:hover': {
+    background: theme.palette.primary.dark,
+    borderColor: theme.palette.primary.dark
+  },
+  '&:disabled': {
+    background: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    color: 'rgba(255, 255, 255, 0.3)'
+  },
+  '& svg': {
+    fontSize: 20
   }
-`
+}))
 
-const EmptyChat = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
-
-  .MuiTypography-root {
-    color: rgba(255, 255, 255, 0.5) !important;
+const AuthSection = styled('div')({
+  textAlign: 'center',
+  '& .MuiTypography-root': {
+    color: 'rgba(255, 255, 255, 0.6)'
   }
-`
+})
 
-const ChatMessage = styled.div`
-  padding: 12px;
-  background: rgba(236, 235, 237, 0.15);
-  border-radius: 8px;
-  border-left: 3px solid var(--participant-color, rgba(255, 255, 255, 0.3));
-`
-
-const MessageHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-`
-
-const ParticipantName = styled.span`
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: white !important;
-`
-
-const MessageTime = styled.span`
-  color: rgba(255, 255, 255, 0.5) !important;
-  font-size: 0.75rem;
-`
-
-const MessageContent = styled.div`
-  word-wrap: break-word;
-  line-height: 1.4;
-  color: white !important;
-  font-size: 14px;
-  font-weight: 400;
-`
-
-const ChatInputSection = styled.div`
-  padding: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    padding: 12px;
+const CloseButton = styled('button')({
+  background: 'none',
+  border: 'none',
+  color: 'rgba(255, 255, 255, 0.7)',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 4,
+  transition: 'color 0.2s ease',
+  '&:hover': {
+    color: 'white'
+  },
+  '& svg': {
+    fontSize: 20
   }
-`
-
-const ChatInputContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-`
-
-const StyledInput = styled(Input)`
-  && {
-    flex: 1;
-
-    .MuiInputBase-input {
-      color: white !important;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 12px 16px;
-      font-size: 14px;
-
-      &::placeholder {
-        color: rgba(255, 255, 255, 0.5) !important;
-      }
-    }
-
-    .MuiOutlinedInput-notchedOutline {
-      border-color: rgba(255, 255, 255, 0.2);
-      border-radius: 20px;
-    }
-
-    &:hover .MuiOutlinedInput-notchedOutline {
-      border-color: rgba(255, 255, 255, 0.3);
-    }
-
-    &.Mui-focused .MuiOutlinedInput-notchedOutline {
-      border-color: var(--primary);
-      border-width: 2px;
-    }
-
-    &.Mui-disabled {
-      opacity: 0.6;
-
-      .MuiInputBase-input {
-        color: rgba(255, 255, 255, 0.3) !important;
-      }
-    }
-  }
-`
-
-const SendButton = styled(Button)`
-  && {
-    min-width: 48px;
-    width: 48px;
-    height: 48px;
-    padding: 0;
-    background: var(--primary) !important;
-    border-color: var(--primary) !important;
-    color: white !important;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-      background: var(--primary-hover) !important;
-      border-color: var(--primary-hover) !important;
-    }
-
-    &:disabled {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.1) !important;
-      color: rgba(255, 255, 255, 0.3) !important;
-    }
-
-    svg {
-      font-size: 20px;
-    }
-  }
-`
-
-const AuthSection = styled.div`
-  text-align: center;
-
-  .MuiTypography-root {
-    color: rgba(255, 255, 255, 0.6) !important;
-  }
-`
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: white;
-  }
-
-  svg {
-    font-size: 20px;
-  }
-`
+})
 
 export {
   AuthSection,
   ChatContainer,
   ChatHeader,
+  ChatHeaderActions,
+  ChatIcon,
   ChatInputContainer,
   ChatInputSection,
   ChatMessage,

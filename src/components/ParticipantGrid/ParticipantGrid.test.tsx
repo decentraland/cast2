@@ -3,12 +3,10 @@ import { render, screen } from '@testing-library/react'
 import { ParticipantGrid } from './ParticipantGrid'
 import { TranslationProvider } from '../../modules/translation'
 
-// Mock SpeakingIndicator to avoid useAudioWaveform issues
 jest.mock('../LiveKitEnhancements/SpeakingIndicator', () => ({
   SpeakingIndicator: () => <div data-testid="speaking-indicator" />
 }))
 
-// Mock LiveKit hooks
 jest.mock('@livekit/components-react', () => ({
   useTracks: jest.fn(),
   useIsSpeaking: jest.fn(),
@@ -23,134 +21,175 @@ const renderWithTranslation = (component: React.ReactElement) => {
 }
 
 describe('ParticipantGrid', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    mockUseIsSpeaking.mockReturnValue(false)
+  describe('when there are no tracks', () => {
+    beforeEach(() => {
+      mockUseTracks.mockReturnValue([])
+      mockUseIsSpeaking.mockReturnValue(false)
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    describe('and local participant is visible', () => {
+      it('should show empty state with no video streams message', () => {
+        renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
+
+        expect(screen.getByText(/no video streams/i)).toBeInTheDocument()
+      })
+    })
+
+    describe('and local participant is not visible', () => {
+      it('should show watcher message', () => {
+        renderWithTranslation(<ParticipantGrid localParticipantVisible={false} />)
+
+        expect(screen.getByText(/waiting/i)).toBeInTheDocument()
+      })
+    })
   })
 
-  it('should show empty state when no tracks', () => {
-    mockUseTracks.mockReturnValue([])
+  describe('when there is one track available', () => {
+    beforeEach(() => {
+      const mockTracks = [
+        {
+          participant: { sid: 'p1', identity: 'streamer', isLocal: true },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        }
+      ]
+      mockUseTracks.mockReturnValue(mockTracks)
+      mockUseIsSpeaking.mockReturnValue(false)
+    })
 
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    expect(screen.getByText(/no video streams/i)).toBeInTheDocument()
+    it('should render video track', () => {
+      renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
+
+      expect(screen.getByTestId('video-track')).toBeInTheDocument()
+    })
   })
 
-  it('should show watcher message when local participant not visible', () => {
-    mockUseTracks.mockReturnValue([])
+  describe('when local participant is not visible', () => {
+    beforeEach(() => {
+      const mockTracks = [
+        {
+          participant: { sid: 'p1', identity: 'streamer', isLocal: true },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        },
+        {
+          participant: { sid: 'p2', identity: 'viewer', isLocal: false },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        }
+      ]
+      mockUseTracks.mockReturnValue(mockTracks)
+      mockUseIsSpeaking.mockReturnValue(false)
+    })
 
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={false} />)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    // Check for the watcher empty state message
-    expect(screen.getByText(/waiting/i)).toBeInTheDocument()
+    it('should filter out local participant', () => {
+      renderWithTranslation(<ParticipantGrid localParticipantVisible={false} />)
+
+      const videoTracks = screen.getAllByTestId('video-track')
+      expect(videoTracks).toHaveLength(1)
+      expect(videoTracks[0]).toHaveTextContent('viewer')
+    })
   })
 
-  it('should render video tracks when available', () => {
-    const mockTracks = [
-      {
-        participant: { sid: 'p1', identity: 'streamer', isLocal: true },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      }
-    ]
+  describe('when there are tracks without publications', () => {
+    beforeEach(() => {
+      const mockTracks = [
+        {
+          participant: { sid: 'p1', identity: 'streamer', isLocal: true },
+          publication: undefined,
+          source: 'camera'
+        },
+        {
+          participant: { sid: 'p2', identity: 'viewer', isLocal: false },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        }
+      ]
+      mockUseTracks.mockReturnValue(mockTracks)
+      mockUseIsSpeaking.mockReturnValue(false)
+    })
 
-    mockUseTracks.mockReturnValue(mockTracks)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
+    it('should filter out tracks without publications', () => {
+      renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
 
-    expect(screen.getByTestId('video-track')).toBeInTheDocument()
+      const videoTracks = screen.getAllByTestId('video-track')
+      expect(videoTracks).toHaveLength(1)
+      expect(videoTracks[0]).toHaveTextContent('viewer')
+    })
   })
 
-  it('should filter out local participant when not visible', () => {
-    const mockTracks = [
-      {
-        participant: { sid: 'p1', identity: 'streamer', isLocal: true },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      },
-      {
-        participant: { sid: 'p2', identity: 'viewer', isLocal: false },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      }
-    ]
+  describe('when there are multiple participants', () => {
+    beforeEach(() => {
+      const mockTracks = [
+        {
+          participant: { sid: 'p1', identity: 'user1', isLocal: false },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        },
+        {
+          participant: { sid: 'p2', identity: 'user2', isLocal: false },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        },
+        {
+          participant: { sid: 'p3', identity: 'user3', isLocal: false },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        }
+      ]
+      mockUseTracks.mockReturnValue(mockTracks)
+      mockUseIsSpeaking.mockReturnValue(false)
+    })
 
-    mockUseTracks.mockReturnValue(mockTracks)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={false} />)
+    it('should render all participants', () => {
+      renderWithTranslation(<ParticipantGrid localParticipantVisible={false} />)
 
-    // Should only show remote participant
-    const videoTracks = screen.getAllByTestId('video-track')
-    expect(videoTracks).toHaveLength(1)
-    expect(videoTracks[0]).toHaveTextContent('viewer')
+      const videoTracks = screen.getAllByTestId('video-track')
+      expect(videoTracks).toHaveLength(3)
+    })
   })
 
-  it('should filter out tracks without publications', () => {
-    const mockTracks = [
-      {
-        participant: { sid: 'p1', identity: 'streamer', isLocal: true },
-        publication: undefined,
-        source: 'camera'
-      },
-      {
-        participant: { sid: 'p2', identity: 'viewer', isLocal: false },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      }
-    ]
+  describe('when a participant is speaking', () => {
+    beforeEach(() => {
+      const mockTracks = [
+        {
+          participant: { sid: 'p1', identity: 'speaker', isLocal: false },
+          publication: { track: {}, source: 'camera' },
+          source: 'camera'
+        }
+      ]
+      mockUseTracks.mockReturnValue(mockTracks)
+      mockUseIsSpeaking.mockReturnValue(true)
+    })
 
-    mockUseTracks.mockReturnValue(mockTracks)
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
 
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
+    it('should render video track with speaking state', () => {
+      renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
 
-    // Should only show participant with publication
-    const videoTracks = screen.getAllByTestId('video-track')
-    expect(videoTracks).toHaveLength(1)
-    expect(videoTracks[0]).toHaveTextContent('viewer')
-  })
-
-  it('should render multiple participants', () => {
-    const mockTracks = [
-      {
-        participant: { sid: 'p1', identity: 'user1', isLocal: false },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      },
-      {
-        participant: { sid: 'p2', identity: 'user2', isLocal: false },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      },
-      {
-        participant: { sid: 'p3', identity: 'user3', isLocal: false },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      }
-    ]
-
-    mockUseTracks.mockReturnValue(mockTracks)
-
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={false} />)
-
-    const videoTracks = screen.getAllByTestId('video-track')
-    expect(videoTracks).toHaveLength(3)
-  })
-
-  it('should apply speaking state to participant tile', () => {
-    mockUseIsSpeaking.mockReturnValue(true)
-
-    const mockTracks = [
-      {
-        participant: { sid: 'p1', identity: 'speaker', isLocal: false },
-        publication: { track: {}, source: 'camera' },
-        source: 'camera'
-      }
-    ]
-
-    mockUseTracks.mockReturnValue(mockTracks)
-
-    renderWithTranslation(<ParticipantGrid localParticipantVisible={true} />)
-
-    expect(screen.getByTestId('video-track')).toBeInTheDocument()
+      expect(screen.getByTestId('video-track')).toBeInTheDocument()
+    })
   })
 })

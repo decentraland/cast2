@@ -1,14 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
-import ChatIcon from '@mui/icons-material/Chat'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import ChatIconMUI from '@mui/icons-material/Chat'
 import CloseIcon from '@mui/icons-material/Close'
 import SendIcon from '@mui/icons-material/Send'
 import { Typography } from 'decentraland-ui2'
 import { ReceivedChatMessage, useChat } from '../../hooks/useChat'
 import { useTranslation } from '../../modules/translation'
+import { ChatPanelProps } from './ChatPanel.types'
 import {
   AuthSection,
   ChatContainer,
   ChatHeader,
+  ChatHeaderActions,
+  ChatIcon,
   ChatInputContainer,
   ChatInputSection,
   ChatMessage,
@@ -24,12 +27,6 @@ import {
   StyledInput
 } from './ChatPanel.styled'
 
-interface ChatPanelProps {
-  canSendMessages: boolean
-  authPrompt?: React.ReactNode
-  onClose?: () => void
-}
-
 export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelProps) {
   const { t } = useTranslation()
   const { chatMessages, sendMessage, isSending } = useChat()
@@ -42,7 +39,7 @@ export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelPro
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!messageInput.trim() || isSending || !canSendMessages) return
 
     const message = messageInput.trim()
@@ -52,29 +49,31 @@ export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelPro
       await sendMessage(message)
       inputRef.current?.focus()
     } catch {
-      // Restore message on error
       setMessageInput(message)
     }
-  }
+  }, [messageInput, isSending, canSendMessages, sendMessage])
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        handleSendMessage()
+      }
+    },
+    [handleSendMessage]
+  )
 
-  const formatTime = (timestamp: number) => {
+  const formatTime = useCallback((timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit'
     })
-  }
+  }, [])
 
   const renderMessage = (msg: ReceivedChatMessage, index: number) => (
-    <ChatMessage key={index} style={{ '--participant-color': msg.participantColor } as React.CSSProperties}>
+    <ChatMessage key={index} $participantColor={msg.participantColor}>
       <MessageHeader>
-        <ParticipantName style={{ color: msg.participantColor }}>{msg.participantName}</ParticipantName>
+        <ParticipantName $color={msg.participantColor}>{msg.participantName}</ParticipantName>
         <MessageTime>{formatTime(msg.timestamp)}</MessageTime>
       </MessageHeader>
       <MessageContent>{msg.message}</MessageContent>
@@ -88,17 +87,19 @@ export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelPro
     <ChatContainer>
       <ChatHeader>
         <Typography variant="h6">
-          <ChatIcon sx={{ fontSize: '18px', marginRight: '4px', verticalAlign: 'middle' }} />
+          <ChatIcon>
+            <ChatIconMUI />
+          </ChatIcon>
           {t('chat.title')}
         </Typography>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <ChatHeaderActions>
           <MessageCount variant="body2">{t(messageCountKey, { count: chatMessages.length.toString() })}</MessageCount>
           {onClose && (
             <CloseButton onClick={onClose}>
               <CloseIcon />
             </CloseButton>
           )}
-        </div>
+        </ChatHeaderActions>
       </ChatHeader>
 
       <ChatMessages>

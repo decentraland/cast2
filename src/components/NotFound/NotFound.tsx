@@ -20,7 +20,7 @@ export function NotFound() {
   return (
     <NotFoundContainer>
       <NotFoundIcon>
-        <SportsEsportsIcon style={{ fontSize: '64px' }} />
+        <SportsEsportsIcon />
       </NotFoundIcon>
       <NotFoundTitle>{t('not_found.title')}</NotFoundTitle>
       <NotFoundDescription>{t('not_found.description')}</NotFoundDescription>

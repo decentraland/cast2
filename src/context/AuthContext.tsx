@@ -1,6 +1,7 @@
 import { ReactNode, createContext, useContext, useEffect, useReducer } from 'react'
 import { AuthIdentity } from '@dcl/crypto'
 import { config } from '../config'
+import { AuthAction, AuthState } from './AuthContext.types'
 
 // Enhanced debug logging for auth flow
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -92,15 +93,6 @@ function clearIdentity(address: string): void {
   }
 }
 
-// Types
-interface AuthState {
-  isConnecting: boolean
-  isConnected: boolean
-  address: string | null
-  identity: AuthIdentity | null
-  error: string | null
-}
-
 const initialState: AuthState = {
   isConnecting: false,
   isConnected: false,
@@ -108,14 +100,6 @@ const initialState: AuthState = {
   identity: null,
   error: null
 }
-
-// Action types
-type AuthAction =
-  | { type: 'CONNECT_START' }
-  | { type: 'CONNECT_SUCCESS'; payload: { address: string; identity: AuthIdentity } }
-  | { type: 'CONNECT_ERROR'; payload: string }
-  | { type: 'DISCONNECT' }
-  | { type: 'CLEAR_ERROR' }
 
 // Reducer
 function authReducer(state: AuthState, action: AuthAction): AuthState {

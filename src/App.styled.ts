@@ -1,17 +1,29 @@
-import styled from '@emotion/styled'
+import { Link, styled } from 'decentraland-ui2'
 
-export const DocsLink = styled.a`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: inherit;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
+const StyledLink = styled(Link)({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  color: 'inherit',
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline'
+  },
+  '& svg': {
+    fontSize: 16
   }
+})
 
-  svg {
-    font-size: 16px;
-  }
-`
+const AuthDemoBox = styled('div')({
+  marginTop: 24,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  alignItems: 'center'
+})
+
+const AppContainer = styled('div')({
+  minHeight: '100vh'
+})
+
+export { AppContainer, AuthDemoBox, StyledLink }

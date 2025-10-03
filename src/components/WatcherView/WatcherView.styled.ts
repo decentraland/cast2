@@ -1,12 +1,11 @@
-import styled from '@emotion/styled'
+import { styled } from 'decentraland-ui2'
 
-const BackLink = styled.a`
-  color: inherit;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
+const BackLink = styled('a')({
+  color: 'inherit',
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline'
   }
-`
+})
 
 export { BackLink }

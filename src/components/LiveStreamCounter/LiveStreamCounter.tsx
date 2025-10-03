@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
@@ -21,14 +21,17 @@ export function LiveStreamCounter() {
   const remoteParticipants = useRemoteParticipants()
   const [expanded, setExpanded] = useState(false)
 
-  // Get all participants (local + remote)
-  const allParticipants = localParticipant ? [localParticipant, ...remoteParticipants] : remoteParticipants
+  const allParticipants = useMemo(
+    () => (localParticipant ? [localParticipant, ...remoteParticipants] : remoteParticipants),
+    [localParticipant, remoteParticipants]
+  )
 
-  // Filter participants with role 'streamer'
-  const streamers = allParticipants.filter(participant => {
-    const metadata = participant.metadata ? JSON.parse(participant.metadata) : {}
-    return metadata.role === 'streamer'
-  })
+  const streamers = useMemo(() => {
+    return allParticipants.filter(participant => {
+      const metadata = participant.metadata ? JSON.parse(participant.metadata) : {}
+      return metadata.role === 'streamer'
+    })
+  }, [allParticipants])
 
   const streamingCount = streamers.length
 

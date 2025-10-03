@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useLocalParticipant } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import { useTranslation } from '../../modules/translation'
@@ -7,11 +8,12 @@ export function StreamerStatusOverlay() {
   const { t } = useTranslation()
   const { localParticipant } = useLocalParticipant()
 
-  // Simple mute detection from track publications
   const isMicMuted = !localParticipant?.isMicrophoneEnabled
 
-  // Check if any video is streaming (camera or screen share)
-  const hasVideoTrack = localParticipant?.videoTrackPublications && localParticipant.videoTrackPublications.size > 0
+  const hasVideoTrack = useMemo(
+    () => localParticipant?.videoTrackPublications && localParticipant.videoTrackPublications.size > 0,
+    [localParticipant?.videoTrackPublications]
+  )
 
   // Only show muted badge if user is actually streaming video but muted
   // Note: Speaking indicator is shown in ParticipantTile, not here, to avoid duplication

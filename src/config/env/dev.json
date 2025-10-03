@@ -1,5 +1,5 @@
 {
-  "GATEKEEPER_URL": "http://localhost:3001",
+  "GATEKEEPER_URL": "https://comms-gatekeeper.decentraland.zone",
   "AUTH_URL": "http://localhost:5173/auth",
   "ENVIRONMENT": "development",
   "ANALYTICS_ENABLED": false,

@@ -1,194 +1,181 @@
-import styled from '@emotion/styled'
-import { Typography } from 'decentraland-ui2'
+import { Typography, styled } from 'decentraland-ui2'
 
-const SidebarContainer = styled.div`
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: white;
-  overflow: hidden;
-`
+const SidebarContainer = styled('div')({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  color: 'white',
+  overflow: 'hidden'
+})
 
-const SidebarHeader = styled.div`
-  padding: 24px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-`
+const SidebarHeader = styled('div')({
+  padding: '24px 20px',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+})
 
-const SidebarTitle = styled(Typography)`
-  && {
-    color: white !important;
-    font-size: 20px;
-    font-weight: 700;
+const SidebarTitle = styled(Typography)(() => ({
+  color: 'white',
+  fontSize: 20,
+  fontWeight: 700
+}))
+
+const CloseButton = styled('button')({
+  width: 32,
+  height: 32,
+  borderRadius: '50%',
+  background: 'rgba(255, 255, 255, 0.1)',
+  border: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'rgba(255, 255, 255, 0.2)'
+  },
+  '& svg': {
+    color: 'white',
+    fontSize: 20
   }
-`
+})
 
-const CloseButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
-
-  svg {
-    color: white;
-    font-size: 20px;
-  }
-`
-
-const SidebarContent = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
+const SidebarContent = styled('div')({
+  flex: 1,
+  overflowY: 'auto',
+  padding: 20,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 20,
+  '&::-webkit-scrollbar': {
+    width: 6
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 3
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.3)'
     }
   }
-`
+})
 
-const Section = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`
+const Section = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12
+})
 
-const SectionHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 4px;
-`
+const SectionHeader = styled('div')({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '0 4px'
+})
 
-const SectionTitle = styled(Typography)`
-  && {
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+const SectionTitle = styled(Typography)(() => ({
+  color: 'rgba(255, 255, 255, 0.7)',
+  fontSize: 12,
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: 0.5
+}))
+
+const SectionCount = styled('span')({
+  color: 'rgba(255, 255, 255, 0.5)',
+  fontSize: 12,
+  fontWeight: 600
+})
+
+const SectionCard = styled('div')({
+  background: 'rgba(236, 235, 237, 0.2)',
+  borderRadius: 12,
+  padding: 16,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 0
+})
+
+const Divider = styled('div')({
+  height: 1,
+  background: 'rgba(255, 255, 255, 0.1)',
+  margin: '12px 0'
+})
+
+const ParticipantItem = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  padding: 8,
+  borderRadius: 8,
+  transition: 'background 0.2s ease',
+  '&:hover': {
+    background: 'rgba(255, 255, 255, 0.05)'
   }
-`
+})
 
-const SectionCount = styled.span`
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
-  font-weight: 600;
-`
+const ParticipantAvatar = styled('div')<{ $color?: string }>(({ $color }) => ({
+  width: 36,
+  height: 36,
+  borderRadius: '50%',
+  background: $color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  overflow: 'hidden',
+  position: 'relative'
+}))
 
-const SectionCard = styled.div`
-  background: rgba(236, 235, 237, 0.2);
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-`
+const ParticipantAvatarImage = styled('img')({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  position: 'relative',
+  zIndex: 1
+})
 
-const Divider = styled.div`
-  height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 12px 0;
-`
+const ParticipantInfo = styled('div')({
+  flex: 1,
+  minWidth: 0
+})
 
-const ParticipantItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  border-radius: 8px;
-  transition: background 0.2s ease;
+const ParticipantName = styled('div')({
+  color: 'white',
+  fontSize: 14,
+  fontWeight: 600,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis'
+})
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
+const ParticipantStatus = styled('div')<{ $isStreaming?: boolean }>(({ $isStreaming }) => ({
+  color: $isStreaming ? '#00ff88' : 'rgba(255, 255, 255, 0.5)',
+  fontSize: 11,
+  fontWeight: 500,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  '&::before': {
+    content: '""',
+    width: 6,
+    height: 6,
+    borderRadius: '50%',
+    background: $isStreaming ? '#00ff88' : 'rgba(255, 255, 255, 0.3)'
   }
-`
+}))
 
-const ParticipantAvatar = styled.div<{ $color?: string }>`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: ${props => props.$color || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  overflow: hidden;
-  position: relative;
-`
-
-const ParticipantAvatarImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: relative;
-  z-index: 1;
-`
-
-const ParticipantInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`
-
-const ParticipantName = styled.div`
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`
-
-const ParticipantStatus = styled.div<{ $isStreaming?: boolean }>`
-  color: ${props => (props.$isStreaming ? '#00ff88' : 'rgba(255, 255, 255, 0.5)')};
-  font-size: 11px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  &::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: ${props => (props.$isStreaming ? '#00ff88' : 'rgba(255, 255, 255, 0.3)')};
-  }
-`
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 24px;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 13px;
-`
+const EmptyState = styled('div')({
+  textAlign: 'center',
+  padding: 24,
+  color: 'rgba(255, 255, 255, 0.4)',
+  fontSize: 13
+})
 
 export {
   CloseButton,

@@ -1,5 +1,6 @@
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import CloseIcon from '@mui/icons-material/Close'
+import { PeopleSidebarProps } from './PeopleSidebar.type'
 import {
   CloseButton,
   Divider,
@@ -20,10 +21,6 @@ import {
   SidebarHeader,
   SidebarTitle
 } from './PeopleSidebar.styled'
-
-interface PeopleSidebarProps {
-  onClose: () => void
-}
 
 export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
   const { localParticipant } = useLocalParticipant()

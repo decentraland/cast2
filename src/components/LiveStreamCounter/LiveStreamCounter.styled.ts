@@ -1,205 +1,174 @@
-import styled from '@emotion/styled'
+import { keyframes, styled } from 'decentraland-ui2'
 
-const CounterContainer = styled.div`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 15;
-
-  @media (max-width: 768px) {
-    top: 10px;
-    left: 10px;
+const pulse = keyframes({
+  '0%, 100%': {
+    opacity: 1
+  },
+  '50%': {
+    opacity: 0.6
   }
-`
+})
 
-const CounterMainContainer = styled.div<{ $expanded: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(42, 12, 67, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
-  width: 290px;
-  box-sizing: border-box;
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease;
-  user-select: none;
-
-  &:hover {
-    background: rgba(42, 12, 67, 1);
-    border-color: rgba(255, 255, 255, 0.2);
+const CounterContainer = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  top: 20,
+  left: 20,
+  zIndex: 15,
+  [theme.breakpoints.down('sm')]: {
+    top: 10,
+    left: 10
   }
+}))
 
-  @media (max-width: 768px) {
-    padding: 10px 12px;
-    width: auto;
-    min-width: 200px;
-    gap: 8px;
+const CounterMainContainer = styled('div')<{ $expanded: boolean }>(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  padding: '12px 16px',
+  background: 'rgba(42, 12, 67, 0.95)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 12,
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  color: 'white',
+  width: 290,
+  boxSizing: 'border-box',
+  cursor: 'pointer',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
+  userSelect: 'none',
+  '&:hover': {
+    background: 'rgba(42, 12, 67, 1)',
+    borderColor: 'rgba(255, 255, 255, 0.2)'
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '10px 12px',
+    width: 'auto',
+    minWidth: 200,
+    gap: 8
   }
-`
+}))
 
-const LivePill = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--primary);
-  border-radius: 20px;
-  font-weight: bold;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-
-  svg {
-    font-size: 14px;
-    animation: pulse 1.5s infinite;
+const LivePill = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '6px 12px',
+  background: theme.palette.primary.main,
+  borderRadius: 20,
+  fontWeight: 'bold',
+  fontSize: 12,
+  textTransform: 'uppercase',
+  letterSpacing: 0.5,
+  flexShrink: 0,
+  '& svg': {
+    fontSize: 14,
+    animation: `${pulse} 1.5s infinite`
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '4px 10px',
+    fontSize: 11,
+    gap: 4
   }
+}))
 
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.6;
-    }
+const ParticipantText = styled('div')(({ theme }) => ({
+  flex: 1,
+  color: '#cfcdd4',
+  fontWeight: 'bold',
+  fontSize: 14,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: 12
   }
+}))
 
-  @media (max-width: 768px) {
-    padding: 4px 10px;
-    font-size: 11px;
-    gap: 4px;
-  }
-`
-
-const ParticipantText = styled.div`
-  flex: 1;
-  color: #cfcdd4;
-  font-weight: bold;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  @media (max-width: 768px) {
-    font-size: 12px;
-  }
-`
-
-const ExpandIcon = styled.div<{ $expanded: boolean }>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-  transform: ${({ $expanded }) => ($expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
-  color: #cfcdd4;
-  flex-shrink: 0;
-
-  svg {
-    font-size: 20px;
-  }
-
-  @media (max-width: 768px) {
-    svg {
-      font-size: 18px;
+const ExpandIcon = styled('div')<{ $expanded: boolean }>(({ theme, $expanded }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'transform 0.2s ease',
+  transform: $expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+  color: '#cfcdd4',
+  flexShrink: 0,
+  '& svg': {
+    fontSize: 20
+  },
+  [theme.breakpoints.down('sm')]: {
+    '& svg': {
+      fontSize: 18
     }
   }
-`
+}))
 
-const ParticipantDropdown = styled.div`
-  margin-top: 8px;
-  background: rgba(42, 12, 67, 0.98);
-  backdrop-filter: blur(20px);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 0;
-  min-width: 270px;
-  max-height: 300px;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-
-  /* Custom scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.3);
+const ParticipantDropdown = styled('div')(({ theme }) => ({
+  marginTop: 8,
+  background: 'rgba(42, 12, 67, 0.98)',
+  backdropFilter: 'blur(20px)',
+  borderRadius: 12,
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  padding: '8px 0',
+  minWidth: 270,
+  maxHeight: 300,
+  overflowY: 'auto',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+  '&::-webkit-scrollbar': {
+    width: 6
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 3
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 3,
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.3)'
     }
+  },
+  [theme.breakpoints.down('sm')]: {
+    minWidth: 200,
+    maxHeight: 200
   }
+}))
 
-  @media (max-width: 768px) {
-    min-width: 200px;
-    max-height: 200px;
+const ParticipantItem = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  padding: '12px 16px',
+  color: 'white',
+  cursor: 'default',
+  transition: 'background 0.2s ease',
+  '&:hover': {
+    background: 'rgba(255, 255, 255, 0.05)'
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: '10px 12px',
+    gap: 10
   }
-`
+}))
 
-const ParticipantItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  color: white;
-  cursor: default;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
+const LiveDot = styled('div')<{ $small?: boolean }>(({ theme, $small }) => ({
+  color: theme.palette.primary.main,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  '& svg': {
+    fontSize: $small ? 12 : 14,
+    animation: `${pulse} 1.5s infinite`
   }
+}))
 
-  @media (max-width: 768px) {
-    padding: 10px 12px;
-    gap: 10px;
+const ParticipantName = styled('span')(({ theme }) => ({
+  fontSize: 14,
+  fontWeight: 500,
+  color: 'white',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: 13
   }
-`
-
-const LiveDot = styled.div<{ $small?: boolean }>`
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  svg {
-    font-size: ${({ $small }) => ($small ? '12px' : '14px')};
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.6;
-    }
-  }
-`
-
-const ParticipantName = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-
-  @media (max-width: 768px) {
-    font-size: 13px;
-  }
-`
+}))
 
 export {
   CounterContainer,

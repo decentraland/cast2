@@ -1,18 +1,8 @@
 import { useEffect, useState } from 'react'
 import { InputLabel, Select } from 'decentraland-ui2'
 import { useTranslation } from '../../modules/translation'
+import { VideoDevice, VideoDeviceSelectorProps } from './VideoDeviceSelector.types'
 import { LoadingText, NoDevicesText, SelectorContainer, StyledFormControl, StyledMenuItem } from './VideoDeviceSelector.styled'
-
-interface VideoDevice {
-  deviceId: string
-  label: string
-  kind: string
-}
-
-interface VideoDeviceSelectorProps {
-  selectedDeviceId?: string
-  onDeviceSelect: (deviceId: string) => void
-}
 
 export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoDeviceSelectorProps) {
   const { t } = useTranslation()

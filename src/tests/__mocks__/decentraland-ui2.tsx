@@ -36,4 +36,17 @@ const MenuItem = ({ children, value, ...props }: any) => (
 
 const Input = ({ ...props }: any) => <input {...props} />
 
-export { Button, Card, FormControl, Input, InputLabel, MenuItem, Navbar, NavbarPages, Select, Typography }
+const styled = (Component: any) => (styles: any) => {
+  return React.forwardRef((props: any, ref: any) => {
+    if (typeof Component === 'string') {
+      return React.createElement(Component, { ...props, ref })
+    }
+    return <Component {...props} ref={ref} />
+  })
+}
+
+const keyframes = (styles: any) => `keyframes-${Math.random()}`
+
+const Link = ({ children, ...props }: any) => <a {...props}>{children}</a>
+
+export { Button, Card, FormControl, Input, InputLabel, keyframes, Link, MenuItem, Navbar, NavbarPages, Select, styled, Typography }
