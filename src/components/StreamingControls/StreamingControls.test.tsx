@@ -7,13 +7,14 @@ import { ConnectionState, LocalParticipant, Room, Track } from 'livekit-client'
 // Mock LiveKit hooks
 const mockDisconnect = jest.fn()
 const mockConnect = jest.fn()
-const mockSetMicrophoneEnabled = jest.fn()
-const mockSetCameraEnabled = jest.fn()
+const mockSetMicrophoneEnabled = jest.fn((enabled: boolean) => {
+  mockLocalParticipant.isMicrophoneEnabled = enabled
+})
+const mockSetCameraEnabled = jest.fn((enabled: boolean) => {
+  mockLocalParticipant.isCameraEnabled = enabled
+})
 const mockSetScreenShareEnabled = jest.fn()
 const mockUnpublishTrack = jest.fn()
-
-let mockMicEnabled = false
-let mockCameraEnabled = false
 
 const mockLocalParticipant = {
   isMicrophoneEnabled: false,
@@ -23,7 +24,8 @@ const mockLocalParticipant = {
   setMicrophoneEnabled: mockSetMicrophoneEnabled,
   setCameraEnabled: mockSetCameraEnabled,
   setScreenShareEnabled: mockSetScreenShareEnabled,
-  unpublishTrack: mockUnpublishTrack
+  unpublishTrack: mockUnpublishTrack,
+  getTrackPublication: jest.fn()
 } as unknown as LocalParticipant
 
 const mockRoom = {
@@ -32,33 +34,31 @@ const mockRoom = {
   localParticipant: mockLocalParticipant
 } as unknown as Room
 
-jest.mock('@livekit/components-react', () => ({
-  useRoomContext: jest.fn(() => mockRoom),
-  useLocalParticipant: jest.fn(() => ({
-    localParticipant: mockLocalParticipant
-  })),
-  useRemoteParticipants: jest.fn(() => []),
-  useConnectionState: jest.fn(() => ConnectionState.Connected),
-  useTrackToggle: jest.fn(({ source }) => {
-    if (source === Track.Source.Microphone) {
-      return {
-        enabled: mockMicEnabled,
-        toggle: () => {
-          mockMicEnabled = !mockMicEnabled
+jest.mock('@livekit/components-react', () => {
+  const getMockLocalParticipant = () => mockLocalParticipant
+  return {
+    useRoomContext: jest.fn(() => mockRoom),
+    useLocalParticipant: jest.fn(() => ({
+      localParticipant: getMockLocalParticipant()
+    })),
+    useRemoteParticipants: jest.fn(() => []),
+    useConnectionState: jest.fn(() => ConnectionState.Connected),
+    useTrackToggle: jest.fn(({ source }) => {
+      const participant = getMockLocalParticipant()
+      if (source === Track.Source.Microphone) {
+        return {
+          enabled: participant.isMicrophoneEnabled
         }
       }
-    }
-    if (source === Track.Source.Camera) {
-      return {
-        enabled: mockCameraEnabled,
-        toggle: () => {
-          mockCameraEnabled = !mockCameraEnabled
+      if (source === Track.Source.Camera) {
+        return {
+          enabled: participant.isCameraEnabled
         }
       }
-    }
-    return { enabled: false, toggle: jest.fn() }
-  })
-}))
+      return { enabled: false }
+    })
+  }
+})
 
 jest.mock('../../context/LiveKitContext', () => ({
   useLiveKitCredentials: jest.fn(() => ({
@@ -95,8 +95,6 @@ describe('StreamingControls', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // Reset mock state for each test
-    mockMicEnabled = false
-    mockCameraEnabled = false
     mockLocalParticipant.isMicrophoneEnabled = false
     mockLocalParticipant.isCameraEnabled = false
     mockLocalParticipant.videoTrackPublications.clear()
@@ -115,33 +113,50 @@ describe('StreamingControls', () => {
       expect(screen.getByText(/end streaming/i)).toBeInTheDocument()
     })
 
-    it('should toggle microphone when mic button clicked', () => {
+    it('should enable microphone when mic button clicked and mic is off', () => {
+      mockLocalParticipant.isMicrophoneEnabled = false
       renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
       // Find mic button (first circular button)
       const buttons = document.querySelectorAll('button')
       const micButton = buttons[0] // First button is mic
 
-      expect(mockMicEnabled).toBe(false)
       fireEvent.click(micButton)
-      expect(mockMicEnabled).toBe(true)
-
-      fireEvent.click(micButton)
-      expect(mockMicEnabled).toBe(false)
+      expect(mockSetMicrophoneEnabled).toHaveBeenCalledWith(true, undefined)
     })
 
-    it('should toggle camera when cam button clicked', () => {
+    it('should disable microphone when mic button clicked and mic is on', () => {
+      mockLocalParticipant.isMicrophoneEnabled = true
+      renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
+
+      // Find mic button (first circular button)
+      const buttons = document.querySelectorAll('button')
+      const micButton = buttons[0] // First button is mic
+
+      fireEvent.click(micButton)
+      expect(mockSetMicrophoneEnabled).toHaveBeenCalledWith(false)
+    })
+
+    it('should enable camera when cam button clicked and cam is off', () => {
+      mockLocalParticipant.isCameraEnabled = false
       renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
       const buttons = document.querySelectorAll('button')
       const camButton = buttons[1] // Second button is camera
 
-      expect(mockCameraEnabled).toBe(false)
       fireEvent.click(camButton)
-      expect(mockCameraEnabled).toBe(true)
+      expect(mockSetCameraEnabled).toHaveBeenCalledWith(true, undefined)
+    })
+
+    it('should disable camera when cam button clicked and cam is on', () => {
+      mockLocalParticipant.isCameraEnabled = true
+      renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
+
+      const buttons = document.querySelectorAll('button')
+      const camButton = buttons[1] // Second button is camera
 
       fireEvent.click(camButton)
-      expect(mockCameraEnabled).toBe(false)
+      expect(mockSetCameraEnabled).toHaveBeenCalledWith(false)
     })
 
     it('should toggle screen share when screen share button clicked', async () => {

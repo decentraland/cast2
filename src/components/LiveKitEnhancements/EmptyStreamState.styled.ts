@@ -18,7 +18,9 @@ const EmptyContainer = styled('div')({
   boxSizing: 'border-box'
 })
 
-const StreamerEmptyContainer = styled('div')({
+const StreamerEmptyContainer = styled('div', {
+  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
+})<{ $isSpeaking?: boolean }>(({ $isSpeaking }) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -28,10 +30,11 @@ const StreamerEmptyContainer = styled('div')({
   background: 'linear-gradient(180deg, rgba(102, 73, 127, 0.6) 0%, rgba(63, 35, 87, 0.6) 100%)',
   padding: '40px 20px',
   boxSizing: 'border-box',
-  border: '1px solid #a24bf3',
+  border: $isSpeaking ? '3px solid #1e90ff' : '1px solid #a24bf3',
   borderRadius: 12,
-  position: 'relative'
-})
+  position: 'relative',
+  transition: 'border-color 0.3s ease'
+}))
 
 const AvatarImage = styled('img')({
   width: 100,
@@ -83,4 +86,20 @@ const EmptySubtitle = styled(Typography)(() => ({
   lineHeight: 1.5
 }))
 
-export { AvatarImage, EmptyContainer, EmptyIconWrapper, EmptySubtitle, EmptyTitle, ParticipantNameOverlay, StreamerEmptyContainer }
+const SpeakingIndicatorWrapper = styled('div')({
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  zIndex: 3
+})
+
+export {
+  AvatarImage,
+  EmptyContainer,
+  EmptyIconWrapper,
+  EmptySubtitle,
+  EmptyTitle,
+  ParticipantNameOverlay,
+  SpeakingIndicatorWrapper,
+  StreamerEmptyContainer
+}

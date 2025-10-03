@@ -41,7 +41,12 @@ export function StreamerViewContent() {
       {hasAnyVideo ? (
         <ParticipantGrid localParticipantVisible={true} />
       ) : (
-        <EmptyStreamState type="streamer" message={t('empty_state.streamer_action')} participantName={localParticipant?.identity} />
+        <EmptyStreamState
+          type="streamer"
+          message={t('empty_state.streamer_action')}
+          participantName={localParticipant?.identity}
+          participant={localParticipant}
+        />
       )}
     </ContentWrapper>
   )

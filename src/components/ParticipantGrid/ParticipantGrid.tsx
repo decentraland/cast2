@@ -135,16 +135,23 @@ function ParticipantTile({
   const participant = trackRef.participant
   const isSpeaking = useIsSpeaking(participant)
 
+  // Get audio track for speaking indicator
+  const audioTrackRefs = useTracks([Track.Source.Microphone], {
+    updateOnlyOn: [],
+    onlySubscribed: false
+  })
+  const participantAudioTrack = audioTrackRefs.find(track => track.participant.identity === participant.identity)
+
   // Only render if publication exists
   if (!trackRef.publication) {
     return null
   }
 
   return (
-    <ParticipantTileContainer isSpeaking={isSpeaking} $isFullscreen={isFullscreen} onClick={onClick} $clickable={!!onClick}>
+    <ParticipantTileContainer $isSpeaking={isSpeaking} $isFullscreen={isFullscreen} onClick={onClick} $clickable={!!onClick}>
       <VideoTrack trackRef={trackRef} />
       <SpeakingIndicatorWrapper>
-        <SpeakingIndicator participant={participant} />
+        <SpeakingIndicator participant={participant} trackRef={participantAudioTrack} />
       </SpeakingIndicatorWrapper>
       <ParticipantName>{participant.identity}</ParticipantName>
     </ParticipantTileContainer>

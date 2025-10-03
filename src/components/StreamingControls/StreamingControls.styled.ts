@@ -1,6 +1,8 @@
 import { Button, styled } from 'decentraland-ui2'
 
-const ControlsContainer = styled('div')<{ $hasRightControls?: boolean }>(({ theme, $hasRightControls }) => ({
+const ControlsContainer = styled('div', {
+  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
+})<{ $hasRightControls?: boolean }>(({ theme, $hasRightControls }) => ({
   width: '100%',
   padding: 20,
   display: 'flex',
@@ -126,7 +128,9 @@ const DeviceMenu = styled('div')({
   }
 })
 
-const DeviceMenuItem = styled('div')<{ $active?: boolean }>(({ $active }) => ({
+const DeviceMenuItem = styled('div', {
+  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
+})<{ $active?: boolean }>(({ $active }) => ({
   padding: '12px 16px',
   color: 'white',
   cursor: 'pointer',

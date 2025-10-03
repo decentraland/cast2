@@ -1,9 +1,8 @@
 import { styled } from 'decentraland-ui2'
 
-const ParticipantGridContainer = styled('div')<{ $participantCount: number; $expandedView: boolean }>(({
-  $participantCount,
-  $expandedView
-}) => {
+const ParticipantGridContainer = styled('div', {
+  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
+})<{ $participantCount: number; $expandedView: boolean }>(({ $participantCount, $expandedView }) => {
   let display = 'grid'
   let gridStyles = {}
 
@@ -63,11 +62,9 @@ const NoParticipantsIcon = styled('div')({
   }
 })
 
-const ParticipantTileContainer = styled('div')<{ isSpeaking?: boolean; $isFullscreen?: boolean; $clickable?: boolean }>(({
-  isSpeaking,
-  $isFullscreen,
-  $clickable
-}) => {
+const ParticipantTileContainer = styled('div', {
+  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
+})<{ $isSpeaking?: boolean; $isFullscreen?: boolean; $clickable?: boolean }>(({ $isSpeaking, $isFullscreen, $clickable }) => {
   const sizeStyles = $isFullscreen
     ? {
         width: '100%',
@@ -83,7 +80,7 @@ const ParticipantTileContainer = styled('div')<{ isSpeaking?: boolean; $isFullsc
     overflow: 'hidden',
     background: '#000',
     ...sizeStyles,
-    border: isSpeaking ? '3px solid #1e90ff' : 'none',
+    border: $isSpeaking ? '3px solid #1e90ff' : 'none',
     transition: 'border-color 0.3s ease, transform 0.2s ease',
     cursor: $clickable ? 'pointer' : 'default',
     ...($clickable && {
