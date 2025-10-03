@@ -1,5 +1,6 @@
 import { useConnectionState, useLocalParticipant } from '@livekit/components-react'
-import { ConnectionState, Track } from 'livekit-client'
+import { ConnectionState } from 'livekit-client'
+import { useLocalVideoTracks } from '../../hooks/useLocalVideoTracks'
 import { useTranslation } from '../../modules/translation'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
@@ -10,19 +11,9 @@ export function StreamerViewContent() {
   const { t } = useTranslation()
   const { localParticipant } = useLocalParticipant()
   const connectionState = useConnectionState()
+  const { hasLocalCamera, hasLocalScreenShare } = useLocalVideoTracks()
 
-  // Check if disconnected
   const isDisconnected = connectionState === ConnectionState.Disconnected
-
-  // Check if there are any active video tracks (camera or screen share) from the LOCAL participant
-  const hasLocalCamera = Array.from(localParticipant?.videoTrackPublications.values() || []).some(
-    pub => pub.source === Track.Source.Camera && pub.track && !pub.isMuted
-  )
-  const hasLocalScreenShare = Array.from(localParticipant?.videoTrackPublications.values() || []).some(
-    pub => pub.source === Track.Source.ScreenShare && pub.track && !pub.isMuted
-  )
-
-  // For streamer, we only care if THEY are sharing something
   const hasAnyVideo = hasLocalCamera || hasLocalScreenShare
 
   // If disconnected, show reconnection message

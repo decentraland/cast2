@@ -22,7 +22,7 @@ const ViewContainer = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   minHeight: '100vh',
-  background: '#301646',
+  background: 'linear-gradient(247deg, #210A35 0%, #000 50%, #210A35 100%)',
   paddingTop: 60
 })
 

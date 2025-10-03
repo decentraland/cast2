@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { InputLabel, Select } from 'decentraland-ui2'
 import { useTranslation } from '../../modules/translation'
 import { VideoDevice, VideoDeviceSelectorProps } from './VideoDeviceSelector.types'
@@ -9,38 +9,35 @@ export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoD
   const [videoDevices, setVideoDevices] = useState<VideoDevice[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const getVideoDevices = async () => {
-      try {
-        // Request camera permission first
-        await navigator.mediaDevices.getUserMedia({ video: true })
+  const getVideoDevices = useCallback(async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true })
 
-        const devices = await navigator.mediaDevices.enumerateDevices()
-        const videoInputs = devices
-          .filter(device => device.kind === 'videoinput')
-          .map(device => ({
-            deviceId: device.deviceId,
-            label: device.label || `Camera ${device.deviceId.slice(0, 8)}`,
-            kind: device.kind
-          }))
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const videoInputs = devices
+        .filter(device => device.kind === 'videoinput')
+        .map(device => ({
+          deviceId: device.deviceId,
+          label: device.label || `Camera ${device.deviceId.slice(0, 8)}`,
+          kind: device.kind
+        }))
 
-        setVideoDevices(videoInputs)
+      setVideoDevices(videoInputs)
 
-        // Auto-select first device if none selected or invalid ID
-        const hasValidSelection = selectedDeviceId && videoInputs.some(d => d.deviceId === selectedDeviceId)
-        if ((!selectedDeviceId || !hasValidSelection) && videoInputs.length > 0) {
-          onDeviceSelect(videoInputs[0].deviceId)
-        }
-      } catch {
-        // Error getting video devices
-      } finally {
-        setLoading(false)
+      const hasValidSelection = selectedDeviceId && videoInputs.some(d => d.deviceId === selectedDeviceId)
+      if ((!selectedDeviceId || !hasValidSelection) && videoInputs.length > 0) {
+        onDeviceSelect(videoInputs[0].deviceId)
       }
+    } catch {
+      // Error getting video devices
+    } finally {
+      setLoading(false)
     }
+  }, [selectedDeviceId, onDeviceSelect])
 
+  useEffect(() => {
     getVideoDevices()
 
-    // Listen for device changes
     const handleDeviceChange = () => {
       getVideoDevices()
     }
@@ -50,7 +47,7 @@ export function VideoDeviceSelector({ selectedDeviceId, onDeviceSelect }: VideoD
     return () => {
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
     }
-  }, [selectedDeviceId, onDeviceSelect])
+  }, [getVideoDevices])
 
   if (loading) {
     return (

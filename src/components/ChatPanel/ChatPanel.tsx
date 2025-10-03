@@ -27,6 +27,23 @@ import {
   StyledInput
 } from './ChatPanel.styled'
 
+const formatTime = (timestamp: number) => {
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const renderMessage = (msg: ReceivedChatMessage, index: number) => (
+  <ChatMessage key={index} $participantColor={msg.participantColor}>
+    <MessageHeader>
+      <ParticipantName $color={msg.participantColor}>{msg.participantName}</ParticipantName>
+      <MessageTime>{formatTime(msg.timestamp)}</MessageTime>
+    </MessageHeader>
+    <MessageContent>{msg.message}</MessageContent>
+  </ChatMessage>
+)
+
 export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelProps) {
   const { t } = useTranslation()
   const { chatMessages, sendMessage, isSending } = useChat()
@@ -61,23 +78,6 @@ export function ChatPanel({ canSendMessages, authPrompt, onClose }: ChatPanelPro
       }
     },
     [handleSendMessage]
-  )
-
-  const formatTime = useCallback((timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }, [])
-
-  const renderMessage = (msg: ReceivedChatMessage, index: number) => (
-    <ChatMessage key={index} $participantColor={msg.participantColor}>
-      <MessageHeader>
-        <ParticipantName $color={msg.participantColor}>{msg.participantName}</ParticipantName>
-        <MessageTime>{formatTime(msg.timestamp)}</MessageTime>
-      </MessageHeader>
-      <MessageContent>{msg.message}</MessageContent>
-    </ChatMessage>
   )
 
   const messageCountKey = chatMessages.length === 1 ? 'chat.messages_count' : 'chat.messages_count_plural'

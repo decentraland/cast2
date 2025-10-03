@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { PeopleSidebarProps } from './PeopleSidebar.type'
+import { getAvatarColor, useFilteredParticipants } from '../../hooks/usePeopleSidebar'
 import {
   CloseButton,
   Divider,
@@ -26,40 +28,11 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
 
-  // Get all participants (local + remote)
-  const allParticipants = localParticipant ? [localParticipant, ...remoteParticipants] : remoteParticipants
+  const allParticipants = useMemo(() => {
+    return localParticipant ? [localParticipant, ...remoteParticipants] : remoteParticipants
+  }, [localParticipant, remoteParticipants])
 
-  // Filter participants by role in metadata
-  const streamers = allParticipants.filter(participant => {
-    try {
-      const metadata = participant.metadata ? JSON.parse(participant.metadata) : {}
-      return metadata.role === 'streamer'
-    } catch {
-      return false
-    }
-  })
-
-  const watchers = allParticipants.filter(participant => {
-    try {
-      const metadata = participant.metadata ? JSON.parse(participant.metadata) : {}
-      return metadata.role === 'watcher'
-    } catch {
-      return false
-    }
-  })
-
-  const getAvatarColor = (identity: string) => {
-    const colors = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
-    ]
-    const index = identity.charCodeAt(0) % colors.length
-    return colors[index]
-  }
+  const { streamers, watchers } = useFilteredParticipants(allParticipants)
 
   return (
     <SidebarContainer>
