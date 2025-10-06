@@ -68,7 +68,7 @@ export function MicrophoneSelector({ selectedDeviceId, onDeviceSelect }: Microph
       devices={microphones}
       selectedDeviceId={selectedDeviceId}
       onDeviceSelect={onDeviceSelect}
-      styledComponents={{ SelectorButton, SelectorLabel, DropdownList, DropdownItem }}
+      childComponents={{ SelectorButton, SelectorLabel, DropdownList, DropdownItem }}
       logPrefix="MicrophoneSelector"
     />
   )
