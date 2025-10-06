@@ -8,12 +8,12 @@ export function DeviceSelector({
   devices,
   selectedDeviceId,
   onDeviceSelect,
-  styledComponents,
+  childComponents,
   logPrefix = 'DeviceSelector'
 }: DeviceSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const { SelectorButton, SelectorLabel, DropdownList, DropdownItem } = styledComponents
+  const { SelectorButton, SelectorLabel, DropdownList, DropdownItem } = childComponents
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

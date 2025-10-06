@@ -66,7 +66,7 @@ export function CameraSelector({ selectedDeviceId, onDeviceSelect }: CameraSelec
       devices={cameras}
       selectedDeviceId={selectedDeviceId}
       onDeviceSelect={onDeviceSelect}
-      styledComponents={{ SelectorButton, SelectorLabel, DropdownList, DropdownItem }}
+      childComponents={{ SelectorButton, SelectorLabel, DropdownList, DropdownItem }}
       logPrefix="CameraSelector"
     />
   )

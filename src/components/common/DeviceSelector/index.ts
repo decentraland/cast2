@@ -1,2 +1,2 @@
 export { DeviceSelector } from './DeviceSelector'
-export type { DeviceOption, DeviceSelectorProps, StyledComponents } from './DeviceSelector.types'
+export type { DeviceOption, DeviceSelectorProps, DeviceSelectorChildComponents } from './DeviceSelector.types'

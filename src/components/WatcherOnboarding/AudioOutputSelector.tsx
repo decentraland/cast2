@@ -63,7 +63,7 @@ export function AudioOutputSelector({ selectedDeviceId, onDeviceSelect }: AudioO
       devices={audioOutputs}
       selectedDeviceId={selectedDeviceId}
       onDeviceSelect={onDeviceSelect}
-      styledComponents={{ SelectorButton, SelectorLabel, DropdownList, DropdownItem }}
+      childComponents={{ SelectorButton, SelectorLabel, DropdownList, DropdownItem }}
       logPrefix="WatcherAudioOutputSelector"
     />
   )
