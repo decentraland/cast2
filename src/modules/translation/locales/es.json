@@ -1,0 +1,117 @@
+{
+  "app": {
+    "title": "Decentraland Cast 2.0",
+    "subtitle": "Transmisión nativa del navegador con latencia submilisegundos",
+    "invalid_route": "Ruta inválida. Los enlaces de transmisión son generados por el Admin Smart Item en las escenas de Decentraland.",
+    "auth_demo": "Demo de Autenticación:",
+    "view_docs": "Ver Documentación"
+  },
+  "not_found": {
+    "title": "404 - Página No Encontrada",
+    "description": "Esta transmisión de Cast 2.0 no existe. Los enlaces de transmisión se generan bajo demanda por el Admin Smart Item en las escenas de Decentraland. Si seguiste un enlace válido y aún ves este error, es posible que la transmisión haya finalizado.",
+    "go_home": "Ir al Inicio"
+  },
+  "streamer": {
+    "title": "Transmisión en Vivo",
+    "share_link": "Compartir Enlace",
+    "share_link_tooltip": "Copia el enlace de visualización para compartir tu transmisión",
+    "link_copied": "¡Enlace Copiado!",
+    "starting_stream": "Iniciando transmisión...",
+    "connecting": "Conectando a la sala...",
+    "error_invalid_token": "Token de transmisión inválido o expirado. Por favor genera un nuevo enlace desde el Admin Smart Item.",
+    "error_connection": "Error al conectar a la sala de transmisión",
+    "connect_wallet_prompt": "Conecta tu billetera de Decentraland para chatear e interactuar"
+  },
+  "watcher": {
+    "title": "Viendo Transmisión en Vivo",
+    "back_to_decentraland": "Volver a Decentraland",
+    "connecting": "Conectando a la transmisión...",
+    "error_connection": "Error al conectar a la transmisión",
+    "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
+  },
+  "streaming_controls": {
+    "mute_mic": "Silenciar Micrófono",
+    "unmute_mic": "Activar Micrófono",
+    "stop_cam": "Detener Cámara",
+    "start_cam": "Iniciar Cámara",
+    "stop_share": "Detener Compartir",
+    "share_screen": "Compartir Pantalla",
+    "end_streaming": "Finalizar Transmisión",
+    "leave": "Salir",
+    "reconnect": "Reconectar",
+    "disconnected": "Desconectado",
+    "connecting": "Conectando...",
+    "connected": "Conectado"
+  },
+  "device_selector": {
+    "audio_input": "Entrada de Audio",
+    "video_input": "Entrada de Video",
+    "loading": "Cargando dispositivos de {type}...",
+    "no_devices": "No se encontraron dispositivos de {type}",
+    "select_device": "Seleccionar Dispositivo de {type}"
+  },
+  "chat": {
+    "title": "Chat",
+    "messages_count": "{count} mensaje",
+    "messages_count_plural": "{count} mensajes",
+    "no_messages": "Sin mensajes aún. {action}",
+    "start_conversation": "¡Inicia la conversación!",
+    "sign_in_to_participate": "Inicia sesión para participar.",
+    "type_message": "Escribe un mensaje...",
+    "sign_in_prompt": "Inicia sesión para enviar mensajes en el chat",
+    "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
+  },
+  "live_counter": {
+    "live": "EN VIVO",
+    "participant_streaming": "Persona transmitiendo",
+    "participants_streaming": "Personas transmitiendo",
+    "you": "Tú"
+  },
+  "room_stats": {
+    "title": "Estadísticas de Transmisión",
+    "people": "Personas",
+    "viewers": "Espectadores",
+    "connection": "Conexión",
+    "quality": "Calidad",
+    "unknown": "Desconocido",
+    "poor": "Pobre",
+    "good": "Buena",
+    "excellent": "Excelente",
+    "disconnected": "Desconectado",
+    "connecting": "Conectando...",
+    "connected": "Conectado"
+  },
+  "empty_state": {
+    "streamer_title": "Listo para Transmitir",
+    "streamer_message": "Activa tu cámara o comparte tu pantalla para que los espectadores puedan ver tu contenido",
+    "streamer_action": "Comienza a compartir haciendo clic en Cámara o Compartir Pantalla abajo",
+    "streamer_disconnected": "Te has desconectado. Haz clic en 'Reconectar' abajo para volver a transmitir",
+    "watcher_title": "Esperando Transmisión",
+    "watcher_message": "La transmisión comenzará en breve. Por favor espera mientras el transmisor se prepara.",
+    "no_video_streams": "Sin transmisiones de video",
+    "waiting_participants": "Esperando participantes..."
+  },
+  "auth": {
+    "connect_wallet": "Conectar Billetera",
+    "connecting": "Conectando...",
+    "disconnect": "Desconectar",
+    "sign_in": "Iniciar Sesión",
+    "sign_out": "Cerrar Sesión",
+    "join_conversation": "Únete a la Conversación",
+    "connect_prompt": "Conecta tu billetera para enviar mensajes en el chat y participar en la discusión.",
+    "no_wallet": "Por favor instala MetaMask para iniciar sesión.",
+    "no_accounts": "No se encontraron cuentas. Por favor conecta tu billetera.",
+    "auth_failed": "Falló la autenticación",
+    "privacy_note": "Nunca almacenaremos tus claves privadas. Esta firma solo se usa para verificar tu identidad."
+  },
+  "status": {
+    "muted": "Silenciado",
+    "streamer_muted": "Transmisor Silenciado",
+    "speaking": "Hablando",
+    "not_speaking": "No está hablando"
+  },
+  "loading": {
+    "title": "Cargando Cast 2.0",
+    "message": "Preparando tu experiencia de transmisión..."
+  }
+}
