@@ -5,6 +5,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { AudioOutputSelector } from './AudioOutputSelector'
 import { CameraSelector } from './CameraSelector'
 import { MicrophoneSelector } from './MicrophoneSelector'
+import logoImage from '../../assets/images/logo.png'
 import { useTranslation } from '../../modules/translation'
 import { StreamerOnboardingProps } from './StreamerOnboarding.types'
 import {
@@ -48,7 +49,7 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
       <OnboardingContainer>
         <JoiningContainer>
           <JoiningLogo>
-            <JoiningLogoImage src="/images/logo.png" alt="Decentraland" />
+            <JoiningLogoImage src={logoImage} alt="Decentraland" />
           </JoiningLogo>
           <JoiningText>{t('onboarding.joining')}</JoiningText>
           <JoiningSpinner />
@@ -61,7 +62,7 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
     <OnboardingContainer>
       <OnboardingModal>
         <LogoContainer>
-          <LogoImage src="/images/logo.png" alt="Decentraland" />
+          <LogoImage src={logoImage} alt="Decentraland" />
         </LogoContainer>
 
         <Title>{t('onboarding.ready_to_join', { streamName })}</Title>

@@ -2,6 +2,7 @@ import { TrackReferenceOrPlaceholder, useIsSpeaking, useTracks } from '@livekit/
 import TvIcon from '@mui/icons-material/Tv'
 import { LocalAudioTrack, Participant, RemoteAudioTrack, Track } from 'livekit-client'
 import { SpeakingIndicator } from './SpeakingIndicator'
+import avatarImage from '../../assets/images/avatar.png'
 import { useTranslation } from '../../modules/translation'
 import { EmptyStreamStateProps } from './EmptyStreamState.types'
 import {
@@ -29,7 +30,7 @@ function StreamerEmptyWithSpeaking({
 
   return (
     <StreamerEmptyContainer $isSpeaking={isSpeaking}>
-      <AvatarImage src="/images/avatar.png" alt="Default Avatar" />
+      <AvatarImage src={avatarImage} alt="Default Avatar" />
       {participantName && <ParticipantNameOverlay>{participantName}</ParticipantNameOverlay>}
       <SpeakingIndicatorWrapper>
         <SpeakingIndicator participant={participant} trackRef={audioTrack} />
@@ -59,7 +60,7 @@ export function EmptyStreamState({ type, message, participantName, participant }
     // Otherwise, show basic empty state
     return (
       <StreamerEmptyContainer>
-        <AvatarImage src="/images/avatar.png" alt="Default Avatar" />
+        <AvatarImage src={avatarImage} alt="Default Avatar" />
         {participantName && <ParticipantNameOverlay>{participantName}</ParticipantNameOverlay>}
       </StreamerEmptyContainer>
     )

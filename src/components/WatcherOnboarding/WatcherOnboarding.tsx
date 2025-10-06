@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { AudioOutputSelector } from './AudioOutputSelector'
+import logoImage from '../../assets/images/logo.png'
 import { useTranslation } from '../../modules/translation'
 import { WatcherOnboardingProps } from './WatcherOnboarding.types'
 import {
@@ -37,7 +38,7 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
       <OnboardingContainer>
         <JoiningContainer>
           <JoiningLogo>
-            <JoiningLogoImage src="/images/logo.png" alt="Decentraland Logo" />
+            <JoiningLogoImage src={logoImage} alt="Decentraland Logo" />
           </JoiningLogo>
           <JoiningSpinner />
           <JoiningText>{t('onboarding.joining')}</JoiningText>
@@ -50,7 +51,7 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
     <OnboardingContainer>
       <OnboardingModal>
         <LogoContainer>
-          <LogoImage src="/images/logo.png" alt="Decentraland Logo" />
+          <LogoImage src={logoImage} alt="Decentraland Logo" />
         </LogoContainer>
 
         <Title>{t('onboarding.ready_to_join', { streamName })}</Title>

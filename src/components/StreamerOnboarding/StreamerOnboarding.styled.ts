@@ -1,4 +1,5 @@
 import { Box, TextField, Typography, keyframes, styled } from 'decentraland-ui2'
+import backgroundImage from '../../assets/images/background.png'
 
 const spin = keyframes({
   '0%': { transform: 'rotate(0deg)' },
@@ -11,7 +12,7 @@ const OnboardingContainer = styled(Box)({
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '100vh',
-  backgroundImage: 'url(/images/background.png)',
+  backgroundImage: `url(${backgroundImage})`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
