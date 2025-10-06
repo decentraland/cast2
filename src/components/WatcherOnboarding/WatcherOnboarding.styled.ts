@@ -1,4 +1,5 @@
 import { Box, Typography, keyframes, styled } from 'decentraland-ui2'
+import backgroundWatcherImage from '../../assets/images/background_watcher.png'
 
 const spin = keyframes({
   '0%': { transform: 'rotate(0deg)' },
@@ -11,7 +12,7 @@ const OnboardingContainer = styled(Box)({
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: '100vh',
-  backgroundImage: 'url(/images/background_watcher.png)',
+  backgroundImage: `url(${backgroundWatcherImage})`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { PeopleSidebarProps } from './PeopleSidebar.type'
+import avatarImage from '../../assets/images/avatar.png'
 import { getAvatarColor, useFilteredParticipants } from '../../hooks/usePeopleSidebar'
 import {
   CloseButton,
@@ -56,7 +57,7 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
               streamers.map(participant => (
                 <ParticipantItem key={participant.sid}>
                   <ParticipantAvatar $color={getAvatarColor(participant.identity)}>
-                    <ParticipantAvatarImage src="/images/avatar.png" alt="Avatar" />
+                    <ParticipantAvatarImage src={avatarImage} alt="Avatar" />
                   </ParticipantAvatar>
                   <ParticipantInfo>
                     <ParticipantName>{participant.identity || 'Anonymous'}</ParticipantName>
@@ -82,7 +83,7 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
               watchers.slice(0, 20).map(participant => (
                 <ParticipantItem key={participant.sid}>
                   <ParticipantAvatar $color={getAvatarColor(participant.identity)}>
-                    <ParticipantAvatarImage src="/images/avatar.png" alt="Avatar" />
+                    <ParticipantAvatarImage src={avatarImage} alt="Avatar" />
                   </ParticipantAvatar>
                   <ParticipantInfo>
                     <ParticipantName>{participant.identity || 'Anonymous'}</ParticipantName>
