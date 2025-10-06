@@ -15,6 +15,7 @@ interface AnonymousIdentity {
 interface LiveKitCredentials {
   url: string
   token: string
+  roomName?: string
 }
 
 interface CastMessage {
@@ -22,11 +23,6 @@ interface CastMessage {
   timestamp: number
   message: string
   from?: string
-}
-
-interface RoomStats {
-  participantCount: number
-  streamCount: number
 }
 
 enum RoomType {
@@ -45,4 +41,4 @@ interface TokenPayload {
   }
 }
 
-export type { StreamerViewProps, WatcherViewProps, AnonymousIdentity, LiveKitCredentials, CastMessage, RoomStats, RoomType, TokenPayload }
+export type { StreamerViewProps, WatcherViewProps, AnonymousIdentity, LiveKitCredentials, CastMessage, RoomType, TokenPayload }

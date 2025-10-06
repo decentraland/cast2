@@ -34,9 +34,9 @@ const HomePage = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <LiveKitProvider>
-        <Router>
+    <Router>
+      <AuthProvider>
+        <LiveKitProvider>
           <AppContainer>
             <Routes>
               {/* Main routes for Cast 2.0 */}
@@ -50,9 +50,9 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppContainer>
-        </Router>
-      </LiveKitProvider>
-    </AuthProvider>
+        </LiveKitProvider>
+      </AuthProvider>
+    </Router>
   )
 }
 

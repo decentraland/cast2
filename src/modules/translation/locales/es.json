@@ -113,5 +113,12 @@
   "loading": {
     "title": "Cargando Cast 2.0",
     "message": "Preparando tu experiencia de transmisión..."
+  },
+  "onboarding": {
+    "ready_to_join": "¿Listo para Unirte a {streamName}?",
+    "participant": "Participante",
+    "name_placeholder": "Inserta Tu Nombre (Opcional)",
+    "join_now": "UNIRSE AHORA",
+    "joining": "Uniéndose..."
   }
 }

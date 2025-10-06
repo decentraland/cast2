@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
@@ -20,8 +20,9 @@ import {
   VideoArea,
   VideoContainer
 } from '../CommonView/CommonView.styled'
-import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
+import { StreamerOnboarding } from '../StreamerOnboarding/StreamerOnboarding'
+import { OnboardingConfig } from '../StreamerOnboarding/StreamerOnboarding.types'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
 import { WalletButton } from '../WalletButton/WalletButton'
 
@@ -29,37 +30,46 @@ export function StreamerView() {
   const { t } = useTranslation()
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
-  const { isConnected, address, disconnectWallet } = useAuth()
+  const { isSignedIn, wallet, signOut } = useAuth()
   const { credentials, setCredentials } = useLiveKitCredentials()
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chatOpen, setChatOpen] = useState(false)
   const [peopleOpen, setPeopleOpen] = useState(false)
+  const [onboardingComplete, setOnboardingComplete] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
+  const [userConfig, setUserConfig] = useState<OnboardingConfig | null>(null)
 
-  useEffect(() => {
-    if (!token) {
-      setError('No token provided')
-      setLoading(false)
-      return
-    }
+  const handleJoinRoom = useCallback(
+    async (config: OnboardingConfig) => {
+      if (!token) {
+        setError('No token provided')
+        return
+      }
 
-    const initializeStreamer = async () => {
+      setIsJoining(true)
+      setUserConfig(config)
+
       try {
         const creds = await getStreamerToken(token)
         setCredentials(creds)
         setError(null)
+        setOnboardingComplete(true)
       } catch (err) {
         setError(err instanceof Error ? err.message : t('streamer.error_initialize_streaming'))
-      } finally {
-        setLoading(false)
+        setIsJoining(false)
       }
-    }
-
-    initializeStreamer()
-  }, [token, t, setCredentials])
+    },
+    [token, t, setCredentials]
+  )
 
   const handleRoomConnect = useCallback(() => {
-    // Streamer connected to LiveKit room
+    setIsJoining(false)
+  }, [])
+
+  const handleLeaveRoom = useCallback(() => {
+    setOnboardingComplete(false)
+    setCredentials(null)
+    setUserConfig(null)
   }, [])
 
   const handleToggleChat = useCallback(() => {
@@ -72,14 +82,14 @@ export function StreamerView() {
     setPeopleOpen(!peopleOpen)
   }, [chatOpen, peopleOpen])
 
-  if (loading) {
-    return <LoadingScreen message={t('streamer.connecting')} />
+  if (!onboardingComplete) {
+    return <StreamerOnboarding streamName="Stream" onJoin={handleJoinRoom} isJoining={isJoining} />
   }
 
   if (error) {
     return (
       <StreamerContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
+        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
             {t('streamer.error_connection')}
@@ -94,7 +104,7 @@ export function StreamerView() {
   if (!credentials) {
     return (
       <StreamerContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
+        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
             {t('streamer.error_no_credentials')}
@@ -108,14 +118,26 @@ export function StreamerView() {
 
   return (
     <StreamerContainer>
-      <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
+      <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
       <LiveKitRoom
         token={credentials.token}
         serverUrl={credentials.url}
         connect={true}
         onConnected={handleRoomConnect}
-        audio={false} // Start with audio disabled - user must enable manually
-        video={false}
+        audio={
+          userConfig?.audioInputId
+            ? {
+                deviceId: userConfig.audioInputId
+              }
+            : false
+        }
+        video={
+          userConfig?.videoDeviceId
+            ? {
+                deviceId: userConfig.videoDeviceId
+              }
+            : false
+        }
         screen={false}
       >
         <StreamerLayout>
@@ -129,10 +151,10 @@ export function StreamerView() {
                 <Sidebar $isOpen={sidebarOpen}>
                   {chatOpen && (
                     <ChatPanel
-                      canSendMessages={isConnected}
+                      canSendMessages={isSignedIn}
                       onClose={handleToggleChat}
                       authPrompt={
-                        !isConnected ? (
+                        !isSignedIn ? (
                           <AuthPrompt>
                             <Typography variant="body2">{t('streamer.connect_wallet_prompt')}</Typography>
                             <WalletButton />
@@ -147,7 +169,7 @@ export function StreamerView() {
             </VideoContainer>
 
             <ControlsArea>
-              <StreamingControls onToggleChat={handleToggleChat} onTogglePeople={handleTogglePeople} isStreamer={true} />
+              <StreamingControls onToggleChat={handleToggleChat} onTogglePeople={handleTogglePeople} isStreamer onLeave={handleLeaveRoom} />
             </ControlsArea>
           </MainContent>
         </StreamerLayout>

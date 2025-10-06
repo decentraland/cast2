@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
@@ -25,69 +25,87 @@ import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
 import { WalletButton } from '../WalletButton/WalletButton'
+import { WatcherOnboarding } from '../WatcherOnboarding/WatcherOnboarding'
 import { BackLink } from './WatcherView.styled'
 
 export function WatcherView() {
   const { t } = useTranslation()
   const { roomId } = useParams<{ roomId: string }>()
-  const { isConnected, address, disconnectWallet } = useAuth()
+  const { isSignedIn, wallet, signOut } = useAuth()
 
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [chatOpen, setChatOpen] = useState(false)
   const [peopleOpen, setPeopleOpen] = useState(false)
+  const [onboardingComplete, setOnboardingComplete] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
+  const [isLoadingCredentials, setIsLoadingCredentials] = useState(true)
 
+  // Fetch credentials on mount to get room name
   useEffect(() => {
     if (!roomId) {
       setError('Room ID is required')
-      setLoading(false)
+      setIsLoadingCredentials(false)
       return
     }
 
-    const initializeWatcher = async () => {
+    const fetchCredentials = async () => {
       try {
-        setLoading(true)
+        setIsLoadingCredentials(true)
         setError(null)
 
         // Generate anonymous identity
         const identity = createLiveKitIdentity(`watcher-${roomId}-${Date.now()}`)
-
         const liveKitCredentials = await getWatcherToken(roomId, identity)
-
         setCredentials(liveKitCredentials)
       } catch (error) {
         setError(error instanceof Error ? error.message : t('watcher.error_connection'))
       } finally {
-        setLoading(false)
+        setIsLoadingCredentials(false)
       }
     }
 
-    initializeWatcher()
+    fetchCredentials()
   }, [roomId, t])
 
-  const handleRoomConnect = () => {
-    // Watcher connected to LiveKit room
-  }
+  const handleJoinRoom = useCallback(() => {
+    setIsJoining(true)
+    // Small delay for the spinner animation
+    setTimeout(() => {
+      setOnboardingComplete(true)
+      setIsJoining(false)
+    }, 500)
+  }, [])
 
-  const handleToggleChat = () => {
+  const handleRoomConnect = useCallback(() => {
+    // Watcher connected to LiveKit room
+  }, [])
+
+  const handleLeaveRoom = useCallback(() => {
+    console.log('[WatcherView] Leaving room, returning to onboarding...')
+    setOnboardingComplete(false)
+  }, [])
+
+  const handleToggleChat = useCallback(() => {
     if (peopleOpen) setPeopleOpen(false)
     setChatOpen(!chatOpen)
-  }
+  }, [peopleOpen, chatOpen])
 
-  const handleTogglePeople = () => {
+  const handleTogglePeople = useCallback(() => {
     if (chatOpen) setChatOpen(false)
     setPeopleOpen(!peopleOpen)
-  }
+  }, [chatOpen, peopleOpen])
 
-  if (loading) {
+  // Loading credentials
+  if (isLoadingCredentials) {
     return <LoadingScreen message={t('watcher.connecting')} />
   }
 
+  // Show error screen
   if (error) {
     return (
       <WatcherContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
+        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
         <ErrorContainer>
           <Typography variant="h6">{t('watcher.error_connection')}</Typography>
           <Typography variant="body1">{error}</Typography>
@@ -99,22 +117,38 @@ export function WatcherView() {
     )
   }
 
+  // No credentials (shouldn't happen but handle gracefully)
   if (!credentials) {
-    return <LoadingScreen message={t('watcher.connecting')} />
+    return (
+      <WatcherContainer>
+        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+        <ErrorContainer>
+          <Typography variant="h6">{t('watcher.error_connection')}</Typography>
+        </ErrorContainer>
+      </WatcherContainer>
+    )
+  }
+
+  // Extract room name from credentials or use roomId
+  const streamName = credentials.roomName || roomId || 'Stream'
+
+  // Show onboarding before connecting
+  if (!onboardingComplete) {
+    return <WatcherOnboarding streamName={streamName} onJoin={handleJoinRoom} isJoining={isJoining} />
   }
 
   const sidebarOpen = chatOpen || peopleOpen
 
   return (
     <WatcherContainer>
-      <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isConnected} address={address || undefined} onClickSignOut={disconnectWallet} />
+      <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
 
       <LiveKitRoom
         token={credentials.token}
         serverUrl={credentials.url}
         connect={true}
-        audio={false} // Watchers don't publish audio by default
-        video={false} // Watchers don't publish video by default
+        audio={false}
+        video={false}
         screen={false}
         onConnected={handleRoomConnect}
       >
@@ -129,10 +163,10 @@ export function WatcherView() {
                 <Sidebar $isOpen={sidebarOpen}>
                   {chatOpen && (
                     <ChatPanel
-                      canSendMessages={isConnected}
+                      canSendMessages={isSignedIn}
                       onClose={handleToggleChat}
                       authPrompt={
-                        !isConnected ? (
+                        !isSignedIn ? (
                           <AuthPromptStyled>
                             <div className="auth-message">{t('watcher.connect_wallet_prompt')}</div>
                             <WalletButton />
@@ -147,7 +181,12 @@ export function WatcherView() {
             </VideoContainer>
 
             <ControlsArea>
-              <StreamingControls onToggleChat={handleToggleChat} onTogglePeople={handleTogglePeople} isStreamer={false} />
+              <StreamingControls
+                onToggleChat={handleToggleChat}
+                onTogglePeople={handleTogglePeople}
+                isStreamer={false}
+                onLeave={handleLeaveRoom}
+              />
             </ControlsArea>
           </MainContent>
         </WatcherLayout>
