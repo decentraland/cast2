@@ -1,5 +1,5 @@
 {
-  "name": "@dcl/{{project_name}}-site",
+  "name": "@dcl/cast2-site",
   "version": "0.1.0",
   "description": "Starter template for Decentraland dApps Repositories",
   "main": "index.js",
