@@ -6,13 +6,10 @@ interface DeviceOption {
   kind: string
 }
 
-interface StyledComponents {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  SelectorButton: ComponentType<any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  SelectorLabel: ComponentType<any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  DropdownList: ComponentType<any>
+interface DeviceSelectorChildComponents {
+  SelectorButton: ComponentType<React.ButtonHTMLAttributes<HTMLButtonElement> & { $isOpen: boolean }>
+  SelectorLabel: ComponentType<React.LabelHTMLAttributes<HTMLLabelElement>>
+  DropdownList: ComponentType<React.HTMLAttributes<HTMLDivElement>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DropdownItem: ComponentType<any>
 }
@@ -22,8 +19,8 @@ interface DeviceSelectorProps {
   devices: DeviceOption[]
   selectedDeviceId: string
   onDeviceSelect: (deviceId: string) => void
-  styledComponents: StyledComponents
+  childComponents: DeviceSelectorChildComponents
   logPrefix?: string
 }
 
-export type { DeviceOption, DeviceSelectorProps, StyledComponents }
+export type { DeviceOption, DeviceSelectorProps, DeviceSelectorChildComponents }
