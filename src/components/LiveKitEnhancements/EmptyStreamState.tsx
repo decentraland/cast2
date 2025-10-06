@@ -27,13 +27,6 @@ function StreamerEmptyWithSpeaking({
 }) {
   const isSpeaking = useIsSpeaking(participant)
 
-  // Debug log
-  console.log('[EmptyStreamState] Render state:', {
-    participant: participant.identity,
-    isSpeaking,
-    hasAudioTrack: !!audioTrack
-  })
-
   return (
     <StreamerEmptyContainer $isSpeaking={isSpeaking}>
       <AvatarImage src="/images/avatar.png" alt="Default Avatar" />
