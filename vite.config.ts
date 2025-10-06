@@ -16,8 +16,7 @@ export default defineConfig(({ command, mode }) => {
       global: 'globalThis'
     },
     server: {
-      port: 5173,
-      host: true,
+      open: true,
       proxy: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         '/auth': {
