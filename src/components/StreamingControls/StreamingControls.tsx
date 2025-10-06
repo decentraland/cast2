@@ -28,7 +28,7 @@ import {
   NotificationBadge
 } from './StreamingControls.styled'
 
-export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = false }: StreamingControlsProps) {
+export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = false, onLeave }: StreamingControlsProps) {
   const { t } = useTranslation()
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
@@ -299,13 +299,15 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
         {/* End Stream / Leave / Reconnect */}
         {isDisconnected ? (
           <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
-        ) : isStreamer ? (
-          <EndStreamButton onClick={() => room?.disconnect()} startIcon={<CallEndIcon />}>
-            {t('streaming_controls.end_streaming')}
-          </EndStreamButton>
         ) : (
-          <EndStreamButton onClick={() => room?.disconnect()} startIcon={<CallEndIcon />}>
-            {t('streaming_controls.leave')}
+          <EndStreamButton
+            onClick={() => {
+              room?.disconnect()
+              onLeave?.()
+            }}
+            startIcon={<CallEndIcon />}
+          >
+            {isStreamer ? t('streaming_controls.end_streaming') : t('streaming_controls.leave')}
           </EndStreamButton>
         )}
       </ControlsCenter>

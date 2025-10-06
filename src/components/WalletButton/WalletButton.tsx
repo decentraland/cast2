@@ -5,16 +5,16 @@ import { WalletContainer } from './WalletButton.styled'
 
 export function WalletButton() {
   const { t } = useTranslation()
-  const { isConnected, address, connectWallet, disconnectWallet, isConnecting } = useAuth()
+  const { isSignedIn, wallet, signIn, signOut, isConnecting } = useAuth()
 
-  if (isConnected && address) {
+  if (isSignedIn && wallet) {
     return (
       <WalletContainer>
         <span>
-          {t('auth.sign_in')}: {address.slice(0, 6)}...{address.slice(-4)}
+          {wallet.slice(0, 6)}...{wallet.slice(-4)}
         </span>
-        <Button onClick={disconnectWallet} variant="outlined" size="small">
-          {t('auth.disconnect')}
+        <Button onClick={signOut} variant="outlined" size="small">
+          {t('auth.sign_out')}
         </Button>
       </WalletContainer>
     )
@@ -22,8 +22,8 @@ export function WalletButton() {
 
   return (
     <WalletContainer>
-      <Button onClick={connectWallet} disabled={isConnecting} variant="contained">
-        {isConnecting ? t('auth.connecting') : t('auth.connect_wallet')}
+      <Button onClick={signIn} disabled={isConnecting} variant="contained">
+        {isConnecting ? t('auth.connecting') : t('auth.sign_in')}
       </Button>
     </WalletContainer>
   )

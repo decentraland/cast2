@@ -1,4 +1,5 @@
 import React from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import { WalletButton } from './WalletButton'
 import { TranslationProvider } from '../../modules/translation'
@@ -10,18 +11,22 @@ jest.mock('../../context/AuthContext', () => ({
 }))
 
 const renderWithTranslation = (component: React.ReactElement) => {
-  return render(<TranslationProvider>{component}</TranslationProvider>)
+  return render(
+    <BrowserRouter>
+      <TranslationProvider>{component}</TranslationProvider>
+    </BrowserRouter>
+  )
 }
 
 describe('WalletButton', () => {
-  let mockConnectWallet: jest.Mock
-  let mockDisconnectWallet: jest.Mock
+  let mockSignIn: jest.Mock
+  let mockSignOut: jest.Mock
   let mockUseAuth: jest.Mock
   let mockConfigGet: jest.Mock
 
   beforeEach(() => {
-    mockConnectWallet = jest.fn()
-    mockDisconnectWallet = jest.fn()
+    mockSignIn = jest.fn()
+    mockSignOut = jest.fn()
 
     mockUseAuth = jest.requireMock('../../context/AuthContext').useAuth
     mockConfigGet = jest.requireMock('../../config').config.get
@@ -35,12 +40,11 @@ describe('WalletButton', () => {
     })
 
     mockUseAuth.mockReturnValue({
-      isConnected: false,
-      address: null,
-      connectWallet: mockConnectWallet,
-      disconnectWallet: mockDisconnectWallet,
+      isSignedIn: false,
+      wallet: null,
+      signIn: mockSignIn,
+      signOut: mockSignOut,
       isConnecting: false,
-      error: null,
       identity: null
     })
   })
@@ -49,11 +53,11 @@ describe('WalletButton', () => {
     jest.clearAllMocks()
   })
 
-  describe('when not connected', () => {
-    it('should render connect button', () => {
+  describe('when not signed in', () => {
+    it('should render sign in button', () => {
       renderWithTranslation(<WalletButton />)
 
-      const button = screen.getByRole('button', { name: /connect wallet/i })
+      const button = screen.getByRole('button', { name: /sign in/i })
       expect(button).toBeInTheDocument()
       expect(button).not.toBeDisabled()
     })
@@ -62,12 +66,11 @@ describe('WalletButton', () => {
   describe('when connecting', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
-        isConnected: false,
-        address: null,
-        connectWallet: mockConnectWallet,
-        disconnectWallet: mockDisconnectWallet,
+        isSignedIn: false,
+        wallet: null,
+        signIn: mockSignIn,
+        signOut: mockSignOut,
         isConnecting: true,
-        error: null,
         identity: null
       })
     })
@@ -81,34 +84,32 @@ describe('WalletButton', () => {
     })
   })
 
-  describe('when connected', () => {
+  describe('when signed in', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
-        isConnected: true,
-        address: '0x1234567890abcdef1234567890abcdef12345678',
-        connectWallet: mockConnectWallet,
-        disconnectWallet: mockDisconnectWallet,
+        isSignedIn: true,
+        wallet: '0x1234567890abcdef1234567890abcdef12345678',
+        signIn: mockSignIn,
+        signOut: mockSignOut,
         isConnecting: false,
-        error: null,
         identity: null
       })
     })
 
-    it('should render disconnect button', () => {
+    it('should render sign out button', () => {
       renderWithTranslation(<WalletButton />)
 
       expect(screen.getByText(/0x1234...5678/)).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /disconnect/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument()
     })
 
     it('should display shortened address', () => {
       mockUseAuth.mockReturnValue({
-        isConnected: true,
-        address: '0xabcdef1234567890abcdef1234567890abcdef12',
-        connectWallet: mockConnectWallet,
-        disconnectWallet: mockDisconnectWallet,
+        isSignedIn: true,
+        wallet: '0xabcdef1234567890abcdef1234567890abcdef12',
+        signIn: mockSignIn,
+        signOut: mockSignOut,
         isConnecting: false,
-        error: null,
         identity: null
       })
 

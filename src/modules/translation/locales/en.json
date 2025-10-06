@@ -113,5 +113,12 @@
   "loading": {
     "title": "Loading Cast 2.0",
     "message": "Preparing your streaming experience..."
+  },
+  "onboarding": {
+    "ready_to_join": "Ready to Join {streamName}?",
+    "participant": "Participant",
+    "name_placeholder": "Insert Your Name (Optional)",
+    "join_now": "JOIN NOW",
+    "joining": "Joining..."
   }
 }
