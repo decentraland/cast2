@@ -1,21 +1,28 @@
 import { useMemo } from 'react'
-import { useLocalParticipant } from '@livekit/components-react'
+import { useTracks } from '@livekit/components-react'
 import { Track } from 'livekit-client'
 
 export function useLocalVideoTracks() {
-  const { localParticipant } = useLocalParticipant()
+  // Use LiveKit's useTracks hook which already handles polling and events efficiently
+  const tracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], {
+    updateOnlyOn: [],
+    onlySubscribed: false
+  })
 
-  const hasLocalCamera = useMemo(() => {
-    return Array.from(localParticipant?.videoTrackPublications.values() || []).some(
-      pub => pub.source === Track.Source.Camera && pub.track && !pub.isMuted
-    )
-  }, [localParticipant])
+  const { hasLocalCamera, hasLocalScreenShare } = useMemo(() => {
+    // Filter for local participant tracks only
+    const localTracks = tracks.filter(trackRef => trackRef.participant.isLocal)
 
-  const hasLocalScreenShare = useMemo(() => {
-    return Array.from(localParticipant?.videoTrackPublications.values() || []).some(
-      pub => pub.source === Track.Source.ScreenShare && pub.track && !pub.isMuted
+    const hasCamera = localTracks.some(
+      trackRef => trackRef.source === Track.Source.Camera && trackRef.publication !== undefined && !trackRef.publication.isMuted
     )
-  }, [localParticipant])
+
+    const hasScreen = localTracks.some(
+      trackRef => trackRef.source === Track.Source.ScreenShare && trackRef.publication !== undefined && !trackRef.publication.isMuted
+    )
+
+    return { hasLocalCamera: hasCamera, hasLocalScreenShare: hasScreen }
+  }, [tracks])
 
   return { hasLocalCamera, hasLocalScreenShare }
 }

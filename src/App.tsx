@@ -3,12 +3,10 @@ import MenuBookIcon from '@mui/icons-material/MenuBook'
 import { Box, Typography } from 'decentraland-ui2'
 import { NotFound } from './components/NotFound/NotFound'
 import { StreamerView } from './components/StreamerView/StreamerView'
-import { WalletButton } from './components/WalletButton/WalletButton'
 import { WatcherView } from './components/WatcherView/WatcherView'
-import { AuthProvider } from './context/AuthContext'
 import { LiveKitProvider } from './context/LiveKitContext'
 import { useTranslation } from './modules/translation'
-import { AppContainer, AuthDemoBox, StyledLink } from './App.styled'
+import { AppContainer, StyledLink } from './App.styled'
 
 const HomePage = () => {
   const { t } = useTranslation()
@@ -24,10 +22,6 @@ const HomePage = () => {
           {t('app.view_docs')}
         </StyledLink>
       </Typography>
-      <AuthDemoBox>
-        <Typography variant="h6">{t('app.auth_demo')}</Typography>
-        <WalletButton />
-      </AuthDemoBox>
     </Box>
   )
 }
@@ -35,23 +29,21 @@ const HomePage = () => {
 const App = () => {
   return (
     <Router>
-      <AuthProvider>
-        <LiveKitProvider>
-          <AppContainer>
-            <Routes>
-              {/* Main routes for Cast 2.0 */}
-              <Route path="/cast/s/:token" element={<StreamerView />} />
-              <Route path="/cast/w/:roomId" element={<WatcherView />} />
+      <LiveKitProvider>
+        <AppContainer>
+          <Routes>
+            {/* Main routes for Cast 2.0 */}
+            <Route path="/cast/s/:token" element={<StreamerView />} />
+            <Route path="/cast/w/:roomId" element={<WatcherView />} />
 
-              {/* Root redirects to home/invalid route handler */}
-              <Route path="/" element={<HomePage />} />
+            {/* Root redirects to home/invalid route handler */}
+            <Route path="/" element={<HomePage />} />
 
-              {/* 404 handler */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppContainer>
-        </LiveKitProvider>
-      </AuthProvider>
+            {/* 404 handler */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppContainer>
+      </LiveKitProvider>
     </Router>
   )
 }
