@@ -19,114 +19,121 @@ const renderWithTranslation = (component: React.ReactElement) => {
 }
 
 describe('ChatPanel', () => {
-  let mockSendMessage: jest.Mock
-
   beforeEach(() => {
     jest.clearAllMocks()
-    mockSendMessage = jest.fn()
     // Default mock setup
     mockUseChat.mockReturnValue({
       chatMessages: [],
-      sendMessage: mockSendMessage,
+      sendMessage: jest.fn(),
       isSending: false
     })
   })
 
-  it('should render chat title', () => {
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
-
-    expect(screen.getByText(/chat/i)).toBeInTheDocument()
-  })
-
-  it('should show empty state when no messages', () => {
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
-
-    expect(screen.getByText(/no messages yet/i)).toBeInTheDocument()
-  })
-
-  it('should show auth prompt when cannot send messages', () => {
-    renderWithTranslation(<ChatPanel canSendMessages={false} />)
-
-    expect(screen.getByText(/sign in to participate/i)).toBeInTheDocument()
-  })
-
-  it('should display messages when available', () => {
-    const mockMessages = [
-      {
-        participantName: 'Alice',
-        participantColor: '#ff0000',
-        message: 'Hello world!',
-        timestamp: Date.now()
-      },
-      {
-        participantName: 'Bob',
-        participantColor: '#00ff00',
-        message: 'Hi Alice!',
-        timestamp: Date.now()
-      }
-    ]
-
-    mockUseChat.mockReturnValue({
-      chatMessages: mockMessages,
-      sendMessage: mockSendMessage,
-      isSending: false
+  describe('when there are no messages', () => {
+    beforeEach(() => {
+      mockUseChat.mockReturnValue({
+        chatMessages: [],
+        sendMessage: jest.fn(),
+        isSending: false
+      })
     })
 
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
+    it('should render chat title', () => {
+      renderWithTranslation(<ChatPanel />)
 
-    expect(screen.getByText('Alice')).toBeInTheDocument()
-    expect(screen.getByText('Hello world!')).toBeInTheDocument()
-    expect(screen.getByText('Bob')).toBeInTheDocument()
-    expect(screen.getByText('Hi Alice!')).toBeInTheDocument()
-  })
-
-  it('should call sendMessage when user sends a message', () => {
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
-
-    const input = screen.getByPlaceholderText(/type.*message/i)
-    const sendButton = screen.getByRole('button')
-
-    fireEvent.change(input, { target: { value: 'Test message' } })
-    fireEvent.click(sendButton)
-
-    expect(mockSendMessage).toHaveBeenCalledWith('Test message')
-  })
-
-  it('should not send empty messages', () => {
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
-
-    const sendButton = screen.getByRole('button')
-    expect(sendButton).toBeDisabled()
-
-    fireEvent.click(sendButton)
-    expect(mockSendMessage).not.toHaveBeenCalled()
-  })
-
-  it('should clear input after sending message', () => {
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
-
-    const input = screen.getByPlaceholderText(/type.*message/i) as HTMLInputElement
-    const sendButton = screen.getByRole('button')
-
-    fireEvent.change(input, { target: { value: 'Test message' } })
-    fireEvent.click(sendButton)
-
-    expect(input.value).toBe('')
-  })
-
-  it('should disable input and button when sending', () => {
-    mockUseChat.mockReturnValue({
-      chatMessages: [],
-      sendMessage: mockSendMessage,
-      isSending: true
+      expect(screen.getByText('Chat')).toBeInTheDocument()
     })
 
-    renderWithTranslation(<ChatPanel canSendMessages={true} />)
+    it('should show empty state', () => {
+      renderWithTranslation(<ChatPanel />)
 
-    const input = screen.getByPlaceholderText(/type.*message/i)
-    const sendButton = screen.getByRole('button')
+      expect(screen.getByText(/no.*messages.*yet/i)).toBeInTheDocument()
+    })
 
-    expect(input).toBeDisabled()
-    expect(sendButton).toBeDisabled()
+    it('should show message count as 0', () => {
+      renderWithTranslation(<ChatPanel />)
+
+      expect(screen.getByText('0 messages')).toBeInTheDocument()
+    })
+  })
+
+  describe('when there are messages', () => {
+    let mockMessages: any[]
+
+    beforeEach(() => {
+      mockMessages = [
+        {
+          participantName: 'Alice',
+          participantColor: '#ff0000',
+          message: 'Hello world!',
+          timestamp: Date.now()
+        },
+        {
+          participantName: 'Bob',
+          participantColor: '#00ff00',
+          message: 'Hi Alice!',
+          timestamp: Date.now()
+        }
+      ]
+
+      mockUseChat.mockReturnValue({
+        chatMessages: mockMessages,
+        sendMessage: jest.fn(),
+        isSending: false
+      })
+    })
+
+    it('should display all messages', () => {
+      renderWithTranslation(<ChatPanel />)
+
+      expect(screen.getByText('Alice')).toBeInTheDocument()
+      expect(screen.getByText('Hello world!')).toBeInTheDocument()
+      expect(screen.getByText('Bob')).toBeInTheDocument()
+      expect(screen.getByText('Hi Alice!')).toBeInTheDocument()
+    })
+
+    it('should show correct message count', () => {
+      renderWithTranslation(<ChatPanel />)
+
+      expect(screen.getByText('2 messages')).toBeInTheDocument()
+    })
+
+    it('should not show empty state', () => {
+      renderWithTranslation(<ChatPanel />)
+
+      expect(screen.queryByText('No messages yet')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('when onClose is provided', () => {
+    let mockOnClose: jest.Mock
+
+    beforeEach(() => {
+      mockOnClose = jest.fn()
+    })
+
+    it('should render close button', () => {
+      renderWithTranslation(<ChatPanel onClose={mockOnClose} />)
+
+      const closeButton = screen.getByRole('button')
+      expect(closeButton).toBeInTheDocument()
+    })
+
+    it('should call onClose when close button is clicked', () => {
+      renderWithTranslation(<ChatPanel onClose={mockOnClose} />)
+
+      const closeButton = screen.getByRole('button')
+      fireEvent.click(closeButton)
+
+      expect(mockOnClose).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('when onClose is not provided', () => {
+    it('should not render close button', () => {
+      renderWithTranslation(<ChatPanel />)
+
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    })
   })
 })
