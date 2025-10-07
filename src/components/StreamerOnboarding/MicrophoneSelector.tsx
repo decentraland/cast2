@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CircularProgress } from 'decentraland-ui2'
 import { DeviceOption, DeviceSelector } from '../common/DeviceSelector'
 import { DropdownItem, DropdownList, SelectorButton, SelectorLabel } from './StreamerOnboarding.styled'
 
@@ -9,9 +10,11 @@ interface MicrophoneSelectorProps {
 
 export function MicrophoneSelector({ selectedDeviceId, onDeviceSelect }: MicrophoneSelectorProps) {
   const [microphones, setMicrophones] = useState<DeviceOption[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const getMicrophones = useCallback(async () => {
     try {
+      setIsLoading(true)
       await navigator.mediaDevices.getUserMedia({ audio: true })
 
       const devices = await navigator.mediaDevices.enumerateDevices()
@@ -41,6 +44,8 @@ export function MicrophoneSelector({ selectedDeviceId, onDeviceSelect }: Microph
       }
     } catch (error) {
       console.error('[MicrophoneSelector] Error getting microphones:', error)
+    } finally {
+      setIsLoading(false)
     }
   }, [selectedDeviceId, onDeviceSelect])
 
@@ -57,6 +62,14 @@ export function MicrophoneSelector({ selectedDeviceId, onDeviceSelect }: Microph
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
     }
   }, [getMicrophones])
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40px' }}>
+        <CircularProgress size={20} />
+      </div>
+    )
+  }
 
   if (microphones.length === 0) {
     return null

@@ -1,6 +1,5 @@
 {
   "GATEKEEPER_URL": "https://comms-gatekeeper.decentraland.org",
-  "AUTH_URL": "https://decentraland.zone/auth",
   "ENVIRONMENT": "production",
   "ANALYTICS_ENABLED": true,
   "DEBUG_MODE": false

@@ -4,14 +4,12 @@ import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/c
 import '@livekit/components-styles'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
 import { WatcherViewContent } from './WatcherViewContent'
-import { useAuth } from '../../context/AuthContext'
 import { useTranslation } from '../../modules/translation'
 import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
 import { createLiveKitIdentity } from '../../utils/identity'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
-  AuthPrompt as AuthPromptStyled,
   ControlsArea,
   ErrorContainer,
   MainContent,
@@ -24,14 +22,12 @@ import {
 import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
-import { WalletButton } from '../WalletButton/WalletButton'
 import { WatcherOnboarding } from '../WatcherOnboarding/WatcherOnboarding'
 import { BackLink } from './WatcherView.styled'
 
 export function WatcherView() {
   const { t } = useTranslation()
   const { roomId } = useParams<{ roomId: string }>()
-  const { isSignedIn, wallet, signOut } = useAuth()
 
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -105,7 +101,7 @@ export function WatcherView() {
   if (error) {
     return (
       <WatcherContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h6">{t('watcher.error_connection')}</Typography>
           <Typography variant="body1">{error}</Typography>
@@ -121,7 +117,7 @@ export function WatcherView() {
   if (!credentials) {
     return (
       <WatcherContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h6">{t('watcher.error_connection')}</Typography>
         </ErrorContainer>
@@ -141,7 +137,7 @@ export function WatcherView() {
 
   return (
     <WatcherContainer>
-      <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+      <Navbar activePage={NavbarPages.EXTRA} />
 
       <LiveKitRoom
         token={credentials.token}
@@ -161,20 +157,7 @@ export function WatcherView() {
 
               {sidebarOpen && (
                 <Sidebar $isOpen={sidebarOpen}>
-                  {chatOpen && (
-                    <ChatPanel
-                      canSendMessages={isSignedIn}
-                      onClose={handleToggleChat}
-                      authPrompt={
-                        !isSignedIn ? (
-                          <AuthPromptStyled>
-                            <div className="auth-message">{t('watcher.connect_wallet_prompt')}</div>
-                            <WalletButton />
-                          </AuthPromptStyled>
-                        ) : undefined
-                      }
-                    />
-                  )}
+                  {chatOpen && <ChatPanel onClose={handleToggleChat} />}
                   {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
                 </Sidebar>
               )}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CircularProgress } from 'decentraland-ui2'
 import { DeviceOption, DeviceSelector } from '../common/DeviceSelector'
 import { DropdownItem, DropdownList, SelectorButton, SelectorLabel } from './StreamerOnboarding.styled'
 
@@ -9,9 +10,11 @@ interface AudioOutputSelectorProps {
 
 export function AudioOutputSelector({ selectedDeviceId, onDeviceSelect }: AudioOutputSelectorProps) {
   const [audioOutputs, setAudioOutputs] = useState<DeviceOption[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const getAudioOutputs = useCallback(async () => {
     try {
+      setIsLoading(true)
       // Request audio permission first to get device labels
       await navigator.mediaDevices.getUserMedia({ audio: true })
 
@@ -40,6 +43,8 @@ export function AudioOutputSelector({ selectedDeviceId, onDeviceSelect }: AudioO
       }
     } catch (error) {
       console.error('[AudioOutputSelector] Error getting audio outputs:', error)
+    } finally {
+      setIsLoading(false)
     }
   }, [selectedDeviceId, onDeviceSelect])
 
@@ -56,6 +61,14 @@ export function AudioOutputSelector({ selectedDeviceId, onDeviceSelect }: AudioO
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
     }
   }, [getAudioOutputs])
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40px' }}>
+        <CircularProgress size={20} />
+      </div>
+    )
+  }
 
   if (audioOutputs.length === 0) {
     return null

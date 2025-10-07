@@ -4,13 +4,11 @@ import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/c
 import '@livekit/components-styles'
 import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
 import { StreamerViewContent } from './StreamerViewContent'
-import { useAuth } from '../../context/AuthContext'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
 import { getStreamerToken } from '../../utils/api'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
-  AuthPrompt,
   ControlsArea,
   ErrorContainer,
   MainContent,
@@ -24,13 +22,11 @@ import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamerOnboarding } from '../StreamerOnboarding/StreamerOnboarding'
 import { OnboardingConfig } from '../StreamerOnboarding/StreamerOnboarding.types'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
-import { WalletButton } from '../WalletButton/WalletButton'
 
 export function StreamerView() {
   const { t } = useTranslation()
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
-  const { isSignedIn, wallet, signOut } = useAuth()
   const { credentials, setCredentials } = useLiveKitCredentials()
   const [error, setError] = useState<string | null>(null)
   const [chatOpen, setChatOpen] = useState(false)
@@ -89,7 +85,7 @@ export function StreamerView() {
   if (error) {
     return (
       <StreamerContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
             {t('streamer.error_connection')}
@@ -104,7 +100,7 @@ export function StreamerView() {
   if (!credentials) {
     return (
       <StreamerContainer>
-        <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
             {t('streamer.error_no_credentials')}
@@ -118,7 +114,7 @@ export function StreamerView() {
 
   return (
     <StreamerContainer>
-      <Navbar activePage={NavbarPages.EXTRA} isSignedIn={isSignedIn} address={wallet} onClickSignOut={signOut} />
+      <Navbar activePage={NavbarPages.EXTRA} />
       <LiveKitRoom
         token={credentials.token}
         serverUrl={credentials.url}
@@ -149,20 +145,7 @@ export function StreamerView() {
 
               {sidebarOpen && (
                 <Sidebar $isOpen={sidebarOpen}>
-                  {chatOpen && (
-                    <ChatPanel
-                      canSendMessages={isSignedIn}
-                      onClose={handleToggleChat}
-                      authPrompt={
-                        !isSignedIn ? (
-                          <AuthPrompt>
-                            <Typography variant="body2">{t('streamer.connect_wallet_prompt')}</Typography>
-                            <WalletButton />
-                          </AuthPrompt>
-                        ) : undefined
-                      }
-                    />
-                  )}
+                  {chatOpen && <ChatPanel onClose={handleToggleChat} />}
                   {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
                 </Sidebar>
               )}

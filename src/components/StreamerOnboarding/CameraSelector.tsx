@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { CircularProgress } from 'decentraland-ui2'
 import { DeviceOption, DeviceSelector } from '../common/DeviceSelector'
 import { DropdownItem, DropdownList, SelectorButton, SelectorLabel } from './StreamerOnboarding.styled'
 
@@ -9,9 +10,11 @@ interface CameraSelectorProps {
 
 export function CameraSelector({ selectedDeviceId, onDeviceSelect }: CameraSelectorProps) {
   const [cameras, setCameras] = useState<DeviceOption[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   const getCameras = useCallback(async () => {
     try {
+      setIsLoading(true)
       await navigator.mediaDevices.getUserMedia({ video: true })
 
       const devices = await navigator.mediaDevices.enumerateDevices()
@@ -39,6 +42,8 @@ export function CameraSelector({ selectedDeviceId, onDeviceSelect }: CameraSelec
       }
     } catch (error) {
       console.error('[CameraSelector] Error getting cameras:', error)
+    } finally {
+      setIsLoading(false)
     }
   }, [selectedDeviceId, onDeviceSelect])
 
@@ -55,6 +60,14 @@ export function CameraSelector({ selectedDeviceId, onDeviceSelect }: CameraSelec
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
     }
   }, [getCameras])
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40px' }}>
+        <CircularProgress size={20} />
+      </div>
+    )
+  }
 
   if (cameras.length === 0) {
     return null
