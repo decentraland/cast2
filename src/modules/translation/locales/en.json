@@ -19,6 +19,7 @@
     "starting_stream": "Starting stream...",
     "connecting": "Connecting to room...",
     "error_invalid_token": "Invalid or expired streaming token. Please generate a new link from the Admin Smart Item.",
+    "error_no_token": "No streaming token found. Please use the link from the Admin Smart Item.",
     "error_connection": "Failed to connect to streaming room",
     "connect_wallet_prompt": "Connect your Decentraland wallet to chat and interact"
   },
