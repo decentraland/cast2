@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
@@ -7,6 +7,7 @@ import { StreamerViewContent } from './StreamerViewContent'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
 import { getStreamerToken } from '../../utils/api'
+import { clearStreamerToken, getStreamerToken as getStoredToken, saveStreamerToken } from '../../utils/localStorage'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
   ControlsArea,
@@ -25,7 +26,7 @@ import { StreamingControls } from '../StreamingControls/StreamingControls'
 
 export function StreamerView() {
   const { t } = useTranslation()
-  const { token } = useParams<{ token: string }>()
+  const { token: tokenFromUrl } = useParams<{ token: string }>()
   const navigate = useNavigate()
   const { credentials, setCredentials } = useLiveKitCredentials()
   const [error, setError] = useState<string | null>(null)
@@ -34,11 +35,42 @@ export function StreamerView() {
   const [onboardingComplete, setOnboardingComplete] = useState(false)
   const [isJoining, setIsJoining] = useState(false)
   const [userConfig, setUserConfig] = useState<OnboardingConfig | null>(null)
+  const [activeToken, setActiveToken] = useState<string | null>(null)
+
+  // Determine which token to use and handle URL cleanup
+  const determineToken = useCallback(() => {
+    // Priority 1: Token from URL (initial access)
+    if (tokenFromUrl && tokenFromUrl !== 'streaming') {
+      console.log('[StreamerView] Token found in URL, saving and redirecting')
+      setActiveToken(tokenFromUrl)
+      saveStreamerToken(tokenFromUrl)
+      // Replace URL to hide the token
+      navigate('/cast/s/streaming', { replace: true })
+      return
+    }
+
+    // Priority 2: Token from localStorage (refresh or direct access to /cast/s/streaming)
+    const storedToken = getStoredToken()
+    if (storedToken) {
+      console.log('[StreamerView] Token found in localStorage')
+      setActiveToken(storedToken)
+      return
+    }
+
+    // No token found
+    console.warn('[StreamerView] No token available')
+    setError(t('streamer.error_no_token'))
+  }, [tokenFromUrl, navigate, t])
+
+  // On mount, determine token
+  useEffect(() => {
+    determineToken()
+  }, [determineToken])
 
   const handleJoinRoom = useCallback(
     async (config: OnboardingConfig) => {
-      if (!token) {
-        setError('No token provided')
+      if (!activeToken) {
+        setError(t('streamer.error_no_token'))
         return
       }
 
@@ -46,16 +78,19 @@ export function StreamerView() {
       setUserConfig(config)
 
       try {
-        const creds = await getStreamerToken(token)
+        const creds = await getStreamerToken(activeToken)
         setCredentials(creds)
         setError(null)
         setOnboardingComplete(true)
       } catch (err) {
         setError(err instanceof Error ? err.message : t('streamer.error_initialize_streaming'))
         setIsJoining(false)
+        // Clear invalid token
+        clearStreamerToken()
+        setActiveToken(null)
       }
     },
-    [token, t, setCredentials]
+    [activeToken, t, setCredentials]
   )
 
   const handleRoomConnect = useCallback(() => {
@@ -66,7 +101,9 @@ export function StreamerView() {
     setOnboardingComplete(false)
     setCredentials(null)
     setUserConfig(null)
-  }, [])
+    clearStreamerToken()
+    setActiveToken(null)
+  }, [setCredentials])
 
   const handleToggleChat = useCallback(() => {
     if (peopleOpen) setPeopleOpen(false)
@@ -78,10 +115,6 @@ export function StreamerView() {
     setPeopleOpen(!peopleOpen)
   }, [chatOpen, peopleOpen])
 
-  if (!onboardingComplete) {
-    return <StreamerOnboarding streamName="Stream" onJoin={handleJoinRoom} isJoining={isJoining} />
-  }
-
   if (error) {
     return (
       <StreamerContainer>
@@ -90,11 +123,15 @@ export function StreamerView() {
           <Typography variant="h5" color="error">
             {t('streamer.error_connection')}
           </Typography>
-          <Typography variant="body1">{t('streamer.error_invalid_token')}</Typography>
+          <Typography variant="body1">{error}</Typography>
           <button onClick={() => navigate('/')}>{t('not_found.go_home')}</button>
         </ErrorContainer>
       </StreamerContainer>
     )
+  }
+
+  if (!onboardingComplete) {
+    return <StreamerOnboarding streamName="Stream" onJoin={handleJoinRoom} isJoining={isJoining} />
   }
 
   if (!credentials) {

@@ -19,6 +19,7 @@
     "starting_stream": "正在启动直播...",
     "connecting": "正在连接房间...",
     "error_invalid_token": "无效或过期的流媒体令牌。请从Admin Smart Item生成新链接。",
+    "error_no_token": "未找到流媒体令牌。请使用Admin Smart Item的链接。",
     "error_connection": "连接流媒体房间失败",
     "connect_wallet_prompt": "连接您的Decentraland钱包以聊天和互动"
   },

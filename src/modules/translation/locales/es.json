@@ -19,6 +19,7 @@
     "starting_stream": "Iniciando transmisión...",
     "connecting": "Conectando a la sala...",
     "error_invalid_token": "Token de transmisión inválido o expirado. Por favor genera un nuevo enlace desde el Admin Smart Item.",
+    "error_no_token": "No se encontró token de transmisión. Por favor usa el enlace del Admin Smart Item.",
     "error_connection": "Error al conectar a la sala de transmisión",
     "connect_wallet_prompt": "Conecta tu billetera de Decentraland para chatear e interactuar"
   },
