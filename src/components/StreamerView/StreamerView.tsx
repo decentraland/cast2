@@ -7,6 +7,7 @@ import { StreamerViewContent } from './StreamerViewContent'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
 import { getStreamerToken } from '../../utils/api'
+import { generateRandomName } from '../../utils/identity'
 import { clearStreamerToken, getStreamerToken as getStoredToken, saveStreamerToken } from '../../utils/localStorage'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
@@ -78,9 +79,10 @@ export function StreamerView() {
       setUserConfig(config)
 
       try {
-        // Only send identity to backend if user provided one
-        const identityToSend = config.displayName || undefined
-        const creds = await getStreamerToken(activeToken, identityToSend)
+        // Always send an identity: use the user's input or generate a random one
+        const identity = config.displayName.trim() || generateRandomName()
+        console.log('[StreamerView] Using identity:', identity)
+        const creds = await getStreamerToken(activeToken, identity)
         setCredentials(creds)
         setError(null)
         setOnboardingComplete(true)

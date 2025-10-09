@@ -7,7 +7,7 @@ import { WatcherViewContent } from './WatcherViewContent'
 import { useTranslation } from '../../modules/translation'
 import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
-import { createLiveKitIdentity } from '../../utils/identity'
+import { generateRandomName } from '../../utils/identity'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
   ControlsArea,
@@ -50,8 +50,9 @@ export function WatcherView() {
         setIsLoadingCredentials(true)
         setError(null)
 
-        // Generate anonymous identity
-        const identity = createLiveKitIdentity(`watcher-${roomId}-${Date.now()}`)
+        // Generate friendly random identity for watchers
+        const identity = generateRandomName()
+        console.log('[WatcherView] Using identity:', identity)
         const liveKitCredentials = await getWatcherToken(roomId, identity)
         setCredentials(liveKitCredentials)
       } catch (error) {

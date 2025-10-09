@@ -69,16 +69,23 @@ const NOUNS = [
 ]
 
 /**
+ * Generates a random friendly name in the format "adjective-noun"
+ * @returns A random name like "happy-fox" or "brave-lion"
+ */
+function generateRandomName(): string {
+  const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)]
+  return `${adjective}-${noun}`
+}
+
+/**
  * Generates an anonymous identity for users who don't want to login
  */
 function generateAnonymousIdentity(roomId: string): AnonymousIdentity {
   const randomId = Math.random().toString(36).substring(2, 15)
   const ulid = `${Date.now()}-${randomId}`
 
-  const adjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]
-  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)]
-
-  const name = `${adjective}-${noun}`
+  const name = generateRandomName()
   const avatar = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)]
 
   return {
@@ -96,4 +103,4 @@ function createLiveKitIdentity(roomId: string): string {
   return generateAnonymousIdentity(roomId).id
 }
 
-export { createLiveKitIdentity }
+export { createLiveKitIdentity, generateRandomName }

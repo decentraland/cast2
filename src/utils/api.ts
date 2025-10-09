@@ -13,8 +13,10 @@ class CastApiError extends Error {
 
 /**
  * Fetches streamer token from gatekeeper
+ * @param token - The streaming token
+ * @param identity - The identity/display name for the streamer (required)
  */
-async function getStreamerToken(token: string, identity?: string): Promise<LiveKitCredentials> {
+async function getStreamerToken(token: string, identity: string): Promise<LiveKitCredentials> {
   const baseUrl = config.get('GATEKEEPER_URL')
   const response = await fetch(`${baseUrl}/cast/streamer-token`, {
     method: 'POST',
@@ -32,9 +34,11 @@ async function getStreamerToken(token: string, identity?: string): Promise<LiveK
 }
 
 /**
- * Fetches watcher token for anonymous viewing
+ * Fetches watcher token for viewing
+ * @param roomId - The room ID to join
+ * @param identity - The identity/display name for the watcher (required)
  */
-async function getWatcherToken(roomId: string, identity?: string): Promise<LiveKitCredentials> {
+async function getWatcherToken(roomId: string, identity: string): Promise<LiveKitCredentials> {
   const baseUrl = config.get('GATEKEEPER_URL')
   const response = await fetch(`${baseUrl}/cast/watcher-token`, {
     method: 'POST',
