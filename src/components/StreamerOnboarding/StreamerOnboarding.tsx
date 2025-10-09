@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import MicIcon from '@mui/icons-material/Mic'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
@@ -7,6 +7,7 @@ import { CameraSelector } from './CameraSelector'
 import { MicrophoneSelector } from './MicrophoneSelector'
 import logoImage from '../../assets/images/logo.png'
 import { useTranslation } from '../../modules/translation'
+import { getDeviceSettings, saveDeviceSettings } from '../../utils/localStorage'
 import { StreamerOnboardingProps } from './StreamerOnboarding.types'
 import {
   DeviceSelectorRow,
@@ -33,9 +34,27 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
   const [audioOutputId, setAudioOutputId] = useState('')
   const [videoDeviceId, setVideoDeviceId] = useState('')
 
+  // Load saved device settings on mount
+  useEffect(() => {
+    const savedSettings = getDeviceSettings()
+    if (savedSettings) {
+      console.log('[StreamerOnboarding] Loading saved device settings:', savedSettings)
+      if (savedSettings.audioInputId) setAudioInputId(savedSettings.audioInputId)
+      if (savedSettings.audioOutputId) setAudioOutputId(savedSettings.audioOutputId)
+      if (savedSettings.videoDeviceId) setVideoDeviceId(savedSettings.videoDeviceId)
+    }
+  }, [])
+
   const handleJoin = () => {
+    // Save device settings for next time
+    saveDeviceSettings({
+      audioInputId,
+      audioOutputId,
+      videoDeviceId
+    })
+
     onJoin({
-      displayName: displayName.trim() || 'Participant',
+      displayName: displayName.trim() || '',
       audioInputId,
       audioOutputId,
       videoDeviceId

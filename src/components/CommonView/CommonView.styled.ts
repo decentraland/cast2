@@ -18,35 +18,42 @@ const slideOutToRight = keyframes({
   }
 })
 
-const ViewContainer = styled('div')({
+const ViewContainer = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  minHeight: '100vh',
+  minHeight: '100dvh',
   background: 'linear-gradient(247deg, #210A35 0%, #000 50%, #210A35 100%)',
-  paddingTop: 60
-})
+  paddingTop: 60,
+  [theme.breakpoints.down('sm')]: {
+    paddingTop: 0
+  }
+}))
 
 const ViewLayout = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  height: 'calc(100vh - 60px)',
+  height: 'calc(100dvh - 60px)',
   width: '100%',
   position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column'
+    flexDirection: 'column',
+    height: '100dvh'
   }
 }))
 
-const MainContent = styled('div')({
+const MainContent = styled('div')(({ theme }) => ({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
   position: 'relative',
   minHeight: 0,
   transition: 'all 0.3s ease-in-out',
-  padding: 24
-})
+  padding: 24,
+  [theme.breakpoints.down('sm')]: {
+    padding: 0
+  }
+}))
 
 const VideoContainer = styled('div')<{ $sidebarOpen: boolean }>(() => ({
   flex: 1,
@@ -73,8 +80,9 @@ const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => ({
     objectFit: 'contain'
   },
   [theme.breakpoints.down('sm')]: {
-    padding: 16,
-    margin: 8
+    borderRadius: 0,
+    padding: 0,
+    margin: 0
   }
 }))
 

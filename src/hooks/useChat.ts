@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useRoomContext } from '@livekit/components-react'
 import { Participant, RoomEvent } from 'livekit-client'
+import { getDisplayName } from '../utils/displayName'
 
 // Simple chat message format (instead of DCL Protocol for now)
 interface ChatPacket {
@@ -39,7 +40,7 @@ function useChat() {
             from: participant,
             timestamp: packet.timestamp,
             message: packet.message,
-            participantName: participant?.name || participant?.identity || 'Unknown',
+            participantName: participant ? getDisplayName(participant) : 'Unknown',
             participantColor: getParticipantColor(participant?.identity)
           }
 
@@ -81,7 +82,7 @@ function useChat() {
         from: room.localParticipant,
         timestamp: Date.now(),
         message: message.trim(),
-        participantName: room.localParticipant.name || 'You',
+        participantName: getDisplayName(room.localParticipant),
         participantColor: getParticipantColor(room.localParticipant.identity)
       }
 

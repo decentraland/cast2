@@ -3,6 +3,7 @@ import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } fro
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { Track } from 'livekit-client'
 import { useTranslation } from '../../modules/translation'
+import { getDisplayName } from '../../utils/displayName'
 import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
 import { ParticipantGridProps } from './ParticipantGrid.types'
 import {
@@ -10,18 +11,26 @@ import {
   FloatingVideoName,
   NoParticipants,
   NoParticipantsIcon,
+  OverflowCard,
+  OverflowCount,
+  OverflowLabel,
   ParticipantGridContainer,
   ParticipantName,
   ParticipantTileContainer,
   SpeakingIndicatorWrapper,
   ThumbnailGrid,
   ThumbnailItem,
-  ThumbnailName
+  ThumbnailName,
+  ThumbnailOverflowCard
 } from './ParticipantGrid.styled'
+
+const MAX_VISIBLE_PARTICIPANTS = 9
+const MAX_THUMBNAILS = 4
 
 function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProps) {
   const { t } = useTranslation()
   const [expandedTrackSid, setExpandedTrackSid] = useState<string | null>(null)
+  const [showAllParticipants, setShowAllParticipants] = useState(false)
 
   const videoTracks = useTracks([Track.Source.Camera, Track.Source.ScreenShare], {
     updateOnlyOn: []
@@ -43,6 +52,15 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   const participantCount = finalTracks.length
   const isFullscreen = participantCount === 1
   const hasMultipleParticipants = participantCount >= 2
+  const hasOverflow = participantCount > MAX_VISIBLE_PARTICIPANTS && !showAllParticipants
+
+  // Determine which tracks to display
+  const displayTracks = useMemo(() => {
+    if (!hasOverflow) return finalTracks
+    return finalTracks.slice(0, MAX_VISIBLE_PARTICIPANTS - 1)
+  }, [hasOverflow, finalTracks])
+
+  const overflowCount = finalTracks.length - displayTracks.length
 
   const handleTileClick = useCallback(
     (trackSid: string) => {
@@ -56,6 +74,10 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     },
     [hasMultipleParticipants, expandedTrackSid]
   )
+
+  const handleShowAll = useCallback(() => {
+    setShowAllParticipants(true)
+  }, [])
 
   if (finalTracks.length === 0) {
     return (
@@ -75,6 +97,11 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     const expandedTrack = finalTracks.find(t => t.participant.sid + t.source === expandedTrackSid)
     const otherTracks = finalTracks.filter(t => t.participant.sid + t.source !== expandedTrackSid)
 
+    // Check if we have more thumbnails than MAX_THUMBNAILS
+    const hasThumbnailOverflow = otherTracks.length > MAX_THUMBNAILS
+    const visibleThumbnails = hasThumbnailOverflow ? otherTracks.slice(0, MAX_THUMBNAILS) : otherTracks
+    const thumbnailOverflowCount = otherTracks.length - visibleThumbnails.length
+
     return (
       <ParticipantGridContainer $participantCount={participantCount} $expandedView={true}>
         {expandedTrack && (
@@ -84,34 +111,46 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
             onClick={() => handleTileClick(expandedTrack.participant.sid + expandedTrack.source)}
           />
         )}
-        {/* Show other tracks in thumbnail grid */}
+        {/* Show other tracks in vertical thumbnail grid */}
         {otherTracks.length === 1 ? (
           // Single floating video
-          <FloatingVideoContainer onClick={() => handleTileClick(otherTracks[0].participant.sid + otherTracks[0].source)}>
+          <FloatingVideoContainer
+            onClick={() => handleTileClick(otherTracks[0].participant.sid + otherTracks[0].source)}
+            $mirror={otherTracks[0].participant.isLocal && otherTracks[0].source === Track.Source.Camera}
+          >
             <VideoTrack trackRef={otherTracks[0]} />
-            <FloatingVideoName>{otherTracks[0].participant.identity}</FloatingVideoName>
+            <FloatingVideoName>{getDisplayName(otherTracks[0].participant)}</FloatingVideoName>
           </FloatingVideoContainer>
         ) : (
-          // Multiple thumbnails in grid
-          <ThumbnailGrid $count={otherTracks.length}>
-            {otherTracks.map(trackRef => (
+          // Multiple thumbnails in vertical grid
+          <ThumbnailGrid>
+            {visibleThumbnails.map(trackRef => (
               <ThumbnailItem
                 key={trackRef.participant.sid + trackRef.source}
                 onClick={() => handleTileClick(trackRef.participant.sid + trackRef.source)}
+                $mirror={trackRef.participant.isLocal && trackRef.source === Track.Source.Camera}
               >
                 <VideoTrack trackRef={trackRef} />
-                <ThumbnailName>{trackRef.participant.identity}</ThumbnailName>
+                <ThumbnailName>{getDisplayName(trackRef.participant)}</ThumbnailName>
               </ThumbnailItem>
             ))}
+            {hasThumbnailOverflow && (
+              <ThumbnailOverflowCard onClick={handleShowAll}>
+                <OverflowCount>+{thumbnailOverflowCount}</OverflowCount>
+              </ThumbnailOverflowCard>
+            )}
           </ThumbnailGrid>
         )}
       </ParticipantGridContainer>
     )
   }
 
+  // Calculate the count to pass to the container (for grid layout)
+  const gridCount = hasOverflow ? MAX_VISIBLE_PARTICIPANTS : participantCount
+
   return (
-    <ParticipantGridContainer $participantCount={participantCount} $expandedView={false}>
-      {finalTracks.map(trackRef => (
+    <ParticipantGridContainer $participantCount={gridCount} $expandedView={false}>
+      {displayTracks.map(trackRef => (
         <ParticipantTile
           key={trackRef.participant.sid + trackRef.source}
           trackRef={trackRef}
@@ -119,6 +158,12 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
           onClick={hasMultipleParticipants ? () => handleTileClick(trackRef.participant.sid + trackRef.source) : undefined}
         />
       ))}
+      {hasOverflow && (
+        <OverflowCard onClick={handleShowAll}>
+          <OverflowCount>+{overflowCount}</OverflowCount>
+          <OverflowLabel>{t('participant_grid.more_participants')}</OverflowLabel>
+        </OverflowCard>
+      )}
     </ParticipantGridContainer>
   )
 }
@@ -132,7 +177,7 @@ function ParticipantTile({
   isFullscreen?: boolean
   onClick?: () => void
 }) {
-  const participant = trackRef.participant
+  const { participant, source } = trackRef
   const isSpeaking = useIsSpeaking(participant)
 
   // Get audio track for speaking indicator
@@ -142,18 +187,27 @@ function ParticipantTile({
   })
   const participantAudioTrack = audioTrackRefs.find(track => track.participant.identity === participant.identity)
 
+  // Mirror the video if it's the local participant's camera (not screen share)
+  const shouldMirror = participant.isLocal && source === Track.Source.Camera
+
   // Only render if publication exists
   if (!trackRef.publication) {
     return null
   }
 
   return (
-    <ParticipantTileContainer $isSpeaking={isSpeaking} $isFullscreen={isFullscreen} onClick={onClick} $clickable={!!onClick}>
+    <ParticipantTileContainer
+      $isSpeaking={isSpeaking}
+      $isFullscreen={isFullscreen}
+      $clickable={!!onClick}
+      $mirror={shouldMirror}
+      onClick={onClick}
+    >
       <VideoTrack trackRef={trackRef} />
       <SpeakingIndicatorWrapper>
         <SpeakingIndicator participant={participant} trackRef={participantAudioTrack} />
       </SpeakingIndicatorWrapper>
-      <ParticipantName>{participant.identity}</ParticipantName>
+      <ParticipantName>{getDisplayName(participant)}</ParticipantName>
     </ParticipantTileContainer>
   )
 }

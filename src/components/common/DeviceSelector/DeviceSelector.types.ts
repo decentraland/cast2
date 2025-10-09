@@ -16,6 +16,7 @@ interface DeviceSelectorChildComponents {
 
 interface DeviceSelectorProps {
   label: string
+  icon?: React.ReactNode
   devices: DeviceOption[]
   selectedDeviceId: string
   onDeviceSelect: (deviceId: string) => void

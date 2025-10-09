@@ -14,14 +14,14 @@ class CastApiError extends Error {
 /**
  * Fetches streamer token from gatekeeper
  */
-async function getStreamerToken(token: string): Promise<LiveKitCredentials> {
+async function getStreamerToken(token: string, identity?: string): Promise<LiveKitCredentials> {
   const baseUrl = config.get('GATEKEEPER_URL')
   const response = await fetch(`${baseUrl}/cast/streamer-token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ token })
+    body: JSON.stringify({ token, identity })
   })
 
   if (!response.ok) {

@@ -37,7 +37,7 @@
     "start_cam": "Iniciar Cámara",
     "stop_share": "Detener Compartir",
     "share_screen": "Compartir Pantalla",
-    "end_streaming": "Finalizar Transmisión",
+    "leave_stream": "Salir del Stream",
     "leave": "Salir",
     "reconnect": "Reconectar",
     "disconnected": "Desconectado",
@@ -56,6 +56,7 @@
     "messages_count": "{count} mensaje",
     "messages_count_plural": "{count} mensajes",
     "no_messages": "Sin mensajes aún. {action}",
+    "no_messages_yet": "Aún no hay mensajes",
     "start_conversation": "¡Inicia la conversación!",
     "sign_in_to_participate": "Inicia sesión para participar.",
     "type_message": "Escribe un mensaje...",
@@ -121,5 +122,8 @@
     "name_placeholder": "Inserta Tu Nombre (Opcional)",
     "join_now": "UNIRSE AHORA",
     "joining": "Uniéndose..."
+  },
+  "participant_grid": {
+    "more_participants": "Más"
   }
 }

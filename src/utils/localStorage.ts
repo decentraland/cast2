@@ -1,4 +1,11 @@
 const STREAMER_TOKEN_KEY = 'dcl_cast_streamer_token'
+const DEVICE_SETTINGS_KEY = 'dcl_cast_device_settings'
+
+interface DeviceSettings {
+  audioInputId?: string
+  audioOutputId?: string
+  videoDeviceId?: string
+}
 
 function saveStreamerToken(token: string): void {
   try {
@@ -29,4 +36,37 @@ function clearStreamerToken(): void {
   }
 }
 
-export { saveStreamerToken, getStreamerToken, clearStreamerToken }
+function saveDeviceSettings(settings: DeviceSettings): void {
+  try {
+    localStorage.setItem(DEVICE_SETTINGS_KEY, JSON.stringify(settings))
+    console.log('[localStorage] Device settings saved')
+  } catch (error) {
+    console.error('[localStorage] Error saving device settings:', error)
+  }
+}
+
+function getDeviceSettings(): DeviceSettings | null {
+  try {
+    const settings = localStorage.getItem(DEVICE_SETTINGS_KEY)
+    if (settings) {
+      console.log('[localStorage] Device settings retrieved')
+      return JSON.parse(settings)
+    }
+    console.log('[localStorage] No device settings found')
+    return null
+  } catch (error) {
+    console.error('[localStorage] Error retrieving device settings:', error)
+    return null
+  }
+}
+
+function clearDeviceSettings(): void {
+  try {
+    localStorage.removeItem(DEVICE_SETTINGS_KEY)
+    console.log('[localStorage] Device settings cleared')
+  } catch (error) {
+    console.error('[localStorage] Error clearing device settings:', error)
+  }
+}
+
+export { saveStreamerToken, getStreamerToken, clearStreamerToken, saveDeviceSettings, getDeviceSettings, clearDeviceSettings }

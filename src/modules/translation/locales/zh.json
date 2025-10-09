@@ -37,7 +37,7 @@
     "start_cam": "启动摄像头",
     "stop_share": "停止共享",
     "share_screen": "共享屏幕",
-    "end_streaming": "结束直播",
+    "leave_stream": "离开直播",
     "leave": "离开",
     "reconnect": "重新连接",
     "disconnected": "已断开",
@@ -56,6 +56,7 @@
     "messages_count": "{count}条消息",
     "messages_count_plural": "{count}条消息",
     "no_messages": "还没有消息。{action}",
+    "no_messages_yet": "暂无消息",
     "start_conversation": "开始对话！",
     "sign_in_to_participate": "登录以参与。",
     "type_message": "输入消息...",
@@ -121,5 +122,8 @@
     "name_placeholder": "输入您的名字（可选）",
     "join_now": "立即加入",
     "joining": "加入中..."
+  },
+  "participant_grid": {
+    "more_participants": "更多"
   }
 }

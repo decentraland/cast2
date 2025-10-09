@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
+import { Typography } from 'decentraland-ui2'
 import { StreamerViewContent } from './StreamerViewContent'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
@@ -78,7 +78,9 @@ export function StreamerView() {
       setUserConfig(config)
 
       try {
-        const creds = await getStreamerToken(activeToken)
+        // Only send identity to backend if user provided one
+        const identityToSend = config.displayName || undefined
+        const creds = await getStreamerToken(activeToken, identityToSend)
         setCredentials(creds)
         setError(null)
         setOnboardingComplete(true)
@@ -118,7 +120,6 @@ export function StreamerView() {
   if (error) {
     return (
       <StreamerContainer>
-        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
             {t('streamer.error_connection')}
@@ -137,7 +138,6 @@ export function StreamerView() {
   if (!credentials) {
     return (
       <StreamerContainer>
-        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h5" color="error">
             {t('streamer.error_no_credentials')}
@@ -151,7 +151,6 @@ export function StreamerView() {
 
   return (
     <StreamerContainer>
-      <Navbar activePage={NavbarPages.EXTRA} />
       <LiveKitRoom
         token={credentials.token}
         serverUrl={credentials.url}

@@ -12,7 +12,18 @@ const ControlsContainer = styled('div', {
   gap: 24,
   [theme.breakpoints.down('sm')]: {
     padding: 12,
-    gap: 12
+    gap: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  }
+}))
+
+const ControlsLeft = styled('div')(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('sm')]: {
+    display: 'flex',
+    gap: 8,
+    alignItems: 'center'
   }
 }))
 
@@ -23,7 +34,8 @@ const ControlsCenter = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   flex: 1,
   [theme.breakpoints.down('sm')]: {
-    gap: 8
+    gap: 8,
+    flex: 'unset'
   }
 }))
 
@@ -32,7 +44,7 @@ const ControlsRight = styled('div')(({ theme }) => ({
   gap: 16,
   alignItems: 'center',
   [theme.breakpoints.down('sm')]: {
-    gap: 12
+    gap: 8
   }
 }))
 
@@ -162,11 +174,7 @@ const IconButton = styled('button')(({ theme }) => ({
     fontSize: 24
   },
   [theme.breakpoints.down('sm')]: {
-    width: 36,
-    height: 36,
-    '& svg': {
-      fontSize: 20
-    }
+    display: 'none' // Hide in mobile, shown in ControlsLeft instead
   }
 }))
 
@@ -205,13 +213,56 @@ const EndStreamButton = styled(Button)(({ theme }) => ({
     marginRight: 8
   },
   [theme.breakpoints.down('sm')]: {
-    padding: '8px 16px',
-    fontSize: 12,
-    '& .MuiButton-startIcon': {
-      marginRight: 4,
-      '& svg': {
-        fontSize: 18
-      }
+    display: 'none' // Hide desktop button on mobile
+  }
+}))
+
+const CircleEndButton = styled('button')(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('sm')]: {
+    display: 'flex',
+    width: 48,
+    height: 48,
+    borderRadius: '50%',
+    background: theme.palette.primary.main,
+    border: 'none',
+    color: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background 0.2s ease, transform 0.1s ease',
+    '&:hover': {
+      background: theme.palette.primary.dark
+    },
+    '&:active': {
+      transform: 'scale(0.95)'
+    },
+    '& svg': {
+      fontSize: 24
+    }
+  }
+}))
+
+const MobileIconButton = styled('button')(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('sm')]: {
+    position: 'relative',
+    width: 40,
+    height: 40,
+    borderRadius: '50%',
+    background: 'transparent',
+    border: 'none',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background 0.2s ease',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.1)'
+    },
+    '& svg': {
+      fontSize: 20
     }
   }
 }))
@@ -220,12 +271,15 @@ export {
   ButtonWithMenu,
   ChevronButton,
   CircleButton,
+  CircleEndButton,
   ControlsCenter,
   ControlsContainer,
+  ControlsLeft,
   ControlsRight,
   DeviceMenu,
   DeviceMenuItem,
   EndStreamButton,
   IconButton,
+  MobileIconButton,
   NotificationBadge
 }

@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { PeopleSidebarProps } from './PeopleSidebar.type'
 import avatarImage from '../../assets/images/avatar.png'
 import { getAvatarColor, useFilteredParticipants } from '../../hooks/usePeopleSidebar'
+import { getDisplayName } from '../../utils/displayName'
 import {
   CloseButton,
   Divider,
@@ -60,7 +61,7 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <ParticipantAvatarImage src={avatarImage} alt="Avatar" />
                   </ParticipantAvatar>
                   <ParticipantInfo>
-                    <ParticipantName>{participant.identity || 'Anonymous'}</ParticipantName>
+                    <ParticipantName>{getDisplayName(participant)}</ParticipantName>
                     <ParticipantStatus $isStreaming={true}>Streaming</ParticipantStatus>
                   </ParticipantInfo>
                 </ParticipantItem>
@@ -86,7 +87,7 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <ParticipantAvatarImage src={avatarImage} alt="Avatar" />
                   </ParticipantAvatar>
                   <ParticipantInfo>
-                    <ParticipantName>{participant.identity || 'Anonymous'}</ParticipantName>
+                    <ParticipantName>{getDisplayName(participant)}</ParticipantName>
                     <ParticipantStatus>Watching</ParticipantStatus>
                   </ParticipantInfo>
                 </ParticipantItem>
