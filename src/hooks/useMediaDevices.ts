@@ -74,9 +74,6 @@ function useMediaDevices(options: UseMediaDevicesOptions = {}): UseMediaDevicesR
       const audioOuts: MediaDevice[] = []
       const videoIns: MediaDevice[] = []
 
-      // Check if we have real device info (permissions granted) or just placeholders
-      const hasRealDeviceInfo = devices.some(d => d.deviceId !== '')
-
       devices.forEach((device, index) => {
         console.log('device', device)
 
@@ -101,18 +98,31 @@ function useMediaDevices(options: UseMediaDevicesOptions = {}): UseMediaDevicesR
         }
       })
 
-      // Special case: If requesting audioOutput but got no devices (no permissions granted),
-      // create a synthetic "default" device which the browser will handle automatically
-      if (requestAudioOutput && audioOuts.length === 0 && !hasRealDeviceInfo) {
-        console.log('[useMediaDevices] No audio output info available (no permissions), using default device')
+      console.log('[useMediaDevices] Filtered devices BEFORE default:', {
+        audioInputs: audioIns.length,
+        audioOutputs: audioOuts.length,
+        videoInputs: videoIns.length,
+        requestAudioOutput
+      })
+
+      // Special case: If requesting audioOutput but got no devices
+      // This is NORMAL on iOS/Safari which doesn't expose audio outputs for privacy
+      // Create a synthetic "default" device which the browser/system will handle automatically
+      if (requestAudioOutput && audioOuts.length === 0) {
+        console.log("✅ [useMediaDevices] ADDING DEFAULT AUDIO OUTPUT - iOS/Safari doesn't expose audio outputs")
         audioOuts.push({
           deviceId: 'default',
           label: 'Default Audio Output',
           kind: 'audiooutput'
         })
+        console.log('✅ [useMediaDevices] DEFAULT ADDED - audioOuts now has:', audioOuts.length, 'device(s)')
+      } else if (requestAudioOutput && audioOuts.length > 0) {
+        console.log('[useMediaDevices] Audio outputs already available, no need for default')
+      } else if (!requestAudioOutput) {
+        console.log('[useMediaDevices] NOT requesting audio output, skipping default creation')
       }
 
-      console.log('[useMediaDevices] Filtered devices:', {
+      console.log('[useMediaDevices] Filtered devices AFTER default:', {
         audioInputs: audioIns.length,
         audioOutputs: audioOuts.length,
         videoInputs: videoIns.length
@@ -133,15 +143,35 @@ function useMediaDevices(options: UseMediaDevicesOptions = {}): UseMediaDevicesR
   useEffect(() => {
     fetchDevices()
 
-    const handleDeviceChange = () => {
-      console.log('[useMediaDevices] Device change detected, refetching...')
-      fetchDevices()
+    // Only set up device change listener if API is available
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      const handleDeviceChange = () => {
+        console.log('[useMediaDevices] Device change detected, refetching...')
+        fetchDevices()
+      }
+
+      navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
+
+      return () => {
+        if (navigator.mediaDevices && navigator.mediaDevices.removeEventListener) {
+          navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
+        }
+        // Stop any cached stream when component unmounts
+        if (cachedStream) {
+          cachedStream.getTracks().forEach(track => track.stop())
+          cachedStream = null
+          permissionsRequested = false
+        }
+      }
     }
 
-    navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
-
+    // Cleanup when no listener is set up
     return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange)
+      if (cachedStream) {
+        cachedStream.getTracks().forEach(track => track.stop())
+        cachedStream = null
+        permissionsRequested = false
+      }
     }
   }, [fetchDevices])
 

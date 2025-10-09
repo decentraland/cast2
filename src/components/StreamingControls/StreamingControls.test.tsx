@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { ConnectionState, LocalParticipant, Room, Track } from 'livekit-client'
 import { StreamingControls } from './StreamingControls'
 import { TranslationProvider } from '../../modules/translation'
@@ -102,7 +102,7 @@ describe('StreamingControls', () => {
     it('should render all streamer control buttons', () => {
       renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-      expect(screen.getByText(/end streaming/i)).toBeInTheDocument()
+      expect(screen.getByText(/leave stream/i)).toBeInTheDocument()
     })
 
     describe('and the microphone button is clicked', () => {
@@ -111,14 +111,17 @@ describe('StreamingControls', () => {
           mockLocalParticipant.isMicrophoneEnabled = false
         })
 
-        it('should enable the microphone', () => {
+        it('should enable the microphone', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          const buttons = document.querySelectorAll('button')
-          const micButton = buttons[0]
+          // Find mic button by MicOffIcon
+          const micButton = screen.getByTestId('MicOffIcon').closest('button')
 
-          fireEvent.click(micButton)
-          expect(mockSetMicrophoneEnabled).toHaveBeenCalledWith(true, undefined)
+          fireEvent.click(micButton!)
+
+          await waitFor(() => {
+            expect(mockSetMicrophoneEnabled).toHaveBeenCalledWith(true, undefined)
+          })
         })
       })
 
@@ -127,14 +130,17 @@ describe('StreamingControls', () => {
           mockLocalParticipant.isMicrophoneEnabled = true
         })
 
-        it('should disable the microphone', () => {
+        it('should disable the microphone', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          const buttons = document.querySelectorAll('button')
-          const micButton = buttons[0]
+          // Find mic button by MicIcon
+          const micButton = screen.getByTestId('MicIcon').closest('button')
 
-          fireEvent.click(micButton)
-          expect(mockSetMicrophoneEnabled).toHaveBeenCalledWith(false)
+          fireEvent.click(micButton!)
+
+          await waitFor(() => {
+            expect(mockSetMicrophoneEnabled).toHaveBeenCalledWith(false)
+          })
         })
       })
     })
@@ -145,14 +151,17 @@ describe('StreamingControls', () => {
           mockLocalParticipant.isCameraEnabled = false
         })
 
-        it('should enable the camera', () => {
+        it('should enable the camera', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          const buttons = document.querySelectorAll('button')
-          const camButton = buttons[1]
+          // Find camera button by VideocamOffIcon
+          const camButton = screen.getByTestId('VideocamOffIcon').closest('button')
 
-          fireEvent.click(camButton)
-          expect(mockSetCameraEnabled).toHaveBeenCalledWith(true, undefined)
+          fireEvent.click(camButton!)
+
+          await waitFor(() => {
+            expect(mockSetCameraEnabled).toHaveBeenCalledWith(true, undefined)
+          })
         })
       })
 
@@ -161,27 +170,33 @@ describe('StreamingControls', () => {
           mockLocalParticipant.isCameraEnabled = true
         })
 
-        it('should disable the camera', () => {
+        it('should disable the camera', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          const buttons = document.querySelectorAll('button')
-          const camButton = buttons[1]
+          // Find camera button by VideocamIcon
+          const camButton = screen.getByTestId('VideocamIcon').closest('button')
 
-          fireEvent.click(camButton)
-          expect(mockSetCameraEnabled).toHaveBeenCalledWith(false)
+          fireEvent.click(camButton!)
+
+          await waitFor(() => {
+            expect(mockSetCameraEnabled).toHaveBeenCalledWith(false)
+          })
         })
       })
     })
 
     describe('and the screen share button is clicked', () => {
-      it('should enable screen sharing', () => {
+      it('should enable screen sharing', async () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-        const buttons = document.querySelectorAll('button')
-        const screenShareButton = buttons[2]
+        // Find screen share button by ScreenShareIcon
+        const screenShareButton = screen.getByTestId('ScreenShareIcon').closest('button')
 
-        fireEvent.click(screenShareButton)
-        expect(mockSetScreenShareEnabled).toHaveBeenCalledWith(true)
+        fireEvent.click(screenShareButton!)
+
+        await waitFor(() => {
+          expect(mockSetScreenShareEnabled).toHaveBeenCalledWith(true)
+        })
       })
     })
 
@@ -189,10 +204,11 @@ describe('StreamingControls', () => {
       it('should call onToggleChat', () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-        const buttons = document.querySelectorAll('button')
-        const chatButton = buttons[4]
+        // Find chat button by ChatBubbleOutlineIcon (there are multiple, get the first one)
+        const chatButtons = screen.getAllByTestId('ChatBubbleOutlineIcon')
+        const chatButton = chatButtons[0].closest('button')
 
-        fireEvent.click(chatButton)
+        fireEvent.click(chatButton!)
         expect(mockOnToggleChat).toHaveBeenCalled()
       })
     })
@@ -201,10 +217,11 @@ describe('StreamingControls', () => {
       it('should call onTogglePeople', () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-        const buttons = document.querySelectorAll('button')
-        const peopleButton = buttons[5]
+        // Find people button by PeopleIcon (there are multiple, get the first one)
+        const peopleButtons = screen.getAllByTestId('PeopleIcon')
+        const peopleButton = peopleButtons[0].closest('button')
 
-        fireEvent.click(peopleButton)
+        fireEvent.click(peopleButton!)
         expect(mockOnTogglePeople).toHaveBeenCalled()
       })
     })
@@ -212,7 +229,7 @@ describe('StreamingControls', () => {
     describe('and the end stream button is clicked', () => {
       it('should disconnect from the room', () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
-        const endStreamButton = screen.getByText(/end streaming/i)
+        const endStreamButton = screen.getByText(/leave stream/i)
 
         fireEvent.click(endStreamButton)
         expect(mockDisconnect).toHaveBeenCalled()
@@ -227,7 +244,9 @@ describe('StreamingControls', () => {
       it('should display the participant count badge', () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-        expect(screen.getByText('3')).toBeInTheDocument()
+        // There are 2 badges (mobile + desktop), both should show "3"
+        const badges = screen.getAllByText('3')
+        expect(badges.length).toBeGreaterThan(0)
       })
     })
   })
@@ -236,9 +255,15 @@ describe('StreamingControls', () => {
     it('should only render leave button', () => {
       renderWithProviders(<StreamingControls isStreamer={false} />)
 
+      // Both desktop and mobile leave buttons should be rendered
       expect(screen.getByText(/leave/i)).toBeInTheDocument()
-      const buttons = document.querySelectorAll('button')
-      expect(buttons.length).toBe(1)
+
+      // Watcher mode should NOT show mic/camera/screen share controls
+      expect(screen.queryByTestId('MicIcon')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('MicOffIcon')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('VideocamIcon')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('VideocamOffIcon')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('ScreenShareIcon')).not.toBeInTheDocument()
     })
 
     describe('and the leave button is clicked', () => {
@@ -261,7 +286,7 @@ describe('StreamingControls', () => {
       renderWithProviders(<StreamingControls isStreamer={true} />)
 
       expect(screen.getByText(/reconnect/i)).toBeInTheDocument()
-      expect(screen.queryByText(/end streaming/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/leave stream/i)).not.toBeInTheDocument()
     })
 
     describe('and the reconnect button is clicked', () => {

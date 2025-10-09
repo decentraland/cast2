@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import { Navbar, NavbarPages, Typography } from 'decentraland-ui2'
+import { Typography } from 'decentraland-ui2'
 import { WatcherViewContent } from './WatcherViewContent'
 import { useTranslation } from '../../modules/translation'
 import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
-import { createLiveKitIdentity } from '../../utils/identity'
+import { generateRandomName } from '../../utils/identity'
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
   ControlsArea,
@@ -50,8 +50,9 @@ export function WatcherView() {
         setIsLoadingCredentials(true)
         setError(null)
 
-        // Generate anonymous identity
-        const identity = createLiveKitIdentity(`watcher-${roomId}-${Date.now()}`)
+        // Generate friendly random identity for watchers
+        const identity = generateRandomName()
+        console.log('[WatcherView] Using identity:', identity)
         const liveKitCredentials = await getWatcherToken(roomId, identity)
         setCredentials(liveKitCredentials)
       } catch (error) {
@@ -101,7 +102,6 @@ export function WatcherView() {
   if (error) {
     return (
       <WatcherContainer>
-        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h6">{t('watcher.error_connection')}</Typography>
           <Typography variant="body1">{error}</Typography>
@@ -117,7 +117,6 @@ export function WatcherView() {
   if (!credentials) {
     return (
       <WatcherContainer>
-        <Navbar activePage={NavbarPages.EXTRA} />
         <ErrorContainer>
           <Typography variant="h6">{t('watcher.error_connection')}</Typography>
         </ErrorContainer>
@@ -137,8 +136,6 @@ export function WatcherView() {
 
   return (
     <WatcherContainer>
-      <Navbar activePage={NavbarPages.EXTRA} />
-
       <LiveKitRoom
         token={credentials.token}
         serverUrl={credentials.url}

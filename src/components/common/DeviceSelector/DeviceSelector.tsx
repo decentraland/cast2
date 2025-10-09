@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import CheckIcon from '@mui/icons-material/Check'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import { useDropdownPosition } from '../../../hooks/useDropdownPosition'
 import { DeviceSelectorProps } from './DeviceSelector.types'
 
 export function DeviceSelector({
@@ -14,6 +15,12 @@ export function DeviceSelector({
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const { SelectorButton, SelectorLabel, DropdownList, DropdownItem } = childComponents
+
+  const dropdownPosition = useDropdownPosition({
+    isOpen,
+    containerRef,
+    minWidth: 250
+  })
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,8 +49,15 @@ export function DeviceSelector({
         <KeyboardArrowDownIcon style={{ fontSize: '20px' }} />
       </SelectorButton>
 
-      {isOpen && (
-        <DropdownList>
+      {isOpen && dropdownPosition && (
+        <DropdownList
+          style={{
+            top: `${dropdownPosition.top}px`,
+            ...(dropdownPosition.left !== undefined ? { left: `${dropdownPosition.left}px` } : {}),
+            ...(dropdownPosition.right !== undefined ? { right: `${dropdownPosition.right}px` } : {}),
+            width: `${dropdownPosition.width}px`
+          }}
+        >
           {devices.map(device => (
             <DropdownItem
               key={device.deviceId}

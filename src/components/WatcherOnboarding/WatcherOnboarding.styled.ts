@@ -11,7 +11,7 @@ const OnboardingContainer = styled(Box)({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '100vh',
+  minHeight: '100dvh',
   backgroundImage: `url(${backgroundWatcherImage})`,
   backgroundSize: 'cover',
   backgroundPosition: 'center',
@@ -41,7 +41,13 @@ const OnboardingModal = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: theme.spacing(3)
+  gap: theme.spacing(3),
+  [theme.breakpoints.down('sm')]: {
+    maxHeight: '100dvh',
+    overflowY: 'auto',
+    width: '95%',
+    padding: `${theme.spacing(3)} ${theme.spacing(4)} ${theme.spacing(4)} ${theme.spacing(4)}`
+  }
 }))
 
 const LogoContainer = styled(Box)({
@@ -52,7 +58,6 @@ const LogoContainer = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'linear-gradient(135deg, #FF2D55 0%, #FFBC5B 100%)',
   padding: '4px'
 })
 
@@ -114,36 +119,48 @@ const SelectorButton = styled('button')<{ $isOpen: boolean }>(({ theme, $isOpen 
   fontFamily: 'inherit',
   transition: 'background-color 0.2s ease',
   borderRadius: theme.spacing(0.5),
+  gap: theme.spacing(0.5),
   '&:hover': {
     backgroundColor: 'rgba(0, 0, 0, 0.04)'
   },
   '& svg': {
     color: '#1a1a1a',
     transition: 'transform 0.2s ease',
-    transform: $isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+    transform: $isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+    flexShrink: 0
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: `${theme.spacing(0.5)} ${theme.spacing(0.5)}`,
+    minWidth: 'auto',
+    width: 'auto'
   }
 }))
 
-const SelectorLabel = styled('span')({
+const SelectorLabel = styled('span')(({ theme }) => ({
   flex: 1,
   textAlign: 'left',
   fontSize: '14px',
-  color: '#1a1a1a'
-})
+  color: '#1a1a1a',
+  [theme.breakpoints.down('sm')]: {
+    display: 'none'
+  }
+}))
 
 const DropdownList = styled('div')(({ theme }) => ({
-  position: 'absolute',
-  top: '100%',
-  left: '-50px',
+  position: 'fixed',
   minWidth: '250px',
   marginTop: theme.spacing(0.5),
   background: 'white',
   border: '1px solid #e0e0e0',
   borderRadius: theme.spacing(1),
   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  zIndex: 1000,
+  zIndex: 10001,
   maxHeight: '200px',
-  overflowY: 'auto'
+  overflowY: 'auto',
+  [theme.breakpoints.down('sm')]: {
+    minWidth: '200px',
+    maxWidth: '90vw'
+  }
 }))
 
 const DropdownItem = styled('div')<{ $isSelected: boolean }>(({ theme, $isSelected }) => ({
@@ -210,7 +227,6 @@ const JoiningLogo = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'linear-gradient(135deg, #FF2D55 0%, #FFBC5B 100%)',
   padding: '6px',
   boxShadow: '0 8px 24px rgba(255, 45, 85, 0.4)'
 })

@@ -18,13 +18,16 @@ import {
   ButtonWithMenu,
   ChevronButton,
   CircleButton,
+  CircleEndButton,
   ControlsCenter,
   ControlsContainer,
+  ControlsLeft,
   ControlsRight,
   DeviceMenu,
   DeviceMenuItem,
   EndStreamButton,
   IconButton,
+  MobileIconButton,
   NotificationBadge
 } from './StreamingControls.styled'
 
@@ -238,8 +241,29 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
 
   const totalParticipants = remoteParticipants.length + 1 // Include local
 
+  const handleLeave = () => {
+    room?.disconnect()
+    onLeave?.()
+  }
+
   return (
     <ControlsContainer $hasRightControls={isStreamer}>
+      {/* Mobile Left Controls: Chat + People (visible only on mobile) */}
+      <ControlsLeft>
+        {onToggleChat && (
+          <MobileIconButton onClick={onToggleChat}>
+            <ChatBubbleOutlineIcon />
+          </MobileIconButton>
+        )}
+        {onTogglePeople && (
+          <MobileIconButton onClick={onTogglePeople}>
+            <PeopleIcon />
+            <NotificationBadge>{totalParticipants}</NotificationBadge>
+          </MobileIconButton>
+        )}
+      </ControlsLeft>
+
+      {/* Center Controls: Media controls only */}
       <ControlsCenter>
         {/* Mic Control - Only for streamer */}
         {isStreamer && (
@@ -295,37 +319,39 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
         {isStreamer && (
           <CircleButton onClick={handleScreenShare}>{isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}</CircleButton>
         )}
-
-        {/* End Stream / Leave / Reconnect */}
-        {isDisconnected ? (
-          <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
-        ) : (
-          <EndStreamButton
-            onClick={() => {
-              room?.disconnect()
-              onLeave?.()
-            }}
-            startIcon={<CallEndIcon />}
-          >
-            {isStreamer ? t('streaming_controls.end_streaming') : t('streaming_controls.leave')}
-          </EndStreamButton>
-        )}
       </ControlsCenter>
 
+      {/* Right Controls: Chat + People (desktop) + End/Leave button (both) */}
       <ControlsRight>
-        {/* Chat */}
+        {/* Chat (desktop only) */}
         {onToggleChat && (
           <IconButton onClick={onToggleChat}>
             <ChatBubbleOutlineIcon />
           </IconButton>
         )}
 
-        {/* People */}
+        {/* People (desktop only) */}
         {onTogglePeople && (
           <IconButton onClick={onTogglePeople}>
             <PeopleIcon />
             <NotificationBadge>{totalParticipants}</NotificationBadge>
           </IconButton>
+        )}
+
+        {/* End Stream / Leave / Reconnect */}
+        {isDisconnected ? (
+          <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
+        ) : (
+          <>
+            {/* Desktop button with text */}
+            <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
+              {isStreamer ? t('streaming_controls.leave_stream') : t('streaming_controls.leave')}
+            </EndStreamButton>
+            {/* Mobile button - icon only */}
+            <CircleEndButton onClick={handleLeave}>
+              <CallEndIcon />
+            </CircleEndButton>
+          </>
         )}
       </ControlsRight>
     </ControlsContainer>
