@@ -26,9 +26,17 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
   const [audioOutputId, setAudioOutputId] = useState('')
 
   const handleJoin = () => {
+    if (!canJoin) return
+
     onJoin({
       audioOutputId
     })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleJoin()
+    }
   }
 
   const canJoin = audioOutputId
@@ -49,7 +57,7 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
 
   return (
     <OnboardingContainer>
-      <OnboardingModal>
+      <OnboardingModal onKeyDown={handleKeyDown}>
         <LogoContainer>
           <LogoImage src={logoImage} alt="Decentraland Logo" />
         </LogoContainer>

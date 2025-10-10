@@ -1,12 +1,11 @@
 import { Button, styled } from 'decentraland-ui2'
 
-const ControlsContainer = styled('div', {
-  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
-})<{ $hasRightControls?: boolean }>(({ theme, $hasRightControls }) => ({
+const ControlsContainer = styled('div')(({ theme }) => ({
   width: '100%',
   padding: 20,
+  paddingBottom: 0,
   display: 'flex',
-  justifyContent: $hasRightControls ? 'space-between' : 'center',
+  justifyContent: 'space-between', // Desktop: [media+hangup] <-> [chat+people]
   alignItems: 'center',
   boxSizing: 'border-box',
   gap: 24,
@@ -14,7 +13,7 @@ const ControlsContainer = styled('div', {
     padding: 12,
     gap: 8,
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between' // Mobile: [media] <-> [chat+people] <-> [hangup]
   }
 }))
 
@@ -22,7 +21,7 @@ const ControlsLeft = styled('div')(({ theme }) => ({
   display: 'none',
   [theme.breakpoints.down('sm')]: {
     display: 'flex',
-    gap: 8,
+    gap: 4,
     alignItems: 'center'
   }
 }))
@@ -36,6 +35,15 @@ const ControlsCenter = styled('div')(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     gap: 8,
     flex: 'unset'
+  }
+}))
+
+const DesktopMediaControls = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: 12,
+  alignItems: 'center',
+  [theme.breakpoints.down('sm')]: {
+    display: 'none' // Hide media controls on mobile (they're in ControlsLeft)
   }
 }))
 
@@ -276,6 +284,7 @@ export {
   ControlsContainer,
   ControlsLeft,
   ControlsRight,
+  DesktopMediaControls,
   DeviceMenu,
   DeviceMenuItem,
   EndStreamButton,

@@ -23,6 +23,7 @@ import {
   ControlsContainer,
   ControlsLeft,
   ControlsRight,
+  DesktopMediaControls,
   DeviceMenu,
   DeviceMenuItem,
   EndStreamButton,
@@ -247,24 +248,9 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
   }
 
   return (
-    <ControlsContainer $hasRightControls={isStreamer}>
-      {/* Mobile Left Controls: Chat + People (visible only on mobile) */}
+    <ControlsContainer>
+      {/* Mobile Left Controls: Media controls (visible only on mobile) */}
       <ControlsLeft>
-        {onToggleChat && (
-          <MobileIconButton onClick={onToggleChat}>
-            <ChatBubbleOutlineIcon />
-          </MobileIconButton>
-        )}
-        {onTogglePeople && (
-          <MobileIconButton onClick={onTogglePeople}>
-            <PeopleIcon />
-            <NotificationBadge>{totalParticipants}</NotificationBadge>
-          </MobileIconButton>
-        )}
-      </ControlsLeft>
-
-      {/* Center Controls: Media controls only */}
-      <ControlsCenter>
         {/* Mic Control - Only for streamer */}
         {isStreamer && (
           <ButtonWithMenu>
@@ -319,9 +305,85 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
         {isStreamer && (
           <CircleButton onClick={handleScreenShare}>{isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}</CircleButton>
         )}
+      </ControlsLeft>
+
+      {/* Center Controls: Media controls (desktop) + Chat/People (mobile) */}
+      <ControlsCenter>
+        {/* Media controls - Only for streamer, visible only on desktop */}
+        {isStreamer && (
+          <DesktopMediaControls>
+            <ButtonWithMenu>
+              <CircleButton onClick={handleToggleMic}>{isMicEnabled ? <MicIcon /> : <MicOffIcon />}</CircleButton>
+              {audioDevices.length > 1 && (
+                <ChevronButton onClick={() => setShowAudioMenu(!showAudioMenu)}>
+                  <ExpandMoreIcon />
+                </ChevronButton>
+              )}
+              {showAudioMenu && (
+                <DeviceMenu>
+                  {audioDevices.map(device => (
+                    <DeviceMenuItem
+                      key={device.deviceId}
+                      $active={device.deviceId === selectedAudioDevice}
+                      onClick={() => handleAudioDeviceSelect(device.deviceId)}
+                    >
+                      {device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
+                    </DeviceMenuItem>
+                  ))}
+                </DeviceMenu>
+              )}
+            </ButtonWithMenu>
+
+            <ButtonWithMenu>
+              <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
+              {videoDevices.length > 1 && (
+                <ChevronButton onClick={() => setShowVideoMenu(!showVideoMenu)}>
+                  <ExpandMoreIcon />
+                </ChevronButton>
+              )}
+              {showVideoMenu && (
+                <DeviceMenu>
+                  {videoDevices.map(device => (
+                    <DeviceMenuItem
+                      key={device.deviceId}
+                      $active={device.deviceId === selectedVideoDevice}
+                      onClick={() => handleVideoDeviceSelect(device.deviceId)}
+                    >
+                      {device.label || `Camera ${device.deviceId.slice(0, 5)}`}
+                    </DeviceMenuItem>
+                  ))}
+                </DeviceMenu>
+              )}
+            </ButtonWithMenu>
+
+            <CircleButton onClick={handleScreenShare}>{isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}</CircleButton>
+
+            {/* Leave/Hang-up button - Desktop only, positioned after media controls */}
+            {isDisconnected ? (
+              <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
+            ) : (
+              <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
+                {isStreamer ? t('streaming_controls.leave_stream') : t('streaming_controls.leave')}
+              </EndStreamButton>
+            )}
+          </DesktopMediaControls>
+        )}
+
+        {/* Chat + People buttons (mobile only) */}
+        {onToggleChat && (
+          <MobileIconButton onClick={onToggleChat}>
+            <ChatBubbleOutlineIcon />
+          </MobileIconButton>
+        )}
+        {onTogglePeople && (
+          <MobileIconButton onClick={onTogglePeople}>
+            <PeopleIcon />
+            <NotificationBadge>{totalParticipants}</NotificationBadge>
+          </MobileIconButton>
+        )}
       </ControlsCenter>
 
-      {/* Right Controls: Chat + People (desktop) + End/Leave button (both) */}
+      {/* Right Controls: Chat + People (desktop) + Hang-up (mobile) */}
       <ControlsRight>
         {/* Chat (desktop only) */}
         {onToggleChat && (
@@ -338,20 +400,11 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
           </IconButton>
         )}
 
-        {/* End Stream / Leave / Reconnect */}
-        {isDisconnected ? (
-          <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
-        ) : (
-          <>
-            {/* Desktop button with text */}
-            <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
-              {isStreamer ? t('streaming_controls.leave_stream') : t('streaming_controls.leave')}
-            </EndStreamButton>
-            {/* Mobile button - icon only */}
-            <CircleEndButton onClick={handleLeave}>
-              <CallEndIcon />
-            </CircleEndButton>
-          </>
+        {/* Hang-up button (mobile only - icon) */}
+        {!isDisconnected && (
+          <CircleEndButton onClick={handleLeave}>
+            <CallEndIcon />
+          </CircleEndButton>
         )}
       </ControlsRight>
     </ControlsContainer>

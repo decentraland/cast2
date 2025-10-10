@@ -88,6 +88,7 @@
     "streamer_message": "打开您的摄像头或共享屏幕，以便观众看到您的内容",
     "streamer_action": "点击下方的摄像头或共享屏幕开始分享",
     "streamer_disconnected": "您已断开连接。点击下方的重新连接以再次开始直播",
+    "camera_initializing": "摄像头初始化中... 请稍候",
     "watcher_title": "等待直播",
     "watcher_message": "直播即将开始。请等待主播准备就绪。",
     "no_video_streams": "无视频流",
@@ -125,5 +126,9 @@
   },
   "participant_grid": {
     "more_participants": "更多"
+  },
+  "error_modal": {
+    "title": "重新加入直播室失败",
+    "message": "请使用从Admin Smart Item发送的链接重新加入直播。"
   }
 }

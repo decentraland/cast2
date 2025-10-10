@@ -23,7 +23,6 @@ const ViewContainer = styled('div')(({ theme }) => ({
   flexDirection: 'column',
   minHeight: '100dvh',
   background: 'linear-gradient(247deg, #210A35 0%, #000 50%, #210A35 100%)',
-  paddingTop: 60,
   [theme.breakpoints.down('sm')]: {
     paddingTop: 0
   }
@@ -32,7 +31,7 @@ const ViewContainer = styled('div')(({ theme }) => ({
 const ViewLayout = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  height: 'calc(100dvh - 60px)',
+  height: '100dvh',
   width: '100%',
   position: 'relative',
   overflow: 'hidden',
@@ -111,13 +110,15 @@ const Sidebar = styled('div')<{ $isOpen: boolean; $isClosing?: boolean }>(({ the
     },
     [theme.breakpoints.down('sm')]: {
       position: 'fixed',
-      top: 60,
+      top: 0,
       left: 0,
       right: 0,
       width: '100%',
-      height: $isOpen ? '40vh' : '0',
-      margin: 8,
+      height: $isOpen ? '100dvh' : '0',
+      margin: 0,
       padding: 16,
+      paddingBottom: 80,
+      borderRadius: 0,
       zIndex: 100
     }
   }

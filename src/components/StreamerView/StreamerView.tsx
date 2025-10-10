@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import { Typography } from 'decentraland-ui2'
 import { StreamerViewContent } from './StreamerViewContent'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
@@ -12,7 +11,6 @@ import { clearStreamerToken, getStreamerToken as getStoredToken, saveStreamerTok
 import { ChatPanel } from '../ChatPanel/ChatPanel'
 import {
   ControlsArea,
-  ErrorContainer,
   MainContent,
   Sidebar,
   ViewContainer as StreamerContainer,
@@ -20,6 +18,7 @@ import {
   VideoArea,
   VideoContainer
 } from '../CommonView/CommonView.styled'
+import { ErrorModal } from '../ErrorModal'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamerOnboarding } from '../StreamerOnboarding/StreamerOnboarding'
 import { OnboardingConfig } from '../StreamerOnboarding/StreamerOnboarding.types'
@@ -121,15 +120,13 @@ export function StreamerView() {
 
   if (error) {
     return (
-      <StreamerContainer>
-        <ErrorContainer>
-          <Typography variant="h5" color="error">
-            {t('streamer.error_connection')}
-          </Typography>
-          <Typography variant="body1">{error}</Typography>
-          <button onClick={() => navigate('/')}>{t('not_found.go_home')}</button>
-        </ErrorContainer>
-      </StreamerContainer>
+      <ErrorModal
+        title={t('error_modal.title')}
+        message={t('error_modal.message')}
+        onExit={() => {
+          /* No action for now */
+        }}
+      />
     )
   }
 
@@ -139,13 +136,13 @@ export function StreamerView() {
 
   if (!credentials) {
     return (
-      <StreamerContainer>
-        <ErrorContainer>
-          <Typography variant="h5" color="error">
-            {t('streamer.error_no_credentials')}
-          </Typography>
-        </ErrorContainer>
-      </StreamerContainer>
+      <ErrorModal
+        title={t('error_modal.title')}
+        message={t('error_modal.message')}
+        onExit={() => {
+          /* No action for now */
+        }}
+      />
     )
   }
 
@@ -161,14 +158,14 @@ export function StreamerView() {
         audio={
           userConfig?.audioInputId
             ? {
-                deviceId: userConfig.audioInputId
+                deviceId: { exact: userConfig.audioInputId }
               }
             : false
         }
         video={
           userConfig?.videoDeviceId
             ? {
-                deviceId: userConfig.videoDeviceId
+                deviceId: { exact: userConfig.videoDeviceId }
               }
             : false
         }

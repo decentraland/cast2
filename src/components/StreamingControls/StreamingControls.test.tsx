@@ -114,8 +114,8 @@ describe('StreamingControls', () => {
         it('should enable the microphone', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          // Find mic button by MicOffIcon
-          const micButton = screen.getByTestId('MicOffIcon').closest('button')
+          // Find mic button by MicOffIcon (use getAllByTestId as there are desktop and mobile versions)
+          const micButton = screen.getAllByTestId('MicOffIcon')[0].closest('button')
 
           fireEvent.click(micButton!)
 
@@ -133,8 +133,8 @@ describe('StreamingControls', () => {
         it('should disable the microphone', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          // Find mic button by MicIcon
-          const micButton = screen.getByTestId('MicIcon').closest('button')
+          // Find mic button by MicIcon (use getAllByTestId as there are desktop and mobile versions)
+          const micButton = screen.getAllByTestId('MicIcon')[0].closest('button')
 
           fireEvent.click(micButton!)
 
@@ -154,8 +154,8 @@ describe('StreamingControls', () => {
         it('should enable the camera', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          // Find camera button by VideocamOffIcon
-          const camButton = screen.getByTestId('VideocamOffIcon').closest('button')
+          // Find camera button by VideocamOffIcon (use getAllByTestId as there are desktop and mobile versions)
+          const camButton = screen.getAllByTestId('VideocamOffIcon')[0].closest('button')
 
           fireEvent.click(camButton!)
 
@@ -173,8 +173,8 @@ describe('StreamingControls', () => {
         it('should disable the camera', async () => {
           renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-          // Find camera button by VideocamIcon
-          const camButton = screen.getByTestId('VideocamIcon').closest('button')
+          // Find camera button by VideocamIcon (use getAllByTestId as there are desktop and mobile versions)
+          const camButton = screen.getAllByTestId('VideocamIcon')[0].closest('button')
 
           fireEvent.click(camButton!)
 
@@ -189,8 +189,8 @@ describe('StreamingControls', () => {
       it('should enable screen sharing', async () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-        // Find screen share button by ScreenShareIcon
-        const screenShareButton = screen.getByTestId('ScreenShareIcon').closest('button')
+        // Find screen share button by ScreenShareIcon (use getAllByTestId as there are desktop and mobile versions)
+        const screenShareButton = screen.getAllByTestId('ScreenShareIcon')[0].closest('button')
 
         fireEvent.click(screenShareButton!)
 
@@ -255,8 +255,8 @@ describe('StreamingControls', () => {
     it('should only render leave button', () => {
       renderWithProviders(<StreamingControls isStreamer={false} />)
 
-      // Both desktop and mobile leave buttons should be rendered
-      expect(screen.getByText(/leave/i)).toBeInTheDocument()
+      // Watcher mode should render the leave button (by icon, since there's no text in mobile mode)
+      expect(screen.getByTestId('CallEndIcon')).toBeInTheDocument()
 
       // Watcher mode should NOT show mic/camera/screen share controls
       expect(screen.queryByTestId('MicIcon')).not.toBeInTheDocument()
@@ -269,9 +269,9 @@ describe('StreamingControls', () => {
     describe('and the leave button is clicked', () => {
       it('should disconnect from the room', () => {
         renderWithProviders(<StreamingControls isStreamer={false} />)
-        const leaveButton = screen.getByText(/leave/i)
+        const leaveButton = screen.getByTestId('CallEndIcon').closest('button')
 
-        fireEvent.click(leaveButton)
+        fireEvent.click(leaveButton!)
         expect(mockDisconnect).toHaveBeenCalled()
       })
     })

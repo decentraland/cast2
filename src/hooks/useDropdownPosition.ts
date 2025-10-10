@@ -34,11 +34,12 @@ export function useDropdownPosition({ isOpen, containerRef, minWidth = 250 }: Us
     let calculatedPosition: DropdownPosition
 
     if (isMobile && wouldOverflowRight) {
-      // On mobile, align to right edge of viewport with padding
+      // On mobile, align dropdown to the right edge of the button
+      // This ensures it opens towards the left (inward) instead of overflowing right
       calculatedPosition = {
         top: rect.bottom + 4,
-        right: 16,
-        width: Math.min(dropdownWidth, viewportWidth - 32)
+        right: viewportWidth - rect.right,
+        width: Math.min(dropdownWidth, rect.right - 16)
       }
     } else {
       // Normal positioning (left-aligned)

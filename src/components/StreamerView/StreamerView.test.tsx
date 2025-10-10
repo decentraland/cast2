@@ -139,7 +139,7 @@ describe('StreamerView - Token Management', () => {
         mockLocalStorage.getStreamerToken.mockReturnValue(null)
       })
 
-      it('should display an error message with translated error_no_token', async () => {
+      it('should display an error modal', async () => {
         render(
           <MemoryRouter initialEntries={['/cast/s/streaming']}>
             <Routes>
@@ -150,8 +150,8 @@ describe('StreamerView - Token Management', () => {
         )
 
         await waitFor(() => {
-          expect(screen.getByText('streamer.error_connection')).toBeInTheDocument()
-          expect(screen.getByText('streamer.error_no_token')).toBeInTheDocument()
+          expect(screen.getByText('error_modal.title')).toBeInTheDocument()
+          expect(screen.getByText('error_modal.message')).toBeInTheDocument()
         })
       })
 

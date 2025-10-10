@@ -15,8 +15,8 @@ const CounterContainer = styled('div')(({ theme }) => ({
   left: 20,
   zIndex: 15,
   [theme.breakpoints.down('sm')]: {
-    top: 10,
-    left: 10
+    top: 16,
+    left: 16
   }
 }))
 
