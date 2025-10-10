@@ -1,6 +1,9 @@
 interface LiveKitCredentials {
   token: string
   url: string
+  identity: string
+  roomId: string
+  roomName?: string
 }
 
 interface LiveKitContextValue {

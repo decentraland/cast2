@@ -46,6 +46,8 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
   }, [])
 
   const handleJoin = () => {
+    if (!canJoin) return
+
     // Save device settings for next time
     saveDeviceSettings({
       audioInputId,
@@ -59,6 +61,12 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
       audioOutputId,
       videoDeviceId
     })
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleJoin()
+    }
   }
 
   const canJoin = audioInputId && audioOutputId && videoDeviceId
@@ -79,7 +87,7 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
 
   return (
     <OnboardingContainer>
-      <OnboardingModal>
+      <OnboardingModal onKeyDown={handleKeyDown}>
         <LogoContainer>
           <LogoImage src={logoImage} alt="Decentraland" />
         </LogoContainer>
@@ -94,6 +102,7 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
           onChange={e => setDisplayName(e.target.value)}
           variant="outlined"
           size="small"
+          autoFocus
         />
 
         <DeviceSelectorsContainer>

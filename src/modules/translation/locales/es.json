@@ -88,6 +88,7 @@
     "streamer_message": "Activa tu cámara o comparte tu pantalla para que los espectadores puedan ver tu contenido",
     "streamer_action": "Comienza a compartir haciendo clic en Cámara o Compartir Pantalla abajo",
     "streamer_disconnected": "Te has desconectado. Haz clic en 'Reconectar' abajo para volver a transmitir",
+    "camera_initializing": "Iniciando cámara... Por favor espera",
     "watcher_title": "Esperando Transmisión",
     "watcher_message": "La transmisión comenzará en breve. Por favor espera mientras el transmisor se prepara.",
     "no_video_streams": "Sin transmisiones de video",
@@ -125,5 +126,9 @@
   },
   "participant_grid": {
     "more_participants": "Más"
+  },
+  "error_modal": {
+    "title": "Error al reingresar a la sala de transmisión",
+    "message": "Por favor usa el enlace enviado desde el Admin Smart Item para reingresar a la transmisión."
   }
 }

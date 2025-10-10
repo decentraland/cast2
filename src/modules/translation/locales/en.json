@@ -88,6 +88,7 @@
     "streamer_message": "Turn on your camera or share your screen so viewers can see your content",
     "streamer_action": "Start sharing by clicking Camera or Share Screen below",
     "streamer_disconnected": "You've been disconnected. Click 'Reconnect' below to start streaming again",
+    "camera_initializing": "Camera initializing... Please wait",
     "watcher_title": "Waiting for Stream",
     "watcher_message": "The stream will start shortly. Please wait while the streamer gets ready.",
     "no_video_streams": "No video streams",
@@ -125,5 +126,9 @@
   },
   "participant_grid": {
     "more_participants": "More"
+  },
+  "error_modal": {
+    "title": "Failed to rejoin to streaming room",
+    "message": "Please use the link sent from the Admin Smart Item to rejoin the streaming."
   }
 }

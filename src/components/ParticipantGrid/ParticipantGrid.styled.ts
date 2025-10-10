@@ -2,7 +2,7 @@ import { styled } from 'decentraland-ui2'
 
 const ParticipantGridContainer = styled('div', {
   shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
-})<{ $participantCount: number; $expandedView: boolean }>(({ $participantCount, $expandedView }) => {
+})<{ $participantCount: number; $expandedView: boolean }>(({ theme, $participantCount, $expandedView }) => {
   let display = 'grid'
   let gridStyles = {}
 
@@ -20,36 +20,75 @@ const ParticipantGridContainer = styled('div', {
   } else if ($participantCount === 2) {
     gridStyles = {
       gridTemplateColumns: '1fr 1fr',
-      gap: 16
+      gap: 16,
+      // Mobile: horizontal layout for 2 participants (square tiles, not full height)
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        '& > *': {
+          aspectRatio: '1 / 1',
+          maxHeight: 'calc((100vw - 16px) / 2)' // Square based on width
+        }
+      }
     }
   } else if ($participantCount === 3) {
     gridStyles = {
       gridTemplateColumns: '1fr 1fr 1fr',
-      gap: 16
+      gap: 16,
+      // Mobile: 1 large on top, 2 small below
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: '1fr 1fr',
+        gridTemplateRows: 'auto auto',
+        gap: 8,
+        '& > *:nth-of-type(1)': {
+          gridColumn: '1 / -1',
+          aspectRatio: 'auto'
+        },
+        '& > *:nth-of-type(2), & > *:nth-of-type(3)': {
+          aspectRatio: '1 / 1'
+        }
+      }
     }
   } else if ($participantCount === 4) {
     gridStyles = {
       gridTemplateColumns: '1fr 1fr',
       gridTemplateRows: '1fr 1fr',
-      gap: 16
+      gap: 16,
+      [theme.breakpoints.down('sm')]: {
+        gap: 8
+      }
     }
   } else if ($participantCount <= 6) {
     gridStyles = {
       gridTemplateColumns: 'repeat(3, 1fr)',
       gridTemplateRows: 'repeat(2, 1fr)',
-      gap: 16
+      gap: 16,
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8
+      }
     }
   } else if ($participantCount <= 9) {
     gridStyles = {
       gridTemplateColumns: 'repeat(3, 1fr)',
       gridTemplateRows: 'repeat(3, 1fr)',
-      gap: 16
+      gap: 16,
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8
+      }
     }
   } else {
     gridStyles = {
       gridTemplateColumns: 'repeat(3, 1fr)',
       gridTemplateRows: 'repeat(3, 1fr)',
-      gap: 16
+      gap: 16,
+      [theme.breakpoints.down('sm')]: {
+        gridTemplateColumns: '1fr 1fr',
+        gap: 8
+      }
     }
   }
 
@@ -59,6 +98,9 @@ const ParticipantGridContainer = styled('div', {
     position: 'relative',
     display,
     padding: 8,
+    [theme.breakpoints.down('sm')]: {
+      padding: 4
+    },
     ...gridStyles
   }
 })
@@ -175,17 +217,16 @@ const FloatingVideoName = styled('div')({
   position: 'absolute',
   bottom: 8,
   left: 8,
-  right: 8,
-  background: 'rgba(0, 0, 0, 0.8)',
   color: 'white',
   padding: '6px 10px',
-  borderRadius: 6,
   fontSize: 12,
-  fontWeight: 600,
-  textAlign: 'center',
+  fontWeight: 700,
+  textAlign: 'left',
+  textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
+  maxWidth: 'calc(100% - 16px)',
   zIndex: 11
 })
 
@@ -239,17 +280,16 @@ const ThumbnailName = styled('div')({
   position: 'absolute',
   bottom: 4,
   left: 4,
-  right: 4,
-  background: 'rgba(0, 0, 0, 0.8)',
   color: 'white',
   padding: '4px 6px',
-  borderRadius: 4,
   fontSize: 10,
-  fontWeight: 600,
-  textAlign: 'center',
+  fontWeight: 700,
+  textAlign: 'left',
+  textShadow: '0 2px 6px rgba(0, 0, 0, 0.8)',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
-  textOverflow: 'ellipsis'
+  textOverflow: 'ellipsis',
+  maxWidth: 'calc(100% - 8px)'
 })
 
 const SpeakingIndicatorWrapper = styled('div')({
@@ -317,12 +357,8 @@ const ParticipantName = styled('div')({
   left: 12,
   color: 'white',
   fontSize: 14,
-  fontWeight: 500,
-  textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
-  background: 'rgba(0, 0, 0, 0.7)',
-  backdropFilter: 'blur(10px)',
-  padding: '6px 12px',
-  borderRadius: 8,
+  fontWeight: 700,
+  textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
   zIndex: 2
 })
 
