@@ -1,31 +1,35 @@
 import { useCallback, useMemo, useState } from 'react'
 import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } from '@livekit/components-react'
+import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { Track } from 'livekit-client'
+import avatarImage from '../../assets/images/avatar.png'
 import { useTranslation } from '../../modules/translation'
 import { getDisplayName } from '../../utils/displayName'
 import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
 import { ParticipantGridProps } from './ParticipantGrid.types'
 import {
+  AvatarFallback,
   FloatingVideoContainer,
-  FloatingVideoName,
+  LoadingSpinner,
+  LoadingText,
+  MutedIndicator,
   NoParticipants,
   NoParticipantsIcon,
+  OverflowAvatarStack,
   OverflowCard,
   OverflowCount,
-  OverflowLabel,
   ParticipantGridContainer,
   ParticipantName,
   ParticipantTileContainer,
   SpeakingIndicatorWrapper,
   ThumbnailGrid,
   ThumbnailItem,
-  ThumbnailName,
   ThumbnailOverflowCard
 } from './ParticipantGrid.styled'
 
 const MAX_VISIBLE_PARTICIPANTS = 9
-const MAX_THUMBNAILS = 4
+const MAX_THUMBNAILS = 1
 
 function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProps) {
   const { t } = useTranslation()
@@ -98,7 +102,9 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     const otherTracks = finalTracks.filter(t => t.participant.sid + t.source !== expandedTrackSid)
 
     // Check if we have more thumbnails than MAX_THUMBNAILS
-    const hasThumbnailOverflow = otherTracks.length > MAX_THUMBNAILS
+    // Only show overflow card if there are at least 2 more participants (+2 minimum)
+    const hasEnoughForOverflow = otherTracks.length > MAX_THUMBNAILS + 1
+    const hasThumbnailOverflow = hasEnoughForOverflow
     const visibleThumbnails = hasThumbnailOverflow ? otherTracks.slice(0, MAX_THUMBNAILS) : otherTracks
     const thumbnailOverflowCount = otherTracks.length - visibleThumbnails.length
 
@@ -114,28 +120,31 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
         {/* Show other tracks in vertical thumbnail grid */}
         {otherTracks.length === 1 ? (
           // Single floating video
-          <FloatingVideoContainer
-            onClick={() => handleTileClick(otherTracks[0].participant.sid + otherTracks[0].source)}
-            $mirror={otherTracks[0].participant.isLocal && otherTracks[0].source === Track.Source.Camera}
-          >
-            <VideoTrack trackRef={otherTracks[0]} />
-            <FloatingVideoName>{getDisplayName(otherTracks[0].participant)}</FloatingVideoName>
+          <FloatingVideoContainer>
+            <ParticipantTile
+              trackRef={otherTracks[0]}
+              isFullscreen={false}
+              onClick={() => handleTileClick(otherTracks[0].participant.sid + otherTracks[0].source)}
+            />
           </FloatingVideoContainer>
         ) : (
           // Multiple thumbnails in vertical grid
           <ThumbnailGrid>
             {visibleThumbnails.map(trackRef => (
-              <ThumbnailItem
-                key={trackRef.participant.sid + trackRef.source}
-                onClick={() => handleTileClick(trackRef.participant.sid + trackRef.source)}
-                $mirror={trackRef.participant.isLocal && trackRef.source === Track.Source.Camera}
-              >
-                <VideoTrack trackRef={trackRef} />
-                <ThumbnailName>{getDisplayName(trackRef.participant)}</ThumbnailName>
+              <ThumbnailItem key={trackRef.participant.sid + trackRef.source}>
+                <ParticipantTile
+                  trackRef={trackRef}
+                  isFullscreen={false}
+                  onClick={() => handleTileClick(trackRef.participant.sid + trackRef.source)}
+                />
               </ThumbnailItem>
             ))}
             {hasThumbnailOverflow && (
               <ThumbnailOverflowCard onClick={handleShowAll}>
+                <OverflowAvatarStack>
+                  <img src={avatarImage} alt="" />
+                  <img src={avatarImage} alt="" />
+                </OverflowAvatarStack>
                 <OverflowCount>+{thumbnailOverflowCount}</OverflowCount>
               </ThumbnailOverflowCard>
             )}
@@ -160,8 +169,11 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
       ))}
       {hasOverflow && (
         <OverflowCard onClick={handleShowAll}>
+          <OverflowAvatarStack>
+            <img src={avatarImage} alt="" />
+            <img src={avatarImage} alt="" />
+          </OverflowAvatarStack>
           <OverflowCount>+{overflowCount}</OverflowCount>
-          <OverflowLabel>{t('participant_grid.more_participants')}</OverflowLabel>
         </OverflowCard>
       )}
     </ParticipantGridContainer>
@@ -177,23 +189,43 @@ function ParticipantTile({
   isFullscreen?: boolean
   onClick?: () => void
 }) {
-  const { participant, source } = trackRef
-  const isSpeaking = useIsSpeaking(participant)
+  const { participant, source, publication } = trackRef
+  const isScreenShare = source === Track.Source.ScreenShare
 
-  // Get audio track for speaking indicator
+  // Only apply speaking indicator to camera, not screen share
+  const isSpeaking = useIsSpeaking(participant) && !isScreenShare
+
+  // Get audio track for speaking indicator and muted state
   const audioTrackRefs = useTracks([Track.Source.Microphone], {
     updateOnlyOn: [],
     onlySubscribed: false
   })
   const participantAudioTrack = audioTrackRefs.find(track => track.participant.identity === participant.identity)
+  const isMuted = participantAudioTrack ? participantAudioTrack.publication?.isMuted === true : true
 
   // Mirror the video if it's the local participant's camera (not screen share)
   const shouldMirror = participant.isLocal && source === Track.Source.Camera
 
+  // Check if video track is actually publishing (not muted/disabled)
+  // For camera tracks, also check if mediaStream is active (handles when camera is turned off)
+  const hasActiveVideo =
+    publication &&
+    publication.track &&
+    !publication.isMuted &&
+    (isScreenShare || !publication.track.mediaStream || publication.track.mediaStream.active)
+
+  // Check if track is initializing (readyState is 'live' when ready)
+  // Note: readyState might not be available on all track types
+  const isTrackInitializing =
+    publication && publication.track && 'readyState' in publication.track && publication.track.readyState !== 'live' && !publication.isMuted
+
   // Only render if publication exists
-  if (!trackRef.publication) {
+  if (!publication) {
     return null
   }
+
+  // Get display name with " - screen" suffix for screen share
+  const displayName = isScreenShare ? `${getDisplayName(participant)} - screen` : getDisplayName(participant)
 
   return (
     <ParticipantTileContainer
@@ -203,11 +235,32 @@ function ParticipantTile({
       $mirror={shouldMirror}
       onClick={onClick}
     >
-      <VideoTrack trackRef={trackRef} />
-      <SpeakingIndicatorWrapper>
-        <SpeakingIndicator participant={participant} trackRef={participantAudioTrack} />
-      </SpeakingIndicatorWrapper>
-      <ParticipantName>{getDisplayName(participant)}</ParticipantName>
+      {isTrackInitializing ? (
+        <AvatarFallback>
+          <LoadingSpinner />
+          <LoadingText>Initializing video...</LoadingText>
+        </AvatarFallback>
+      ) : hasActiveVideo ? (
+        <VideoTrack trackRef={trackRef} />
+      ) : (
+        <AvatarFallback>
+          <img src={avatarImage} alt="Avatar" />
+        </AvatarFallback>
+      )}
+
+      {!isScreenShare && (
+        <SpeakingIndicatorWrapper>
+          <SpeakingIndicator participant={participant} trackRef={participantAudioTrack} />
+        </SpeakingIndicatorWrapper>
+      )}
+
+      {isMuted && !isScreenShare && (
+        <MutedIndicator>
+          <MicOffIcon />
+        </MutedIndicator>
+      )}
+
+      <ParticipantName>{displayName}</ParticipantName>
     </ParticipantTileContainer>
   )
 }

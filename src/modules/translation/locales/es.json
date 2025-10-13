@@ -109,7 +109,6 @@
   },
   "status": {
     "muted": "Silenciado",
-    "streamer_muted": "Transmisor Silenciado",
     "speaking": "Hablando",
     "not_speaking": "No está hablando"
   },

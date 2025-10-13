@@ -1,7 +1,7 @@
 import { useRemoteParticipants } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import { WatcherStatusOverlay } from './WatcherStatusOverlay'
 import { useTranslation } from '../../modules/translation'
+import { getDisplayName } from '../../utils/displayName'
 import { EmptyStreamState } from '../LiveKitEnhancements/EmptyStreamState'
 import { LiveStreamCounter } from '../LiveStreamCounter/LiveStreamCounter'
 import { ParticipantGrid } from '../ParticipantGrid/ParticipantGrid'
@@ -50,6 +50,7 @@ export function WatcherViewContent() {
       return false
     }
   })
+  console.log('streamerParticipant', streamerParticipant)
 
   // Always show LiveStreamCounter and grid when there are streamers
   return (
@@ -58,9 +59,12 @@ export function WatcherViewContent() {
       {hasActiveVideo ? (
         <ParticipantGrid localParticipantVisible={false} />
       ) : (
-        <EmptyStreamState type="streamer" message={t('empty_state.streamer_action')} participantName={streamerParticipant?.identity} />
+        <EmptyStreamState
+          type="streamer"
+          message={t('empty_state.streamer_action')}
+          participantName={streamerParticipant ? getDisplayName(streamerParticipant) : undefined}
+        />
       )}
-      <WatcherStatusOverlay />
     </ContentWrapper>
   )
 }

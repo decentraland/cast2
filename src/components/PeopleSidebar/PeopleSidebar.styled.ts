@@ -8,18 +8,24 @@ const SidebarContainer = styled('div')({
   overflow: 'hidden'
 })
 
-const SidebarHeader = styled('div')({
-  padding: '24px 20px',
+const SidebarHeader = styled('div')(({ theme }) => ({
   display: 'flex',
-  justifyContent: 'space-between',
   alignItems: 'center',
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-})
+  justifyContent: 'space-between',
+  padding: 30,
+  flexShrink: 0,
+  [theme.breakpoints.down('sm')]: {
+    padding: 16
+  }
+}))
 
 const SidebarTitle = styled(Typography)(() => ({
   color: 'white',
-  fontSize: 20,
-  fontWeight: 700
+  fontWeight: 500,
+  fontSize: 24,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8
 }))
 
 const CloseButton = styled('button')({
@@ -42,10 +48,10 @@ const CloseButton = styled('button')({
   }
 })
 
-const SidebarContent = styled('div')({
+const SidebarContent = styled('div')(({ theme }) => ({
   flex: 1,
   overflowY: 'auto',
-  padding: 20,
+  padding: '20px 30px',
   display: 'flex',
   flexDirection: 'column',
   gap: 20,
@@ -62,8 +68,11 @@ const SidebarContent = styled('div')({
     '&:hover': {
       background: 'rgba(255, 255, 255, 0.3)'
     }
+  },
+  [theme.breakpoints.down('sm')]: {
+    padding: 12
   }
-})
+}))
 
 const Section = styled('div')({
   display: 'flex',

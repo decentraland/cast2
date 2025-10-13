@@ -128,6 +128,12 @@ const DeviceSelectorRow = styled(Box)(({ theme }) => ({
     color: '#1a1a1a',
     fontSize: '20px',
     flexShrink: 0
+  },
+  [theme.breakpoints.down('sm')]: {
+    justifyContent: 'center',
+    '& svg': {
+      fontSize: '28px'
+    }
   }
 }))
 

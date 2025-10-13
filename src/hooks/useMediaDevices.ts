@@ -75,8 +75,6 @@ function useMediaDevices(options: UseMediaDevicesOptions = {}): UseMediaDevicesR
       const videoIns: MediaDevice[] = []
 
       devices.forEach((device, index) => {
-        console.log('device', device)
-
         // Skip devices without deviceId (browser security restriction when no permissions)
         if (!device.deviceId) {
           console.warn(`[useMediaDevices] Device without ID: ${device.kind}`)
