@@ -109,7 +109,6 @@
   },
   "status": {
     "muted": "Muted",
-    "streamer_muted": "Streamer Muted",
     "speaking": "Speaking",
     "not_speaking": "Not speaking"
   },

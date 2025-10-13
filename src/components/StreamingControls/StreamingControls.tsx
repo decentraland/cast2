@@ -28,7 +28,6 @@ import {
   DeviceMenuItem,
   EndStreamButton,
   IconButton,
-  MobileIconButton,
   NotificationBadge
 } from './StreamingControls.styled'
 
@@ -140,22 +139,58 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
   }
 
   const handleScreenShare = async () => {
-    if (!localParticipant) return
+    if (!localParticipant) {
+      console.error('[StreamingControls] No local participant for screen share')
+      return
+    }
+
+    console.log('[StreamingControls] Screen share toggle requested', {
+      currentState: isScreenSharing,
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
+      userAgent: navigator.userAgent,
+      hasGetDisplayMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
+    })
 
     if (isScreenSharing) {
+      console.log('[StreamingControls] Stopping screen share')
       const screenShareTrack = Array.from(localParticipant.videoTrackPublications.values()).find(
         pub => pub.source === Track.Source.ScreenShare
       )
       if (screenShareTrack) {
         await localParticipant.unpublishTrack(screenShareTrack.track!)
         setIsScreenSharing(false)
+        console.log('[StreamingControls] Screen share stopped successfully')
       }
     } else {
       try {
+        // Check if screen share is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+          console.error('[StreamingControls] Screen share not supported on this device/browser')
+          alert('Screen sharing is not supported on this device or browser')
+          return
+        }
+
+        console.log('[StreamingControls] Starting screen share')
         await localParticipant.setScreenShareEnabled(true)
         setIsScreenSharing(true)
+        console.log('[StreamingControls] Screen share started successfully')
       } catch (error) {
+        console.error('[StreamingControls] Error enabling screen share:', error)
+        console.error('[StreamingControls] Error details:', {
+          name: error instanceof Error ? error.name : 'Unknown',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined
+        })
         setIsScreenSharing(false)
+
+        // Show user-friendly error message
+        if (error instanceof Error) {
+          if (error.name === 'NotAllowedError') {
+            console.log('[StreamingControls] User denied screen share permission')
+          } else if (error.name === 'NotSupportedError') {
+            alert('Screen sharing is not supported on this device')
+          }
+        }
       }
     }
   }
@@ -369,30 +404,30 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
           </DesktopMediaControls>
         )}
 
-        {/* Chat + People buttons (mobile only) */}
-        {onToggleChat && (
-          <MobileIconButton onClick={onToggleChat}>
-            <ChatBubbleOutlineIcon />
-          </MobileIconButton>
-        )}
-        {onTogglePeople && (
-          <MobileIconButton onClick={onTogglePeople}>
-            <PeopleIcon />
-            <NotificationBadge>{totalParticipants}</NotificationBadge>
-          </MobileIconButton>
+        {/* Leave button for watchers (centered) */}
+        {!isStreamer && (
+          <>
+            {isDisconnected ? (
+              <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
+            ) : (
+              <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
+                {t('streaming_controls.leave')}
+              </EndStreamButton>
+            )}
+          </>
         )}
       </ControlsCenter>
 
-      {/* Right Controls: Chat + People (desktop) + Hang-up (mobile) */}
+      {/* Right Controls: Chat + People buttons */}
       <ControlsRight>
-        {/* Chat (desktop only) */}
+        {/* Chat button (desktop only) */}
         {onToggleChat && (
           <IconButton onClick={onToggleChat}>
             <ChatBubbleOutlineIcon />
           </IconButton>
         )}
 
-        {/* People (desktop only) */}
+        {/* People button (desktop only) */}
         {onTogglePeople && (
           <IconButton onClick={onTogglePeople}>
             <PeopleIcon />
@@ -400,8 +435,12 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
           </IconButton>
         )}
 
-        {/* Hang-up button (mobile only - icon) */}
-        {!isDisconnected && (
+        {/* Leave button (mobile only - circular) */}
+        {isDisconnected ? (
+          <CircleEndButton onClick={handleReconnect}>
+            <CallEndIcon />
+          </CircleEndButton>
+        ) : (
           <CircleEndButton onClick={handleLeave}>
             <CallEndIcon />
           </CircleEndButton>

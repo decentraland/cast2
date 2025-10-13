@@ -1,4 +1,4 @@
-import { styled } from 'decentraland-ui2'
+import { keyframes, styled } from 'decentraland-ui2'
 
 const ParticipantGridContainer = styled('div', {
   shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
@@ -154,11 +154,6 @@ const ParticipantTileContainer = styled('div', {
     borderRadius: 16,
     transition: 'border 0.3s ease, transform 0.2s ease',
     cursor: $clickable ? 'pointer' : 'default',
-    ...($clickable && {
-      '&:hover': {
-        transform: 'scale(1.02)'
-      }
-    }),
     '& .lk-participant-tile': {
       background: 'transparent'
     },
@@ -178,33 +173,13 @@ const ParticipantTileContainer = styled('div', {
   }
 })
 
-const FloatingVideoContainer = styled('div', {
-  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
-})<{ $mirror?: boolean }>(({ theme, $mirror }) => ({
+const FloatingVideoContainer = styled('div')(({ theme }) => ({
   position: 'absolute',
   bottom: 20,
   right: 20,
   width: 280,
   height: 160,
-  borderRadius: 12,
-  overflow: 'hidden',
-  border: '2px solid rgba(255, 255, 255, 0.3)',
-  background: '#000',
-  cursor: 'pointer',
   zIndex: 10,
-  transition: 'transform 0.2s ease, border-color 0.2s ease',
-  '&:hover': {
-    transform: 'scale(1.05)',
-    borderColor: 'rgba(255, 255, 255, 0.5)'
-  },
-  '& video': {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    ...($mirror && {
-      transform: 'scaleX(-1)'
-    })
-  },
   [theme.breakpoints.down('sm')]: {
     width: 180,
     height: 100,
@@ -212,23 +187,6 @@ const FloatingVideoContainer = styled('div', {
     right: 10
   }
 }))
-
-const FloatingVideoName = styled('div')({
-  position: 'absolute',
-  bottom: 8,
-  left: 8,
-  color: 'white',
-  padding: '6px 10px',
-  fontSize: 12,
-  fontWeight: 700,
-  textAlign: 'left',
-  textShadow: '0 2px 8px rgba(0, 0, 0, 0.8)',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  maxWidth: 'calc(100% - 16px)',
-  zIndex: 11
-})
 
 const ThumbnailGrid = styled('div')(({ theme }) => ({
   position: 'absolute',
@@ -246,51 +204,14 @@ const ThumbnailGrid = styled('div')(({ theme }) => ({
   }
 }))
 
-const ThumbnailItem = styled('div', {
-  shouldForwardProp: prop => typeof prop === 'string' && !prop.startsWith('$')
-})<{ $mirror?: boolean }>(({ theme, $mirror }) => ({
+const ThumbnailItem = styled('div')(({ theme }) => ({
   width: 180,
   aspectRatio: '16/9',
-  borderRadius: 8,
-  overflow: 'hidden',
-  border: '2px solid rgba(255, 255, 255, 0.3)',
-  background: '#000',
-  cursor: 'pointer',
-  position: 'relative',
-  transition: 'transform 0.2s ease, border-color 0.2s ease',
   flexShrink: 0,
-  '&:hover': {
-    transform: 'scale(1.05)',
-    borderColor: 'rgba(255, 255, 255, 0.5)'
-  },
-  '& video': {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    ...($mirror && {
-      transform: 'scaleX(-1)'
-    })
-  },
   [theme.breakpoints.down('sm')]: {
     width: 120
   }
 }))
-
-const ThumbnailName = styled('div')({
-  position: 'absolute',
-  bottom: 4,
-  left: 4,
-  color: 'white',
-  padding: '4px 6px',
-  fontSize: 10,
-  fontWeight: 700,
-  textAlign: 'left',
-  textShadow: '0 2px 6px rgba(0, 0, 0, 0.8)',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  maxWidth: 'calc(100% - 8px)'
-})
 
 const SpeakingIndicatorWrapper = styled('div')({
   position: 'absolute',
@@ -315,7 +236,8 @@ const OverflowCard = styled('div')({
   justifyContent: 'center',
   cursor: 'pointer',
   transition: 'all 0.3s ease',
-  overflow: 'hidden',
+  overflow: 'visible',
+  gap: 16,
   '&:hover': {
     transform: 'scale(1.05)',
     borderColor: 'rgba(255, 255, 255, 0.5)',
@@ -333,22 +255,40 @@ const OverflowCard = styled('div')({
   }
 })
 
-const OverflowCount = styled('div')({
-  fontSize: 72,
-  fontWeight: 700,
-  color: '#fff',
-  textShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
-  marginBottom: 8,
-  zIndex: 1
+const OverflowAvatarStack = styled('div')({
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 120,
+  height: 60,
+  marginTop: 16,
+  zIndex: 1,
+  '& img': {
+    position: 'absolute',
+    width: 50,
+    height: 50,
+    objectFit: 'contain',
+    opacity: 0.8,
+    '&:first-of-type': {
+      left: 15,
+      zIndex: 1
+    },
+    '&:last-of-type': {
+      right: 15,
+      zIndex: 2
+    }
+  }
 })
 
-const OverflowLabel = styled('div')({
-  fontSize: 16,
-  fontWeight: 600,
-  color: 'rgba(255, 255, 255, 0.9)',
-  textTransform: 'uppercase',
-  letterSpacing: 1,
-  zIndex: 1
+const OverflowCount = styled('div')({
+  fontSize: 12,
+  fontWeight: 400,
+  lineHeight: '100%',
+  letterSpacing: 0,
+  color: '#fff',
+  marginTop: 8,
+  zIndex: 2
 })
 
 const ParticipantName = styled('div')({
@@ -364,42 +304,114 @@ const ParticipantName = styled('div')({
 
 const ThumbnailOverflowCard = styled('div')(({ theme }) => ({
   width: 180,
-  aspectRatio: '16/9',
+  height: 124,
   borderRadius: 8,
   overflow: 'hidden',
   border: '2px solid rgba(255, 255, 255, 0.2)',
-  background: 'linear-gradient(135deg, rgba(30, 144, 255, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+  background: 'linear-gradient(180deg, #66497F 0%, #3F2357 100%)',
   cursor: 'pointer',
   position: 'relative',
-  transition: 'transform 0.2s ease, border-color 0.2s ease, background 0.2s ease',
+  transition: 'transform 0.2s ease, border-color 0.2s ease',
   flexShrink: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 0,
+  paddingBottom: 12,
+  '&:hover': {
+    transform: 'scale(1.05)',
+    borderColor: 'rgba(255, 255, 255, 0.5)'
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: 120,
+    height: 'auto',
+    aspectRatio: '16/9'
+  }
+}))
+
+const AvatarFallback = styled('div')({
+  width: '100%',
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'linear-gradient(135deg, rgba(30, 144, 255, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%)',
+  gap: 12,
+  '& img': {
+    width: 100,
+    height: 100,
+    objectFit: 'contain',
+    opacity: 0.9
+  }
+})
+
+const spin = keyframes({
+  '0%': { transform: 'rotate(0deg)' },
+  '100%': { transform: 'rotate(360deg)' }
+})
+
+const LoadingSpinner = styled('div')({
+  width: 48,
+  height: 48,
+  border: '4px solid rgba(255, 255, 255, 0.2)',
+  borderTop: '4px solid rgba(30, 144, 255, 0.8)',
+  borderRadius: '50%',
+  animation: `${spin} 1s linear infinite`
+})
+
+const LoadingText = styled('div')({
+  color: 'rgba(255, 255, 255, 0.8)',
+  fontSize: 14,
+  fontWeight: 500,
+  textAlign: 'center'
+})
+
+const MutedIndicator = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  bottom: 12,
+  right: 12,
+  width: 32,
+  height: 32,
+  borderRadius: '50%',
+  background: 'rgba(0, 0, 0, 0.7)',
+  backdropFilter: 'blur(10px)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  '&:hover': {
-    transform: 'scale(1.05)',
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-    background: 'linear-gradient(135deg, rgba(30, 144, 255, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)'
+  color: 'white',
+  zIndex: 3,
+  '& svg': {
+    fontSize: 18
   },
   [theme.breakpoints.down('sm')]: {
-    width: 120
+    width: 28,
+    height: 28,
+    bottom: 8,
+    right: 8,
+    '& svg': {
+      fontSize: 16
+    }
   }
 }))
 
 export {
+  AvatarFallback,
   FloatingVideoContainer,
-  FloatingVideoName,
+  LoadingSpinner,
+  LoadingText,
+  MutedIndicator,
   NoParticipants,
+  NoParticipantsIcon,
+  OverflowAvatarStack,
   OverflowCard,
   OverflowCount,
-  OverflowLabel,
-  NoParticipantsIcon,
   ParticipantGridContainer,
   ParticipantName,
   ParticipantTileContainer,
   SpeakingIndicatorWrapper,
   ThumbnailGrid,
   ThumbnailItem,
-  ThumbnailName,
   ThumbnailOverflowCard
 }

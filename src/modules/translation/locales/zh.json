@@ -109,7 +109,6 @@
   },
   "status": {
     "muted": "已静音",
-    "streamer_muted": "主播已静音",
     "speaking": "说话中",
     "not_speaking": "未说话"
   },

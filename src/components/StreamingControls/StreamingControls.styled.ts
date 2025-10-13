@@ -31,10 +31,11 @@ const ControlsCenter = styled('div')(({ theme }) => ({
   gap: 12,
   alignItems: 'center',
   justifyContent: 'center',
-  flex: 1,
+  position: 'absolute',
+  left: '50%',
+  transform: 'translateX(-50%)',
   [theme.breakpoints.down('sm')]: {
-    gap: 8,
-    flex: 'unset'
+    gap: 8
   }
 }))
 
@@ -51,6 +52,7 @@ const ControlsRight = styled('div')(({ theme }) => ({
   display: 'flex',
   gap: 16,
   alignItems: 'center',
+  marginLeft: 'auto',
   [theme.breakpoints.down('sm')]: {
     gap: 8
   }
@@ -251,30 +253,6 @@ const CircleEndButton = styled('button')(({ theme }) => ({
   }
 }))
 
-const MobileIconButton = styled('button')(({ theme }) => ({
-  display: 'none',
-  [theme.breakpoints.down('sm')]: {
-    position: 'relative',
-    width: 40,
-    height: 40,
-    borderRadius: '50%',
-    background: 'transparent',
-    border: 'none',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    transition: 'background 0.2s ease',
-    '&:hover': {
-      background: 'rgba(255, 255, 255, 0.1)'
-    },
-    '& svg': {
-      fontSize: 20
-    }
-  }
-}))
-
 export {
   ButtonWithMenu,
   ChevronButton,
@@ -289,6 +267,5 @@ export {
   DeviceMenuItem,
   EndStreamButton,
   IconButton,
-  MobileIconButton,
   NotificationBadge
 }

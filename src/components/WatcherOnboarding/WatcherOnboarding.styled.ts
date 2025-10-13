@@ -98,10 +98,16 @@ const DeviceSelectorRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1.5),
   width: '100px',
   position: 'relative',
+  justifyContent: 'center',
   '& svg': {
     color: '#1a1a1a',
     fontSize: '20px',
     flexShrink: 0
+  },
+  [theme.breakpoints.down('sm')]: {
+    '& svg': {
+      fontSize: '28px'
+    }
   }
 }))
 

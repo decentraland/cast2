@@ -50,10 +50,13 @@ describe('ChatPanel', () => {
       expect(screen.getByText(/no.*messages.*yet/i)).toBeInTheDocument()
     })
 
-    it('should show message count as 0', () => {
+    it('should show footer with Decentraland App link', () => {
       renderWithTranslation(<ChatPanel />)
 
-      expect(screen.getByText('0 messages')).toBeInTheDocument()
+      const link = screen.getByRole('link', { name: /decentraland app/i })
+      expect(link).toBeInTheDocument()
+      expect(link).toHaveAttribute('href', 'https://decentraland.org/download')
+      expect(link).toHaveAttribute('target', '_blank')
     })
   })
 
@@ -92,16 +95,17 @@ describe('ChatPanel', () => {
       expect(screen.getByText('Hi Alice!')).toBeInTheDocument()
     })
 
-    it('should show correct message count', () => {
-      renderWithTranslation(<ChatPanel />)
-
-      expect(screen.getByText('2 messages')).toBeInTheDocument()
-    })
-
     it('should not show empty state', () => {
       renderWithTranslation(<ChatPanel />)
 
       expect(screen.queryByText('No messages yet')).not.toBeInTheDocument()
+    })
+
+    it('should show footer with Decentraland App link', () => {
+      renderWithTranslation(<ChatPanel />)
+
+      const link = screen.getByRole('link', { name: /decentraland app/i })
+      expect(link).toBeInTheDocument()
     })
   })
 

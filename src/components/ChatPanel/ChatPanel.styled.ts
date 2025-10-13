@@ -13,18 +13,15 @@ const ChatHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: 16,
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  padding: 30,
   flexShrink: 0,
   '& .MuiTypography-root': {
     color: 'white',
-    fontWeight: 600,
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8
+    fontWeight: 500,
+    fontSize: 24
   },
   [theme.breakpoints.down('sm')]: {
-    padding: 12
+    padding: 16
   }
 }))
 
@@ -32,14 +29,6 @@ const ChatHeaderActions = styled('div')({
   display: 'flex',
   alignItems: 'center',
   gap: 12
-})
-
-const ChatIcon = styled('span')({
-  fontSize: 18,
-  marginRight: 4,
-  verticalAlign: 'middle',
-  display: 'flex',
-  alignItems: 'center'
 })
 
 const MessageCount = styled(Typography)(() => ({
@@ -50,7 +39,7 @@ const MessageCount = styled(Typography)(() => ({
 const ChatMessages = styled('div')(({ theme }) => ({
   flex: 1,
   overflowY: 'auto',
-  padding: 16,
+  padding: '16px 30px',
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
@@ -215,18 +204,40 @@ const CloseButton = styled('button')({
   }
 })
 
+const ChatFooter = styled('div')(({ theme }) => ({
+  borderTop: '0.5px solid #A09BA8',
+  padding: 30,
+  flexShrink: 0,
+  textAlign: 'center',
+  fontWeight: 400,
+  fontSize: 16,
+  color: 'white',
+  [theme.breakpoints.down('sm')]: {
+    padding: 16
+  }
+}))
+
+const FooterLink = styled('a')(({ theme }) => ({
+  color: theme.palette.primary.main,
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline'
+  }
+}))
+
 export {
   AuthSection,
   ChatContainer,
+  ChatFooter,
   ChatHeader,
   ChatHeaderActions,
-  ChatIcon,
   ChatInputContainer,
   ChatInputSection,
   ChatMessage,
   ChatMessages,
   CloseButton,
   EmptyChat,
+  FooterLink,
   MessageContent,
   MessageCount,
   MessageHeader,

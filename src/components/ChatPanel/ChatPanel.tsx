@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import ChatIconMUI from '@mui/icons-material/Chat'
 import CloseIcon from '@mui/icons-material/Close'
 import { Typography } from 'decentraland-ui2'
 import { ReceivedChatMessage, useChat } from '../../hooks/useChat'
@@ -7,15 +6,14 @@ import { useTranslation } from '../../modules/translation'
 import { ChatPanelProps } from './ChatPanel.types'
 import {
   ChatContainer,
+  ChatFooter,
   ChatHeader,
-  ChatHeaderActions,
-  ChatIcon,
   ChatMessage,
   ChatMessages,
   CloseButton,
   EmptyChat,
+  FooterLink,
   MessageContent,
-  MessageCount,
   MessageHeader,
   MessageTime,
   ParticipantName
@@ -48,25 +46,15 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
-  const messageCountKey = chatMessages.length === 1 ? 'chat.messages_count' : 'chat.messages_count_plural'
-
   return (
     <ChatContainer>
       <ChatHeader>
-        <Typography variant="h6">
-          <ChatIcon>
-            <ChatIconMUI />
-          </ChatIcon>
-          {t('chat.title')}
-        </Typography>
-        <ChatHeaderActions>
-          <MessageCount variant="body2">{t(messageCountKey, { count: chatMessages.length.toString() })}</MessageCount>
-          {onClose && (
-            <CloseButton onClick={onClose}>
-              <CloseIcon />
-            </CloseButton>
-          )}
-        </ChatHeaderActions>
+        <Typography variant="h6">{t('chat.title')}</Typography>
+        {onClose && (
+          <CloseButton onClick={onClose}>
+            <CloseIcon />
+          </CloseButton>
+        )}
       </ChatHeader>
 
       <ChatMessages>
@@ -81,6 +69,14 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
           </>
         )}
       </ChatMessages>
+
+      <ChatFooter>
+        Join from{' '}
+        <FooterLink href="https://decentraland.org/download" target="_blank" rel="noopener noreferrer">
+          Decentraland App
+        </FooterLink>{' '}
+        to participate
+      </ChatFooter>
     </ChatContainer>
   )
 }
