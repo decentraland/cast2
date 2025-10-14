@@ -1,22 +1,4 @@
-import { Card, keyframes, styled } from 'decentraland-ui2'
-
-const slideInFromRight = keyframes({
-  from: {
-    transform: 'translateX(100%)'
-  },
-  to: {
-    transform: 'translateX(0)'
-  }
-})
-
-const slideOutToRight = keyframes({
-  from: {
-    transform: 'translateX(0)'
-  },
-  to: {
-    transform: 'translateX(100%)'
-  }
-})
+import { Card, styled } from 'decentraland-ui2'
 
 const ViewContainer = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -54,16 +36,20 @@ const MainContent = styled('div')(({ theme }) => ({
   }
 }))
 
-const VideoContainer = styled('div')<{ $sidebarOpen: boolean }>(() => ({
+const VideoContainer = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => ({
   flex: 1,
   display: 'flex',
   position: 'relative',
   minHeight: 0,
-  transition: 'all 0.3s ease-in-out'
+  gap: 18,
+  [theme.breakpoints.down('sm')]: {
+    gap: 0
+  }
 }))
 
-const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => ({
+const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme, $sidebarOpen }) => ({
   flex: 1,
+  minWidth: 0,
   background: '#1a0b2e',
   position: 'relative',
   display: 'flex',
@@ -71,8 +57,9 @@ const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => ({
   justifyContent: 'center',
   overflow: 'hidden',
   boxSizing: 'border-box',
-  transition: 'flex 0.3s ease-in-out',
   borderRadius: 12,
+  transition: 'flex 0.3s ease-out',
+  willChange: $sidebarOpen ? 'flex' : 'auto',
   '& video': {
     width: '100%',
     height: '100%',
@@ -85,28 +72,25 @@ const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => ({
   }
 }))
 
-const Sidebar = styled('div')<{ $isOpen: boolean; $isClosing?: boolean }>(({ theme, $isOpen, $isClosing }) => {
-  let animationValue = 'none'
-  if ($isClosing) {
-    animationValue = `${slideOutToRight} 0.3s ease-out`
-  } else if ($isOpen) {
-    animationValue = `${slideInFromRight} 0.3s ease-out`
-  }
-
+const Sidebar = styled('div')<{ $isOpen: boolean }>(({ theme, $isOpen }) => {
   return {
     width: $isOpen ? '400px' : '0',
+    minWidth: $isOpen ? '400px' : '0',
+    maxWidth: $isOpen ? '400px' : '0',
     display: 'flex',
     flexDirection: 'column',
-    transition: 'width 0.3s ease-in-out',
     overflow: 'hidden',
     background: 'linear-gradient(135deg, #66497f 0%, #3f2357 100%)',
     borderRadius: 12,
-    flexShrink: 0,
-    animation: animationValue,
-    marginLeft: 18,
     boxSizing: 'border-box',
+    flexShrink: 0,
+    transition: 'width 0.3s ease-out, min-width 0.3s ease-out, max-width 0.3s ease-out',
+    visibility: $isOpen ? 'visible' : 'hidden',
+    willChange: $isOpen ? 'width, min-width, max-width' : 'auto',
     [theme.breakpoints.down('lg')]: {
-      width: $isOpen ? '320px' : '0'
+      width: $isOpen ? '320px' : '0',
+      minWidth: $isOpen ? '320px' : '0',
+      maxWidth: $isOpen ? '320px' : '0'
     },
     [theme.breakpoints.down('sm')]: {
       position: 'fixed',
@@ -114,12 +98,14 @@ const Sidebar = styled('div')<{ $isOpen: boolean; $isClosing?: boolean }>(({ the
       left: 0,
       right: 0,
       width: '100%',
+      minWidth: '100%',
+      maxWidth: '100%',
       height: $isOpen ? '100dvh' : '0',
-      margin: 0,
       padding: 16,
       paddingBottom: 80,
       borderRadius: 0,
-      zIndex: 100
+      zIndex: 100,
+      transition: 'height 0.3s ease-out'
     }
   }
 })

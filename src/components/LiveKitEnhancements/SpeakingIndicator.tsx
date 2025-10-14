@@ -17,11 +17,6 @@ export function SpeakingIndicator({ participant, trackRef }: SpeakingIndicatorPr
   // Calculate speaking intensity from waveform
   const intensity = audioWaveform?.bars?.length ? Math.max(...audioWaveform.bars) / 255 : 0.5
 
-  // Debug log only when speaking changes
-  if (isSpeaking) {
-    console.log('[SpeakingIndicator] 🎙️ Speaking:', participant?.identity)
-  }
-
   return (
     <SpeakingCircle isSpeaking={isSpeaking} intensity={intensity} title={isSpeaking ? t('status.speaking') : t('status.not_speaking')} />
   )

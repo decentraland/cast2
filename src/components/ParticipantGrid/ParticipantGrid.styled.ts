@@ -209,7 +209,10 @@ const ThumbnailItem = styled('div')(({ theme }) => ({
   aspectRatio: '16/9',
   flexShrink: 0,
   [theme.breakpoints.down('sm')]: {
-    width: 120
+    width: 120,
+    border: '2px solid #691FA9',
+    borderRadius: 8,
+    overflow: 'hidden'
   }
 }))
 

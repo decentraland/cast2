@@ -184,7 +184,11 @@ const IconButton = styled('button')(({ theme }) => ({
     fontSize: 24
   },
   [theme.breakpoints.down('sm')]: {
-    display: 'none' // Hide in mobile, shown in ControlsLeft instead
+    width: 40,
+    height: 40,
+    '& svg': {
+      fontSize: 28
+    }
   }
 }))
 

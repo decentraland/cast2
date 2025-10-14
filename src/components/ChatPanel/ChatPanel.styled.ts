@@ -42,7 +42,7 @@ const ChatMessages = styled('div')(({ theme }) => ({
   padding: '16px 30px',
   display: 'flex',
   flexDirection: 'column',
-  gap: 12,
+  gap: 48,
   '&::-webkit-scrollbar': {
     width: 6
   },
@@ -74,38 +74,51 @@ const EmptyChat = styled('div')({
   }
 })
 
-const ChatMessage = styled('div')<{ $participantColor?: string }>(({ $participantColor }) => ({
-  padding: 12,
-  background: 'rgba(236, 235, 237, 0.15)',
-  borderRadius: 8,
-  borderLeft: `3px solid ${$participantColor || 'rgba(255, 255, 255, 0.3)'}`
-}))
+const ChatMessage = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8
+})
+
+const MessageWrapper = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8
+})
 
 const MessageHeader = styled('div')({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  marginBottom: 4
+  gap: 8
 })
 
-const ParticipantName = styled('span')<{ $color?: string }>(({ $color }) => ({
+const ParticipantName = styled('span')({
+  color: '#FCFCFC',
   fontWeight: 600,
-  fontSize: '0.875rem',
-  color: $color || 'white'
-}))
+  fontSize: 16,
+  lineHeight: '16px',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  flexShrink: 0
+})
 
 const MessageTime = styled('span')({
-  color: 'rgba(255, 255, 255, 0.5)',
-  fontSize: '0.75rem'
+  color: '#716B7C',
+  fontWeight: 700,
+  fontSize: 12,
+  lineHeight: '16px',
+  whiteSpace: 'nowrap',
+  flexShrink: 0
 })
 
-const MessageContent = styled('div')({
-  wordWrap: 'break-word',
-  lineHeight: 1.4,
-  color: 'white',
+const MessageContent = styled('div')(() => ({
+  color: 'rgba(255, 255, 255, 0.9)',
   fontSize: 14,
-  fontWeight: 400
-})
+  lineHeight: '20px',
+  wordBreak: 'break-word',
+  overflowWrap: 'break-word'
+}))
 
 const ChatInputSection = styled('div')(({ theme }) => ({
   padding: 16,
@@ -205,6 +218,7 @@ const CloseButton = styled('button')({
 })
 
 const ChatFooter = styled('div')(({ theme }) => ({
+  margin: '0 30px',
   borderTop: '0.5px solid #A09BA8',
   padding: 30,
   flexShrink: 0,
@@ -213,6 +227,7 @@ const ChatFooter = styled('div')(({ theme }) => ({
   fontSize: 16,
   color: 'white',
   [theme.breakpoints.down('sm')]: {
+    margin: '0 16px',
     padding: 16
   }
 }))
@@ -242,6 +257,7 @@ export {
   MessageCount,
   MessageHeader,
   MessageTime,
+  MessageWrapper,
   ParticipantName,
   SendButton,
   StyledInput

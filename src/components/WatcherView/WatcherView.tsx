@@ -3,25 +3,14 @@ import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
 import { Typography } from 'decentraland-ui2'
-import { WatcherViewContent } from './WatcherViewContent'
+import { WatcherViewWithChat } from './WatcherViewWithChat'
 import { useTranslation } from '../../modules/translation'
 import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
 import { generateRandomName } from '../../utils/identity'
-import { ChatPanel } from '../ChatPanel/ChatPanel'
-import {
-  ControlsArea,
-  ErrorContainer,
-  MainContent,
-  Sidebar,
-  VideoArea,
-  VideoContainer,
-  ViewContainer as WatcherContainer,
-  ViewLayout as WatcherLayout
-} from '../CommonView/CommonView.styled'
+import { ChatProvider } from '../ChatProvider/ChatProvider'
+import { ErrorContainer, ViewContainer as WatcherContainer } from '../CommonView/CommonView.styled'
 import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
-import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
-import { StreamingControls } from '../StreamingControls/StreamingControls'
 import { WatcherOnboarding } from '../WatcherOnboarding/WatcherOnboarding'
 import { BackLink } from './WatcherView.styled'
 
@@ -31,8 +20,6 @@ export function WatcherView() {
 
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [chatOpen, setChatOpen] = useState(false)
-  const [peopleOpen, setPeopleOpen] = useState(false)
   const [onboardingComplete, setOnboardingComplete] = useState(false)
   const [isJoining, setIsJoining] = useState(false)
   const [isLoadingCredentials, setIsLoadingCredentials] = useState(true)
@@ -83,16 +70,6 @@ export function WatcherView() {
     setOnboardingComplete(false)
   }, [])
 
-  const handleToggleChat = useCallback(() => {
-    if (peopleOpen) setPeopleOpen(false)
-    setChatOpen(!chatOpen)
-  }, [peopleOpen, chatOpen])
-
-  const handleTogglePeople = useCallback(() => {
-    if (chatOpen) setChatOpen(false)
-    setPeopleOpen(!peopleOpen)
-  }, [chatOpen, peopleOpen])
-
   // Loading credentials
   if (isLoadingCredentials) {
     return <LoadingScreen message={t('watcher.connecting')} />
@@ -132,8 +109,6 @@ export function WatcherView() {
     return <WatcherOnboarding streamName={streamName} onJoin={handleJoinRoom} isJoining={isJoining} />
   }
 
-  const sidebarOpen = chatOpen || peopleOpen
-
   return (
     <WatcherContainer>
       <LiveKitRoom
@@ -145,31 +120,9 @@ export function WatcherView() {
         screen={false}
         onConnected={handleRoomConnect}
       >
-        <WatcherLayout>
-          <MainContent>
-            <VideoContainer $sidebarOpen={sidebarOpen}>
-              <VideoArea $sidebarOpen={sidebarOpen}>
-                <WatcherViewContent />
-              </VideoArea>
-
-              {sidebarOpen && (
-                <Sidebar $isOpen={sidebarOpen}>
-                  {chatOpen && <ChatPanel onClose={handleToggleChat} />}
-                  {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
-                </Sidebar>
-              )}
-            </VideoContainer>
-
-            <ControlsArea>
-              <StreamingControls
-                onToggleChat={handleToggleChat}
-                onTogglePeople={handleTogglePeople}
-                isStreamer={false}
-                onLeave={handleLeaveRoom}
-              />
-            </ControlsArea>
-          </MainContent>
-        </WatcherLayout>
+        <ChatProvider>
+          <WatcherViewWithChat onLeave={handleLeaveRoom} />
+        </ChatProvider>
 
         <RoomAudioRenderer />
         <ConnectionStateToast />
