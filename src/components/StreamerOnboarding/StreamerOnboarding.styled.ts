@@ -74,7 +74,16 @@ const Title = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
   color: '#1a1a1a',
   textAlign: 'center',
-  marginTop: theme.spacing(1)
+  marginTop: theme.spacing(1),
+  maxWidth: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.25rem',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word'
+  }
 }))
 
 const ParticipantLabel = styled(Typography)(({ theme }) => ({
@@ -124,15 +133,15 @@ const DeviceSelectorRow = styled(Box)(({ theme }) => ({
   gap: theme.spacing(1),
   flex: 1,
   position: 'relative',
+  justifyContent: 'center',
   '& svg': {
     color: '#1a1a1a',
     fontSize: '20px',
     flexShrink: 0
   },
   [theme.breakpoints.down('sm')]: {
-    justifyContent: 'center',
     '& svg': {
-      fontSize: '28px'
+      fontSize: '24px'
     }
   }
 }))
@@ -140,9 +149,10 @@ const DeviceSelectorRow = styled(Box)(({ theme }) => ({
 const SelectorButton = styled('button')<{ $isOpen: boolean }>(({ theme, $isOpen }) => ({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  width: '100%',
-  padding: `${theme.spacing(0.75)} ${theme.spacing(1)}`,
+  justifyContent: 'center',
+  width: 'auto',
+  minWidth: 'auto',
+  padding: `${theme.spacing(0.5)} ${theme.spacing(0.75)}`,
   border: 'none',
   background: 'transparent',
   cursor: 'pointer',
@@ -151,7 +161,7 @@ const SelectorButton = styled('button')<{ $isOpen: boolean }>(({ theme, $isOpen 
   fontFamily: 'inherit',
   transition: 'background-color 0.2s ease',
   borderRadius: theme.spacing(0.5),
-  gap: theme.spacing(0.5),
+  gap: theme.spacing(0.25),
   '&:hover': {
     backgroundColor: 'rgba(0, 0, 0, 0.04)'
   },

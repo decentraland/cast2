@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Typography } from 'decentraland-ui2'
-import { ReceivedChatMessage, useChat } from '../../hooks/useChat'
+import { ReceivedChatMessage } from '../../hooks/useChat'
 import { useTranslation } from '../../modules/translation'
+import { Avatar } from '../Avatar/Avatar'
+import { useChatContext } from '../ChatProvider/ChatProvider'
 import { ChatPanelProps } from './ChatPanel.types'
 import {
   ChatContainer,
@@ -26,20 +28,45 @@ const formatTime = (timestamp: number) => {
   })
 }
 
-const renderMessage = (msg: ReceivedChatMessage, index: number) => (
-  <ChatMessage key={index} $participantColor={msg.participantColor}>
-    <MessageHeader>
-      <ParticipantName $color={msg.participantColor}>{msg.participantName}</ParticipantName>
-      <MessageTime>{formatTime(msg.timestamp)}</MessageTime>
-    </MessageHeader>
-    <MessageContent>{msg.message}</MessageContent>
-  </ChatMessage>
-)
-
-export function ChatPanel({ onClose }: ChatPanelProps) {
+export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelProps) {
   const { t } = useTranslation()
-  const { chatMessages } = useChat()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Mark messages as read when panel opens
+  useEffect(() => {
+    if (onMessagesRead) {
+      onMessagesRead()
+    }
+  }, [onMessagesRead])
+
+  // Get profiles from context (already prefetched)
+  const { profiles } = useChatContext()
+
+  const renderMessage = (msg: ReceivedChatMessage, index: number) => {
+    // participantName contains the address
+    const address = msg.participantName
+    const profile = address?.startsWith('0x') ? profiles.get(address.toLowerCase()) : null
+
+    // Display name: claimed name > truncated address > Unknown
+    let displayName = 'Unknown'
+    if (profile?.hasClaimedName && profile?.name) {
+      displayName = profile.name
+    } else if (address?.startsWith('0x')) {
+      // Truncate address: 0x1234...5678
+      displayName = `${address.slice(0, 6)}...${address.slice(-4)}`
+    }
+
+    return (
+      <ChatMessage key={index}>
+        <MessageHeader>
+          <Avatar profile={profile} address={address} size={26} />
+          <ParticipantName>{displayName}</ParticipantName>
+          <MessageTime>{formatTime(msg.timestamp)}</MessageTime>
+        </MessageHeader>
+        <MessageContent>{msg.message}</MessageContent>
+      </ChatMessage>
+    )
+  }
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -64,7 +91,7 @@ export function ChatPanel({ onClose }: ChatPanelProps) {
           </EmptyChat>
         ) : (
           <>
-            {chatMessages.map(renderMessage)}
+            {chatMessages.map((msg, index) => renderMessage(msg, index))}
             <div ref={messagesEndRef} />
           </>
         )}

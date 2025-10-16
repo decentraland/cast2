@@ -1,5 +1,6 @@
 {
   "GATEKEEPER_URL": "https://comms-gatekeeper.decentraland.org",
+  "PEER_URL": "https://peer.decentraland.org",
   "ENVIRONMENT": "production",
   "ANALYTICS_ENABLED": true,
   "DEBUG_MODE": false

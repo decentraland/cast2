@@ -117,7 +117,7 @@
     "message": "正在准备您的直播体验..."
   },
   "onboarding": {
-    "ready_to_join": "准备好加入{streamName}了吗？",
+    "ready_to_join": "准备好加入{streamName}直播了吗？",
     "participant": "参与者",
     "name_placeholder": "输入您的名字（可选）",
     "join_now": "立即加入",

@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react'
+import { Packet } from '@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen'
 import { useRoomContext } from '@livekit/components-react'
 import { Participant, RoomEvent } from 'livekit-client'
 import { getDisplayName } from '../utils/displayName'
-
-// Simple chat message format (instead of DCL Protocol for now)
-interface ChatPacket {
-  type: 'chat'
-  timestamp: number
-  message: string
-}
 
 interface ReceivedChatMessage {
   from: Participant | undefined
@@ -31,15 +25,22 @@ function useChat() {
     // Listen for data messages
     const handleDataReceived = (payload: Uint8Array, participant?: Participant) => {
       try {
-        // Decode simple JSON chat message
-        const text = new TextDecoder().decode(payload)
-        const packet: ChatPacket = JSON.parse(text)
+        // Decode Decentraland protocol message (protobuf)
+        const packet = Packet.decode(payload)
 
-        if (packet.type === 'chat' && packet.message) {
+        // Filter out non-chat messages and special messages (ping, pong, emotes)
+        if (
+          packet.message?.$case === 'chat' &&
+          !packet.message.chat.message.startsWith('␆') && // ping
+          !packet.message.chat.message.startsWith('␑') && // pong
+          !packet.message.chat.message.startsWith('␐') // emotes
+        ) {
+          const { timestamp, message } = packet.message.chat
+
           const newMessage: ReceivedChatMessage = {
             from: participant,
-            timestamp: packet.timestamp,
-            message: packet.message,
+            timestamp: timestamp,
+            message: message,
             participantName: participant ? getDisplayName(participant) : 'Unknown',
             participantColor: getParticipantColor(participant?.identity)
           }
@@ -47,8 +48,16 @@ function useChat() {
           messages.push(newMessage)
           setChatMessages([...messages])
         }
-      } catch {
-        // Failed to decode chat message
+      } catch (error) {
+        console.error('[useChat] Failed to decode protocol message:', error)
+        console.error('[useChat] Payload:', payload)
+        // Try to decode as text for debugging
+        try {
+          const text = new TextDecoder().decode(payload)
+          console.error('[useChat] Payload as text:', text)
+        } catch {
+          console.error('[useChat] Could not decode payload as text')
+        }
       }
     }
 
@@ -62,13 +71,16 @@ function useChat() {
   const sendMessage = async (message: string) => {
     if (!room || !room.localParticipant || isSending) return
 
-    const packet: ChatPacket = {
-      type: 'chat',
-      timestamp: Date.now(),
-      message: message.trim()
-    }
-
-    const encodedMsg = new TextEncoder().encode(JSON.stringify(packet))
+    // Encode message using Decentraland protocol (protobuf)
+    const encodedMsg = Packet.encode({
+      message: {
+        $case: 'chat',
+        chat: {
+          timestamp: Date.now(),
+          message: message.trim()
+        }
+      }
+    }).finish()
 
     setIsSending(true)
     try {
@@ -87,7 +99,8 @@ function useChat() {
       }
 
       setChatMessages(prev => [...prev, ourMessage])
-    } catch {
+    } catch (error) {
+      console.error('[useChat] Failed to send message:', error)
       // Failed to send message
     } finally {
       setIsSending(false)

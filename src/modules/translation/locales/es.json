@@ -117,7 +117,7 @@
     "message": "Preparando tu experiencia de transmisión..."
   },
   "onboarding": {
-    "ready_to_join": "¿Listo para Unirte a {streamName}?",
+    "ready_to_join": "¿Listo para Unirte a la transmisión {streamName}?",
     "participant": "Participante",
     "name_placeholder": "Inserta Tu Nombre (Opcional)",
     "join_now": "UNIRSE AHORA",

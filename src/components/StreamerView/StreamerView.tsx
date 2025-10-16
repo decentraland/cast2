@@ -2,27 +2,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import { StreamerViewContent } from './StreamerViewContent'
+import { StreamerViewWithChat } from './StreamerViewWithChat'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
 import { getStreamerToken } from '../../utils/api'
 import { generateRandomName } from '../../utils/identity'
 import { clearStreamerToken, getStreamerToken as getStoredToken, saveStreamerToken } from '../../utils/localStorage'
-import { ChatPanel } from '../ChatPanel/ChatPanel'
-import {
-  ControlsArea,
-  MainContent,
-  Sidebar,
-  ViewContainer as StreamerContainer,
-  ViewLayout as StreamerLayout,
-  VideoArea,
-  VideoContainer
-} from '../CommonView/CommonView.styled'
+import { ChatProvider } from '../ChatProvider/ChatProvider'
+import { ViewContainer as StreamerContainer } from '../CommonView/CommonView.styled'
 import { ErrorModal } from '../ErrorModal'
-import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
 import { StreamerOnboarding } from '../StreamerOnboarding/StreamerOnboarding'
 import { OnboardingConfig } from '../StreamerOnboarding/StreamerOnboarding.types'
-import { StreamingControls } from '../StreamingControls/StreamingControls'
 
 export function StreamerView() {
   const { t } = useTranslation()
@@ -30,8 +20,6 @@ export function StreamerView() {
   const navigate = useNavigate()
   const { credentials, setCredentials } = useLiveKitCredentials()
   const [error, setError] = useState<string | null>(null)
-  const [chatOpen, setChatOpen] = useState(false)
-  const [peopleOpen, setPeopleOpen] = useState(false)
   const [onboardingComplete, setOnboardingComplete] = useState(false)
   const [isJoining, setIsJoining] = useState(false)
   const [userConfig, setUserConfig] = useState<OnboardingConfig | null>(null)
@@ -41,7 +29,6 @@ export function StreamerView() {
   const determineToken = useCallback(() => {
     // Priority 1: Token from URL (initial access)
     if (tokenFromUrl && tokenFromUrl !== 'streaming') {
-      console.log('[StreamerView] Token found in URL, saving and redirecting')
       setActiveToken(tokenFromUrl)
       saveStreamerToken(tokenFromUrl)
       // Replace URL to hide the token
@@ -52,7 +39,6 @@ export function StreamerView() {
     // Priority 2: Token from localStorage (refresh or direct access to /cast/s/streaming)
     const storedToken = getStoredToken()
     if (storedToken) {
-      console.log('[StreamerView] Token found in localStorage')
       setActiveToken(storedToken)
       return
     }
@@ -80,7 +66,6 @@ export function StreamerView() {
       try {
         // Always send an identity: use the user's input or generate a random one
         const identity = config.displayName.trim() || generateRandomName()
-        console.log('[StreamerView] Using identity:', identity)
         const creds = await getStreamerToken(activeToken, identity)
         setCredentials(creds)
         setError(null)
@@ -107,16 +92,6 @@ export function StreamerView() {
     clearStreamerToken()
     setActiveToken(null)
   }, [setCredentials])
-
-  const handleToggleChat = useCallback(() => {
-    if (peopleOpen) setPeopleOpen(false)
-    setChatOpen(!chatOpen)
-  }, [peopleOpen, chatOpen])
-
-  const handleTogglePeople = useCallback(() => {
-    if (chatOpen) setChatOpen(false)
-    setPeopleOpen(!peopleOpen)
-  }, [chatOpen, peopleOpen])
 
   if (error) {
     return (
@@ -146,8 +121,6 @@ export function StreamerView() {
     )
   }
 
-  const sidebarOpen = chatOpen || peopleOpen
-
   return (
     <StreamerContainer>
       <LiveKitRoom
@@ -171,26 +144,9 @@ export function StreamerView() {
         }
         screen={false}
       >
-        <StreamerLayout>
-          <MainContent>
-            <VideoContainer $sidebarOpen={sidebarOpen}>
-              <VideoArea $sidebarOpen={sidebarOpen}>
-                <StreamerViewContent />
-              </VideoArea>
-
-              {sidebarOpen && (
-                <Sidebar $isOpen={sidebarOpen}>
-                  {chatOpen && <ChatPanel onClose={handleToggleChat} />}
-                  {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
-                </Sidebar>
-              )}
-            </VideoContainer>
-
-            <ControlsArea>
-              <StreamingControls onToggleChat={handleToggleChat} onTogglePeople={handleTogglePeople} isStreamer onLeave={handleLeaveRoom} />
-            </ControlsArea>
-          </MainContent>
-        </StreamerLayout>
+        <ChatProvider>
+          <StreamerViewWithChat onLeave={handleLeaveRoom} />
+        </ChatProvider>
 
         <RoomAudioRenderer />
         <ConnectionStateToast />

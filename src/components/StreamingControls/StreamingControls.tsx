@@ -31,11 +31,18 @@ import {
   NotificationBadge
 } from './StreamingControls.styled'
 
-export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = false, onLeave }: StreamingControlsProps) {
+export function StreamingControls({
+  onToggleChat,
+  onTogglePeople,
+  isStreamer = false,
+  onLeave,
+  unreadMessagesCount = 0
+}: StreamingControlsProps) {
   const { t } = useTranslation()
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
+  console.log('remoteParticipants', remoteParticipants)
   const connectionState = useConnectionState()
   const [isScreenSharing, setIsScreenSharing] = useState(false)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
@@ -164,6 +171,19 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
     } else {
       try {
         // Check if screen share is supported
+        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+        if (isMobileDevice) {
+          // Mobile devices have limited screen share support
+          // iOS: Not supported at all
+          // Android Chrome: Supported but only on Chrome 72+
+          const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+          if (isIOS) {
+            alert('Screen sharing is not supported on iOS devices. Please use a desktop browser or Android Chrome.')
+            return
+          }
+        }
+
         if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
           console.error('[StreamingControls] Screen share not supported on this device/browser')
           alert('Screen sharing is not supported on this device or browser')
@@ -187,6 +207,7 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
         if (error instanceof Error) {
           if (error.name === 'NotAllowedError') {
             console.log('[StreamingControls] User denied screen share permission')
+            alert('Permission denied. Please allow screen sharing to continue.')
           } else if (error.name === 'NotSupportedError') {
             alert('Screen sharing is not supported on this device')
           }
@@ -424,6 +445,7 @@ export function StreamingControls({ onToggleChat, onTogglePeople, isStreamer = f
         {onToggleChat && (
           <IconButton onClick={onToggleChat}>
             <ChatBubbleOutlineIcon />
+            {unreadMessagesCount > 0 && <NotificationBadge>{unreadMessagesCount}</NotificationBadge>}
           </IconButton>
         )}
 

@@ -74,7 +74,16 @@ const Title = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
   color: '#1a1a1a',
   textAlign: 'center',
-  marginTop: theme.spacing(1)
+  marginTop: theme.spacing(1),
+  maxWidth: '100%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '1.25rem',
+    whiteSpace: 'normal',
+    wordBreak: 'break-word'
+  }
 }))
 
 const WatcherLabel = styled(Typography)(({ theme }) => ({

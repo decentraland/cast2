@@ -35,17 +35,17 @@ async function getStreamerToken(token: string, identity: string): Promise<LiveKi
 
 /**
  * Fetches watcher token for viewing
- * @param roomId - The room ID to join
+ * @param location - The location (parcel coordinates like "20,-4" or world name like "goerliplaza.dcl.eth")
  * @param identity - The identity/display name for the watcher (required)
  */
-async function getWatcherToken(roomId: string, identity: string): Promise<LiveKitCredentials> {
+async function getWatcherToken(location: string, identity: string): Promise<LiveKitCredentials> {
   const baseUrl = config.get('GATEKEEPER_URL')
   const response = await fetch(`${baseUrl}/cast/watcher-token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ roomId, identity })
+    body: JSON.stringify({ location, identity })
   })
 
   if (!response.ok) {

@@ -117,7 +117,7 @@
     "message": "Preparing your streaming experience..."
   },
   "onboarding": {
-    "ready_to_join": "Ready to Join {streamName}?",
+    "ready_to_join": "Ready to Join {streamName} stream?",
     "participant": "Participant",
     "name_placeholder": "Insert Your Name (Optional)",
     "join_now": "JOIN NOW",

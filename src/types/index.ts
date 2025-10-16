@@ -18,6 +18,7 @@ interface LiveKitCredentials {
   roomName?: string
   identity: string
   roomId: string
+  placeName?: string
 }
 
 interface CastMessage {

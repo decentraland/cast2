@@ -29,21 +29,19 @@ const SidebarTitle = styled(Typography)(() => ({
 }))
 
 const CloseButton = styled('button')({
-  width: 32,
-  height: 32,
-  borderRadius: '50%',
-  background: 'rgba(255, 255, 255, 0.1)',
+  background: 'none',
   border: 'none',
+  color: 'rgba(255, 255, 255, 0.7)',
+  cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  padding: 4,
+  transition: 'color 0.2s ease',
   '&:hover': {
-    background: 'rgba(255, 255, 255, 0.2)'
+    color: 'white'
   },
   '& svg': {
-    color: 'white',
     fontSize: 20
   }
 })

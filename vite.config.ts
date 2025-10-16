@@ -15,9 +15,6 @@ export default defineConfig(({ command, mode }) => {
       // For @dcl/ui-env compatibility
       global: 'globalThis'
     },
-    optimizeDeps: {
-      include: ['@dcl/protocol']
-    },
     ...(command === 'build'
       ? {
           base: envVariables.VITE_BASE_URL,
