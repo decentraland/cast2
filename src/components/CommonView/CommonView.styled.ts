@@ -42,6 +42,7 @@ const VideoContainer = styled('div')<{ $sidebarOpen: boolean }>(({ theme }) => (
   position: 'relative',
   minHeight: 0,
   gap: 18,
+  overflow: 'hidden',
   [theme.breakpoints.down('sm')]: {
     gap: 0
   }
@@ -58,12 +59,16 @@ const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme, $sidebarOpe
   overflow: 'hidden',
   boxSizing: 'border-box',
   borderRadius: 12,
-  transition: 'flex 0.3s ease-out',
-  willChange: $sidebarOpen ? 'flex' : 'auto',
+  marginRight: $sidebarOpen ? '418px' : '0',
+  transition: 'margin-right 0.3s ease-out',
+  willChange: $sidebarOpen ? 'margin-right' : 'auto',
   '& video': {
     width: '100%',
     height: '100%',
     objectFit: 'contain'
+  },
+  [theme.breakpoints.down('lg')]: {
+    marginRight: $sidebarOpen ? '338px' : '0'
   },
   [theme.breakpoints.down('sm')]: {
     borderRadius: 0,
@@ -74,9 +79,11 @@ const VideoArea = styled('div')<{ $sidebarOpen: boolean }>(({ theme, $sidebarOpe
 
 const Sidebar = styled('div')<{ $isOpen: boolean }>(({ theme, $isOpen }) => {
   return {
-    width: $isOpen ? '400px' : '0',
-    minWidth: $isOpen ? '400px' : '0',
-    maxWidth: $isOpen ? '400px' : '0',
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: '400px',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
@@ -84,28 +91,23 @@ const Sidebar = styled('div')<{ $isOpen: boolean }>(({ theme, $isOpen }) => {
     borderRadius: 12,
     boxSizing: 'border-box',
     flexShrink: 0,
-    transition: 'width 0.3s ease-out, min-width 0.3s ease-out, max-width 0.3s ease-out',
-    visibility: $isOpen ? 'visible' : 'hidden',
-    willChange: $isOpen ? 'width, min-width, max-width' : 'auto',
+    transform: $isOpen ? 'translateX(0)' : 'translateX(calc(100% + 18px))',
+    transition: 'transform 0.3s ease-out',
+    willChange: $isOpen ? 'transform' : 'auto',
     [theme.breakpoints.down('lg')]: {
-      width: $isOpen ? '320px' : '0',
-      minWidth: $isOpen ? '320px' : '0',
-      maxWidth: $isOpen ? '320px' : '0'
+      width: '320px'
     },
     [theme.breakpoints.down('sm')]: {
       position: 'fixed',
-      top: 0,
       left: 0,
-      right: 0,
       width: '100%',
-      minWidth: '100%',
-      maxWidth: '100%',
-      height: $isOpen ? '100dvh' : '0',
+      height: '100dvh',
       padding: 16,
       paddingBottom: 80,
       borderRadius: 0,
       zIndex: 100,
-      transition: 'height 0.3s ease-out'
+      transform: $isOpen ? 'translateY(0)' : 'translateY(100%)',
+      transition: 'transform 0.3s ease-out'
     }
   }
 })

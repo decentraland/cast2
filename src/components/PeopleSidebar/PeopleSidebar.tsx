@@ -38,7 +38,21 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
 
   const { streamers, watchers } = useFilteredParticipants(allParticipants)
 
-  // Extract addresses from participants
+  // Filter in-world participants (those without role in metadata)
+  const inWorldParticipants = useMemo(() => {
+    return remoteParticipants.filter(p => {
+      try {
+        const metadata = p.metadata ? JSON.parse(p.metadata) : null
+        // In-world participants don't have a role in metadata
+        return !metadata?.role
+      } catch {
+        // If metadata parsing fails, assume it's an in-world participant
+        return true
+      }
+    })
+  }, [remoteParticipants])
+
+  // Extract addresses from all participants (including in-world participants)
   const addresses = useMemo(() => {
     const addressSet = new Set<string>()
     allParticipants.forEach(p => {
@@ -51,8 +65,14 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
         // Ignore parse errors
       }
     })
+    // Also add addresses from in-world participants (they use identity as address)
+    inWorldParticipants.forEach(p => {
+      if (p.identity?.startsWith('0x')) {
+        addressSet.add(p.identity)
+      }
+    })
     return Array.from(addressSet)
-  }, [allParticipants])
+  }, [allParticipants, inWorldParticipants])
 
   // Get profiles for all participants
   const { profiles } = useProfiles(addresses)
@@ -65,6 +85,12 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
       try {
         const metadata = participant.metadata ? JSON.parse(participant.metadata) : null
         address = metadata?.address
+
+        // For in-world participants without role, use identity as address
+        if (!metadata?.role && participant.identity?.startsWith('0x')) {
+          address = participant.identity
+        }
+
         if (address) {
           profile = profiles.get(address.toLowerCase())
         }
@@ -77,8 +103,15 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
 
       if (isLocalUser) {
         displayName = t('live_counter.you').toUpperCase()
+      } else if (profile?.hasClaimedName && profile?.name) {
+        // Use claimed profile name
+        displayName = profile.name
+      } else if (address?.startsWith('0x')) {
+        // Truncate address: 0x1234...5678
+        displayName = `${address.slice(0, 6)}...${address.slice(-4)}`
       } else {
-        displayName = profile?.hasClaimedName && profile?.name ? profile.name : getDisplayName(participant)
+        // Fallback to display name from metadata
+        displayName = getDisplayName(participant)
       }
       return { displayName, address, profile }
     },
@@ -149,6 +182,35 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
               <EmptyState>No watchers yet</EmptyState>
             )}
             {watchers.length > 20 && <EmptyState>and {watchers.length - 20} more...</EmptyState>}
+          </SectionCard>
+        </Section>
+
+        {/* In World Participants Section */}
+        <Section>
+          <SectionCard>
+            <SectionHeader>
+              <SectionTitle>In World Participants</SectionTitle>
+              <SectionCount>{inWorldParticipants.length}</SectionCount>
+            </SectionHeader>
+            <Divider />
+            {inWorldParticipants.length > 0 ? (
+              inWorldParticipants.slice(0, 20).map(participant => {
+                const { address, profile, displayName } = getParticipantProfile(participant)
+
+                return (
+                  <ParticipantItem key={participant.sid}>
+                    <Avatar profile={profile} address={address} size={40} />
+                    <ParticipantInfo>
+                      <ParticipantName>{displayName}</ParticipantName>
+                      <ParticipantStatus>In World</ParticipantStatus>
+                    </ParticipantInfo>
+                  </ParticipantItem>
+                )
+              })
+            ) : (
+              <EmptyState>No in-world participants yet</EmptyState>
+            )}
+            {inWorldParticipants.length > 20 && <EmptyState>and {inWorldParticipants.length - 20} more...</EmptyState>}
           </SectionCard>
         </Section>
       </SidebarContent>

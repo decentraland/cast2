@@ -42,6 +42,7 @@ export function StreamingControls({
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
+  console.log('remoteParticipants', remoteParticipants)
   const connectionState = useConnectionState()
   const [isScreenSharing, setIsScreenSharing] = useState(false)
   const [showAudioMenu, setShowAudioMenu] = useState(false)

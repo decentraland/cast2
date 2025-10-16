@@ -16,7 +16,7 @@ import { BackLink } from './WatcherView.styled'
 
 export function WatcherView() {
   const { t } = useTranslation()
-  const { roomId } = useParams<{ roomId: string }>()
+  const { location } = useParams<{ location: string }>()
 
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -26,8 +26,8 @@ export function WatcherView() {
 
   // Fetch credentials on mount to get room name
   useEffect(() => {
-    if (!roomId) {
-      setError('Room ID is required')
+    if (!location) {
+      setError('Location is required')
       setIsLoadingCredentials(false)
       return
     }
@@ -40,7 +40,7 @@ export function WatcherView() {
         // Generate friendly random identity for watchers
         const identity = generateRandomName()
         console.log('[WatcherView] Using identity:', identity)
-        const liveKitCredentials = await getWatcherToken(roomId, identity)
+        const liveKitCredentials = await getWatcherToken(location, identity)
         setCredentials(liveKitCredentials)
       } catch (error) {
         setError(error instanceof Error ? error.message : t('watcher.error_connection'))
@@ -50,7 +50,7 @@ export function WatcherView() {
     }
 
     fetchCredentials()
-  }, [roomId, t])
+  }, [location, t])
 
   const handleJoinRoom = useCallback(() => {
     setIsJoining(true)
@@ -101,8 +101,8 @@ export function WatcherView() {
     )
   }
 
-  // Extract room name from credentials or use roomId
-  const streamName = credentials.roomName || roomId || 'Stream'
+  // Extract place name from credentials or use location
+  const streamName = credentials.placeName || credentials.roomName || location || 'Stream'
 
   // Show onboarding before connecting
   if (!onboardingComplete) {

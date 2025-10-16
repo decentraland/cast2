@@ -4,6 +4,7 @@ interface LiveKitCredentials {
   identity: string
   roomId: string
   roomName?: string
+  placeName?: string
 }
 
 interface LiveKitContextValue {
