@@ -55,7 +55,7 @@
     "@babel/preset-env": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
-    "@dcl/eslint-config": "^2.3.0",
+    "@dcl/eslint-config": "^2.3.1",
     "@jest/globals": "^30.2.0",
     "@testing-library/dom": "^10.1.0",
     "@testing-library/jest-dom": "^6.9.1",
