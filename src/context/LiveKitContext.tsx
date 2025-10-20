@@ -1,12 +1,15 @@
 import { ReactNode, createContext, useContext, useState } from 'react'
-import { LiveKitContextValue, LiveKitCredentials } from './LiveKitContext.types'
+import { LiveKitContextValue, LiveKitCredentials, StreamMetadata } from './LiveKitContext.types'
 
 const LiveKitContext = createContext<LiveKitContextValue | undefined>(undefined)
 
 function LiveKitProvider({ children }: { children: ReactNode }) {
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
+  const [streamMetadata, setStreamMetadata] = useState<StreamMetadata | null>(null)
 
-  return <LiveKitContext.Provider value={{ credentials, setCredentials }}>{children}</LiveKitContext.Provider>
+  return (
+    <LiveKitContext.Provider value={{ credentials, setCredentials, streamMetadata, setStreamMetadata }}>{children}</LiveKitContext.Provider>
+  )
 }
 
 function useLiveKitCredentials() {
@@ -18,4 +21,4 @@ function useLiveKitCredentials() {
 }
 
 export { LiveKitProvider, useLiveKitCredentials }
-export type { LiveKitCredentials }
+export type { LiveKitCredentials, StreamMetadata }

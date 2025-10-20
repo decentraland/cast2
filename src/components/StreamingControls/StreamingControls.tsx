@@ -174,14 +174,8 @@ export function StreamingControls({
         const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
         if (isMobileDevice) {
-          // Mobile devices have limited screen share support
-          // iOS: Not supported at all
-          // Android Chrome: Supported but only on Chrome 72+
-          const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-          if (isIOS) {
-            alert('Screen sharing is not supported on iOS devices. Please use a desktop browser or Android Chrome.')
-            return
-          }
+          alert(t('streaming_controls.screen_share_mobile_not_supported'))
+          return
         }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {

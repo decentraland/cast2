@@ -37,6 +37,7 @@
     "start_cam": "Iniciar Cámara",
     "stop_share": "Detener Compartir",
     "share_screen": "Compartir Pantalla",
+    "screen_share_mobile_not_supported": "Compartir pantalla no está disponible en móvil",
     "leave_stream": "Salir del Stream",
     "leave": "Salir",
     "reconnect": "Reconectar",
@@ -52,7 +53,7 @@
     "select_device": "Seleccionar Dispositivo de {type}"
   },
   "chat": {
-    "title": "Chat",
+    "title": "Chat In-World",
     "messages_count": "{count} mensaje",
     "messages_count_plural": "{count} mensajes",
     "no_messages": "Sin mensajes aún. {action}",
@@ -61,7 +62,20 @@
     "sign_in_to_participate": "Inicia sesión para participar.",
     "type_message": "Escribe un mensaje...",
     "sign_in_prompt": "Inicia sesión para enviar mensajes en el chat",
-    "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes"
+    "connect_wallet_prompt": "Conecta tu billetera de Decentraland para enviar mensajes",
+    "footer_text": "Ingresa a {sceneName} en Decentraland para participar en el chat."
+  },
+  "people": {
+    "title": "Participantes",
+    "speakers": "Oradores",
+    "viewers": "Espectadores",
+    "in_world_participants": "Participantes In-World",
+    "no_speakers": "Aún no hay oradores",
+    "no_viewers": "Aún no hay espectadores",
+    "no_in_world": "Aún no hay participantes in-world",
+    "speaker_status": "Hablando",
+    "viewer_status": "Viendo",
+    "in_world_status": "En el Mundo"
   },
   "live_counter": {
     "live": "EN VIVO",
@@ -89,8 +103,8 @@
     "streamer_action": "Comienza a compartir haciendo clic en Cámara o Compartir Pantalla abajo",
     "streamer_disconnected": "Te has desconectado. Haz clic en 'Reconectar' abajo para volver a transmitir",
     "camera_initializing": "Iniciando cámara... Por favor espera",
-    "watcher_title": "Esperando Transmisión",
-    "watcher_message": "La transmisión comenzará en breve. Por favor espera mientras el transmisor se prepara.",
+    "watcher_title": "Nadie está transmitiendo a este enlace...",
+    "watcher_message": "Este Cast de Decentraland puede estar comenzando pronto o ya ha finalizado.",
     "no_video_streams": "Sin transmisiones de video",
     "waiting_participants": "Esperando participantes..."
   },
@@ -117,8 +131,10 @@
     "message": "Preparando tu experiencia de transmisión..."
   },
   "onboarding": {
-    "ready_to_join": "¿Listo para Unirte a la transmisión {streamName}?",
-    "participant": "Participante",
+    "speaker_title": "Transmitiendo a {streamName}, Decentraland",
+    "speaker_tag": "Orador",
+    "viewer_title": "Cast de Decentraland desde {streamName}",
+    "viewer_tag": "Espectador",
     "name_placeholder": "Inserta Tu Nombre (Opcional)",
     "join_now": "UNIRSE AHORA",
     "joining": "Uniéndose..."
@@ -127,7 +143,11 @@
     "more_participants": "Más"
   },
   "error_modal": {
-    "title": "Error al reingresar a la sala de transmisión",
+    "title": "Error al reingresar al cast",
+    "message": "Por favor usa el enlace de este Cast para reingresar."
+  },
+  "watcher_error_modal": {
+    "title": "Error al conectarse a la sala de transmisión",
     "message": "Por favor usa el enlace enviado desde el Admin Smart Item para reingresar a la transmisión."
   }
 }

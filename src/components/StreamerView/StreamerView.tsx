@@ -5,12 +5,13 @@ import '@livekit/components-styles'
 import { StreamerViewWithChat } from './StreamerViewWithChat'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
-import { getStreamerToken } from '../../utils/api'
+import { getStreamInfo, getStreamerToken } from '../../utils/api'
 import { generateRandomName } from '../../utils/identity'
 import { clearStreamerToken, getStreamerToken as getStoredToken, saveStreamerToken } from '../../utils/localStorage'
 import { ChatProvider } from '../ChatProvider/ChatProvider'
 import { ViewContainer as StreamerContainer } from '../CommonView/CommonView.styled'
 import { ErrorModal } from '../ErrorModal'
+import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
 import { StreamerOnboarding } from '../StreamerOnboarding/StreamerOnboarding'
 import { OnboardingConfig } from '../StreamerOnboarding/StreamerOnboarding.types'
 
@@ -18,12 +19,14 @@ export function StreamerView() {
   const { t } = useTranslation()
   const { token: tokenFromUrl } = useParams<{ token: string }>()
   const navigate = useNavigate()
-  const { credentials, setCredentials } = useLiveKitCredentials()
+  const { credentials, setCredentials, setStreamMetadata } = useLiveKitCredentials()
   const [error, setError] = useState<string | null>(null)
   const [onboardingComplete, setOnboardingComplete] = useState(false)
   const [isJoining, setIsJoining] = useState(false)
   const [userConfig, setUserConfig] = useState<OnboardingConfig | null>(null)
   const [activeToken, setActiveToken] = useState<string | null>(null)
+  const [placeName, setPlaceName] = useState<string | null>(null)
+  const [loadingPlaceInfo, setLoadingPlaceInfo] = useState(false)
 
   // Determine which token to use and handle URL cleanup
   const determineToken = useCallback(() => {
@@ -52,6 +55,33 @@ export function StreamerView() {
   useEffect(() => {
     determineToken()
   }, [determineToken])
+
+  // Load place info when token is available
+  useEffect(() => {
+    async function loadPlaceInfo() {
+      if (!activeToken || placeName) return
+
+      setLoadingPlaceInfo(true)
+      try {
+        const streamInfo = await getStreamInfo(activeToken)
+        setPlaceName(streamInfo.placeName)
+        // Set stream metadata for use in ChatPanel
+        setStreamMetadata({
+          placeName: streamInfo.placeName,
+          location: streamInfo.location,
+          isWorld: streamInfo.isWorld
+        })
+      } catch (err) {
+        console.error('[StreamerView] Failed to load place info:', err)
+        // If we can't load place info, fallback to "Stream"
+        setPlaceName('Stream')
+      } finally {
+        setLoadingPlaceInfo(false)
+      }
+    }
+
+    loadPlaceInfo()
+  }, [activeToken, placeName, setStreamMetadata])
 
   const handleJoinRoom = useCallback(
     async (config: OnboardingConfig) => {
@@ -94,31 +124,19 @@ export function StreamerView() {
   }, [setCredentials])
 
   if (error) {
-    return (
-      <ErrorModal
-        title={t('error_modal.title')}
-        message={t('error_modal.message')}
-        onExit={() => {
-          /* No action for now */
-        }}
-      />
-    )
+    return <ErrorModal title={t('error_modal.title')} message={t('error_modal.message')} showExitButton={false} />
+  }
+
+  if (loadingPlaceInfo) {
+    return <LoadingScreen />
   }
 
   if (!onboardingComplete) {
-    return <StreamerOnboarding streamName="Stream" onJoin={handleJoinRoom} isJoining={isJoining} />
+    return <StreamerOnboarding streamName={placeName || 'Stream'} onJoin={handleJoinRoom} isJoining={isJoining} />
   }
 
   if (!credentials) {
-    return (
-      <ErrorModal
-        title={t('error_modal.title')}
-        message={t('error_modal.message')}
-        onExit={() => {
-          /* No action for now */
-        }}
-      />
-    )
+    return <ErrorModal title={t('error_modal.title')} message={t('error_modal.message')} showExitButton={false} />
   }
 
   return (

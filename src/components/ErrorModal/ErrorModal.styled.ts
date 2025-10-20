@@ -18,14 +18,17 @@ const Modal = styled('div')(({ theme }) => ({
   backgroundColor: '#3E3A4F',
   borderRadius: 16,
   padding: 48,
-  maxWidth: 600,
-  width: '100%',
+  width: 560,
+  height: 360,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: 24,
   [theme.breakpoints.down('sm')]: {
-    padding: 32
+    padding: 32,
+    width: '100%',
+    height: 'auto'
   }
 }))
 

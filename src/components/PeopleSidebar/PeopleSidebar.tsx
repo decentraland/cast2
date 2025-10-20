@@ -121,18 +121,18 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
   return (
     <SidebarContainer>
       <SidebarHeader>
-        <SidebarTitle>People</SidebarTitle>
+        <SidebarTitle>{t('people.title')}</SidebarTitle>
         <CloseButton onClick={onClose}>
           <CloseIcon />
         </CloseButton>
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Participants Section */}
+        {/* Speakers Section */}
         <Section>
           <SectionCard>
             <SectionHeader>
-              <SectionTitle>Participants</SectionTitle>
+              <SectionTitle>{t('people.speakers')}</SectionTitle>
               <SectionCount>{streamers.length}</SectionCount>
             </SectionHeader>
             <Divider />
@@ -145,22 +145,22 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus $isStreaming={true}>Streaming</ParticipantStatus>
+                      <ParticipantStatus $isStreaming={true}>{t('people.speaker_status')}</ParticipantStatus>
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
               })
             ) : (
-              <EmptyState>No streamers yet</EmptyState>
+              <EmptyState>{t('people.no_speakers')}</EmptyState>
             )}
           </SectionCard>
         </Section>
 
-        {/* Watchers Section */}
+        {/* Viewers Section */}
         <Section>
           <SectionCard>
             <SectionHeader>
-              <SectionTitle>Watchers</SectionTitle>
+              <SectionTitle>{t('people.viewers')}</SectionTitle>
               <SectionCount>{watchers.length}</SectionCount>
             </SectionHeader>
             <Divider />
@@ -173,23 +173,23 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus>Watching</ParticipantStatus>
+                      <ParticipantStatus>{t('people.viewer_status')}</ParticipantStatus>
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
               })
             ) : (
-              <EmptyState>No watchers yet</EmptyState>
+              <EmptyState>{t('people.no_viewers')}</EmptyState>
             )}
             {watchers.length > 20 && <EmptyState>and {watchers.length - 20} more...</EmptyState>}
           </SectionCard>
         </Section>
 
-        {/* In World Participants Section */}
+        {/* In-World Participants Section */}
         <Section>
           <SectionCard>
             <SectionHeader>
-              <SectionTitle>In World Participants</SectionTitle>
+              <SectionTitle>{t('people.in_world_participants')}</SectionTitle>
               <SectionCount>{inWorldParticipants.length}</SectionCount>
             </SectionHeader>
             <Divider />
@@ -202,13 +202,13 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus>In World</ParticipantStatus>
+                      <ParticipantStatus>{t('people.in_world_status')}</ParticipantStatus>
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
               })
             ) : (
-              <EmptyState>No in-world participants yet</EmptyState>
+              <EmptyState>{t('people.no_in_world')}</EmptyState>
             )}
             {inWorldParticipants.length > 20 && <EmptyState>and {inWorldParticipants.length - 20} more...</EmptyState>}
           </SectionCard>
