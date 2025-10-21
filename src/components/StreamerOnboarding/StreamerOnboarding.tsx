@@ -92,8 +92,8 @@ export function StreamerOnboarding({ streamName = 'Stream', onJoin, isJoining }:
           <LogoImage src={logoImage} alt="Decentraland" />
         </LogoContainer>
 
-        <Title>{t('onboarding.ready_to_join', { streamName })}</Title>
-        <ParticipantLabel>{t('onboarding.participant')}</ParticipantLabel>
+        <Title>{t('onboarding.speaker_title', { streamName })}</Title>
+        <ParticipantLabel>{t('onboarding.speaker_tag')}</ParticipantLabel>
 
         <StyledTextField
           fullWidth

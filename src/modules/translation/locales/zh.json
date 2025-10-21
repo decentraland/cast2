@@ -37,6 +37,7 @@
     "start_cam": "启动摄像头",
     "stop_share": "停止共享",
     "share_screen": "共享屏幕",
+    "screen_share_mobile_not_supported": "移动设备不支持屏幕共享",
     "leave_stream": "离开直播",
     "leave": "离开",
     "reconnect": "重新连接",
@@ -52,7 +53,7 @@
     "select_device": "选择{type}设备"
   },
   "chat": {
-    "title": "聊天",
+    "title": "游戏内聊天",
     "messages_count": "{count}条消息",
     "messages_count_plural": "{count}条消息",
     "no_messages": "还没有消息。{action}",
@@ -61,7 +62,20 @@
     "sign_in_to_participate": "登录以参与。",
     "type_message": "输入消息...",
     "sign_in_prompt": "登录以在聊天中发送消息",
-    "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息"
+    "connect_wallet_prompt": "连接您的Decentraland钱包以发送消息",
+    "footer_text": "进入Decentraland中的{sceneName}参与聊天。"
+  },
+  "people": {
+    "title": "参与者",
+    "speakers": "主播",
+    "viewers": "观众",
+    "in_world_participants": "游戏内参与者",
+    "no_speakers": "暂无主播",
+    "no_viewers": "暂无观众",
+    "no_in_world": "暂无游戏内参与者",
+    "speaker_status": "说话中",
+    "viewer_status": "观看中",
+    "in_world_status": "在游戏中"
   },
   "live_counter": {
     "live": "直播中",
@@ -89,8 +103,8 @@
     "streamer_action": "点击下方的摄像头或共享屏幕开始分享",
     "streamer_disconnected": "您已断开连接。点击下方的重新连接以再次开始直播",
     "camera_initializing": "摄像头初始化中... 请稍候",
-    "watcher_title": "等待直播",
-    "watcher_message": "直播即将开始。请等待主播准备就绪。",
+    "watcher_title": "目前没有人在此链接直播...",
+    "watcher_message": "此Decentraland Cast可能即将开始或已经结束。",
     "no_video_streams": "无视频流",
     "waiting_participants": "等待参与者..."
   },
@@ -117,8 +131,10 @@
     "message": "正在准备您的直播体验..."
   },
   "onboarding": {
-    "ready_to_join": "准备好加入{streamName}直播了吗？",
-    "participant": "参与者",
+    "speaker_title": "正在向{streamName}直播，Decentraland",
+    "speaker_tag": "主播",
+    "viewer_title": "来自{streamName}的Decentraland Cast",
+    "viewer_tag": "观众",
     "name_placeholder": "输入您的名字（可选）",
     "join_now": "立即加入",
     "joining": "加入中..."
@@ -127,7 +143,11 @@
     "more_participants": "更多"
   },
   "error_modal": {
-    "title": "重新加入直播室失败",
+    "title": "重新加入Cast失败",
+    "message": "请使用此Cast的链接重新加入。"
+  },
+  "watcher_error_modal": {
+    "title": "连接直播室失败",
     "message": "请使用从Admin Smart Item发送的链接重新加入直播。"
   }
 }

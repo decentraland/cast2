@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import { Typography } from 'decentraland-ui2'
+import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { ReceivedChatMessage } from '../../hooks/useChat'
 import { useTranslation } from '../../modules/translation'
 import { Avatar } from '../Avatar/Avatar'
@@ -31,6 +32,7 @@ const formatTime = (timestamp: number) => {
 export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelProps) {
   const { t } = useTranslation()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { streamMetadata } = useLiveKitCredentials()
 
   // Mark messages as read when panel opens
   useEffect(() => {
@@ -41,6 +43,15 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
 
   // Get profiles from context (already prefetched)
   const { profiles } = useChatContext()
+
+  // Generate jump link based on stream metadata
+  const jumpLink = streamMetadata
+    ? streamMetadata.isWorld
+      ? `https://decentraland.org/jump/?realm=${streamMetadata.location}`
+      : `https://decentraland.org/jump/?position=${encodeURIComponent(streamMetadata.location)}`
+    : null
+
+  const sceneName = streamMetadata?.placeName || 'this scene'
 
   const renderMessage = (msg: ReceivedChatMessage, index: number) => {
     // participantName contains the address
@@ -98,11 +109,17 @@ export function ChatPanel({ onClose, chatMessages, onMessagesRead }: ChatPanelPr
       </ChatMessages>
 
       <ChatFooter>
-        Join from{' '}
-        <FooterLink href="https://decentraland.org/download" target="_blank" rel="noopener noreferrer">
-          Decentraland App
-        </FooterLink>{' '}
-        to participate
+        {jumpLink ? (
+          <Typography variant="body2">
+            Jump into{' '}
+            <FooterLink href={jumpLink} target="_blank" rel="noopener noreferrer">
+              {sceneName}
+            </FooterLink>{' '}
+            in Decentraland to participate in the chat.
+          </Typography>
+        ) : (
+          <Typography variant="body2">{t('chat.footer_text', { sceneName })}</Typography>
+        )}
       </ChatFooter>
     </ChatContainer>
   )

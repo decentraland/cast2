@@ -62,8 +62,8 @@ export function WatcherOnboarding({ streamName = 'Stream', onJoin, isJoining }: 
           <LogoImage src={logoImage} alt="Decentraland Logo" />
         </LogoContainer>
 
-        <Title>{t('onboarding.ready_to_join', { streamName })}</Title>
-        <WatcherLabel>Watcher</WatcherLabel>
+        <Title>{t('onboarding.viewer_title', { streamName })}</Title>
+        <WatcherLabel>{t('onboarding.viewer_tag')}</WatcherLabel>
 
         <DeviceSelectorsContainer>
           <DeviceSelectorRow>

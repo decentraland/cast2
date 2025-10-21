@@ -2,21 +2,22 @@ import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ConnectionStateToast, LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react'
 import '@livekit/components-styles'
-import { Typography } from 'decentraland-ui2'
 import { WatcherViewWithChat } from './WatcherViewWithChat'
+import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { useTranslation } from '../../modules/translation'
 import { LiveKitCredentials } from '../../types'
 import { getWatcherToken } from '../../utils/api'
 import { generateRandomName } from '../../utils/identity'
 import { ChatProvider } from '../ChatProvider/ChatProvider'
-import { ErrorContainer, ViewContainer as WatcherContainer } from '../CommonView/CommonView.styled'
+import { ViewContainer as WatcherContainer } from '../CommonView/CommonView.styled'
+import { ErrorModal } from '../ErrorModal'
 import { LoadingScreen } from '../LoadingScreen/LoadingScreen'
 import { WatcherOnboarding } from '../WatcherOnboarding/WatcherOnboarding'
-import { BackLink } from './WatcherView.styled'
 
 export function WatcherView() {
   const { t } = useTranslation()
   const { location } = useParams<{ location: string }>()
+  const { setStreamMetadata } = useLiveKitCredentials()
 
   const [credentials, setCredentials] = useState<LiveKitCredentials | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -42,6 +43,14 @@ export function WatcherView() {
         console.log('[WatcherView] Using identity:', identity)
         const liveKitCredentials = await getWatcherToken(location, identity)
         setCredentials(liveKitCredentials)
+
+        // Set stream metadata for use in ChatPanel
+        const isWorld = location.includes('.dcl.eth')
+        setStreamMetadata({
+          placeName: liveKitCredentials.placeName || location,
+          location,
+          isWorld
+        })
       } catch (error) {
         setError(error instanceof Error ? error.message : t('watcher.error_connection'))
       } finally {
@@ -78,26 +87,26 @@ export function WatcherView() {
   // Show error screen
   if (error) {
     return (
-      <WatcherContainer>
-        <ErrorContainer>
-          <Typography variant="h6">{t('watcher.error_connection')}</Typography>
-          <Typography variant="body1">{error}</Typography>
-          <Typography variant="body2">
-            <BackLink href="/cast">← Back to Cast</BackLink>
-          </Typography>
-        </ErrorContainer>
-      </WatcherContainer>
+      <ErrorModal
+        title={t('watcher_error_modal.title')}
+        message={t('watcher_error_modal.message')}
+        onExit={() => {
+          window.location.href = 'https://decentraland.org'
+        }}
+      />
     )
   }
 
   // No credentials (shouldn't happen but handle gracefully)
   if (!credentials) {
     return (
-      <WatcherContainer>
-        <ErrorContainer>
-          <Typography variant="h6">{t('watcher.error_connection')}</Typography>
-        </ErrorContainer>
-      </WatcherContainer>
+      <ErrorModal
+        title={t('watcher_error_modal.title')}
+        message={t('watcher_error_modal.message')}
+        onExit={() => {
+          window.location.href = 'https://decentraland.org'
+        }}
+      />
     )
   }
 

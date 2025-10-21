@@ -28,6 +28,9 @@ import {
   DeviceMenuItem,
   EndStreamButton,
   IconButton,
+  MobileIconButton,
+  MobileLeftGroup,
+  MobileRightGroup,
   NotificationBadge
 } from './StreamingControls.styled'
 
@@ -104,11 +107,41 @@ export function StreamingControls({
     return () => navigator.mediaDevices.removeEventListener('devicechange', getDevices)
   }, [getDevices])
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      // Check if click is outside of any dropdown menu
+      if (!target.closest('[data-dropdown-menu]') && !target.closest('[data-dropdown-button]')) {
+        setShowAudioMenu(false)
+        setShowVideoMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   useEffect(() => {
     const screenShareTrack = Array.from(localParticipant?.videoTrackPublications.values() || []).find(
       pub => pub.source === Track.Source.ScreenShare
     )
     setIsScreenSharing(!!screenShareTrack)
+
+    // Listen for screen share track ending (e.g., when user stops from Chrome controls)
+    if (screenShareTrack?.track) {
+      const handleTrackEnded = () => {
+        console.log('[StreamingControls] Screen share track ended (stopped by browser)')
+        setIsScreenSharing(false)
+      }
+
+      const mediaStreamTrack = screenShareTrack.track.mediaStreamTrack
+      mediaStreamTrack?.addEventListener('ended', handleTrackEnded)
+
+      return () => {
+        mediaStreamTrack?.removeEventListener('ended', handleTrackEnded)
+      }
+    }
   }, [localParticipant])
 
   const handleToggleMic = async () => {
@@ -174,14 +207,8 @@ export function StreamingControls({
         const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
         if (isMobileDevice) {
-          // Mobile devices have limited screen share support
-          // iOS: Not supported at all
-          // Android Chrome: Supported but only on Chrome 72+
-          const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-          if (isIOS) {
-            alert('Screen sharing is not supported on iOS devices. Please use a desktop browser or Android Chrome.')
-            return
-          }
+          alert(t('streaming_controls.screen_share_mobile_not_supported'))
+          return
         }
 
         if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
@@ -312,12 +339,12 @@ export function StreamingControls({
           <ButtonWithMenu>
             <CircleButton onClick={handleToggleMic}>{isMicEnabled ? <MicIcon /> : <MicOffIcon />}</CircleButton>
             {audioDevices.length > 1 && (
-              <ChevronButton onClick={() => setShowAudioMenu(!showAudioMenu)}>
+              <ChevronButton data-dropdown-button onClick={() => setShowAudioMenu(!showAudioMenu)}>
                 <ExpandMoreIcon />
               </ChevronButton>
             )}
             {showAudioMenu && (
-              <DeviceMenu>
+              <DeviceMenu data-dropdown-menu>
                 {audioDevices.map(device => (
                   <DeviceMenuItem
                     key={device.deviceId}
@@ -337,12 +364,12 @@ export function StreamingControls({
           <ButtonWithMenu>
             <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
             {videoDevices.length > 1 && (
-              <ChevronButton onClick={() => setShowVideoMenu(!showVideoMenu)}>
+              <ChevronButton data-dropdown-button onClick={() => setShowVideoMenu(!showVideoMenu)}>
                 <ExpandMoreIcon />
               </ChevronButton>
             )}
             {showVideoMenu && (
-              <DeviceMenu>
+              <DeviceMenu data-dropdown-menu>
                 {videoDevices.map(device => (
                   <DeviceMenuItem
                     key={device.deviceId}
@@ -371,12 +398,12 @@ export function StreamingControls({
             <ButtonWithMenu>
               <CircleButton onClick={handleToggleMic}>{isMicEnabled ? <MicIcon /> : <MicOffIcon />}</CircleButton>
               {audioDevices.length > 1 && (
-                <ChevronButton onClick={() => setShowAudioMenu(!showAudioMenu)}>
+                <ChevronButton data-dropdown-button onClick={() => setShowAudioMenu(!showAudioMenu)}>
                   <ExpandMoreIcon />
                 </ChevronButton>
               )}
               {showAudioMenu && (
-                <DeviceMenu>
+                <DeviceMenu data-dropdown-menu>
                   {audioDevices.map(device => (
                     <DeviceMenuItem
                       key={device.deviceId}
@@ -393,12 +420,12 @@ export function StreamingControls({
             <ButtonWithMenu>
               <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
               {videoDevices.length > 1 && (
-                <ChevronButton onClick={() => setShowVideoMenu(!showVideoMenu)}>
+                <ChevronButton data-dropdown-button onClick={() => setShowVideoMenu(!showVideoMenu)}>
                   <ExpandMoreIcon />
                 </ChevronButton>
               )}
               {showVideoMenu && (
-                <DeviceMenu>
+                <DeviceMenu data-dropdown-menu>
                   {videoDevices.map(device => (
                     <DeviceMenuItem
                       key={device.deviceId}
@@ -441,7 +468,7 @@ export function StreamingControls({
 
       {/* Right Controls: Chat + People buttons */}
       <ControlsRight>
-        {/* Chat button (desktop only) */}
+        {/* Desktop buttons */}
         {onToggleChat && (
           <IconButton onClick={onToggleChat}>
             <ChatBubbleOutlineIcon />
@@ -449,7 +476,6 @@ export function StreamingControls({
           </IconButton>
         )}
 
-        {/* People button (desktop only) */}
         {onTogglePeople && (
           <IconButton onClick={onTogglePeople}>
             <PeopleIcon />
@@ -457,16 +483,35 @@ export function StreamingControls({
           </IconButton>
         )}
 
-        {/* Leave button (mobile only - circular) */}
-        {isDisconnected ? (
-          <CircleEndButton onClick={handleReconnect}>
-            <CallEndIcon />
-          </CircleEndButton>
-        ) : (
-          <CircleEndButton onClick={handleLeave}>
-            <CallEndIcon />
-          </CircleEndButton>
-        )}
+        {/* Mobile: Chat and People on the left */}
+        <MobileLeftGroup>
+          {onToggleChat && (
+            <MobileIconButton onClick={onToggleChat}>
+              <ChatBubbleOutlineIcon />
+              {unreadMessagesCount > 0 && <NotificationBadge>{unreadMessagesCount}</NotificationBadge>}
+            </MobileIconButton>
+          )}
+
+          {onTogglePeople && (
+            <MobileIconButton onClick={onTogglePeople}>
+              <PeopleIcon />
+              <NotificationBadge>{totalParticipants}</NotificationBadge>
+            </MobileIconButton>
+          )}
+        </MobileLeftGroup>
+
+        {/* Mobile: End Call on the right */}
+        <MobileRightGroup>
+          {isDisconnected ? (
+            <CircleEndButton onClick={handleReconnect}>
+              <CallEndIcon />
+            </CircleEndButton>
+          ) : (
+            <CircleEndButton onClick={handleLeave}>
+              <CallEndIcon />
+            </CircleEndButton>
+          )}
+        </MobileRightGroup>
       </ControlsRight>
     </ControlsContainer>
   )

@@ -55,4 +55,21 @@ async function getWatcherToken(location: string, identity: string): Promise<Live
   return response.json()
 }
 
-export { CastApiError, getStreamerToken, getWatcherToken }
+/**
+ * Fetches stream info (place name, location, etc.) for a streaming key
+ * @param streamingKey - The streaming key from the URL
+ */
+async function getStreamInfo(streamingKey: string): Promise<{ placeName: string; placeId: string; location: string; isWorld: boolean }> {
+  const baseUrl = config.get('GATEKEEPER_URL')
+  const response = await fetch(`${baseUrl}/cast/stream-info/${streamingKey}`, {
+    method: 'GET'
+  })
+
+  if (!response.ok) {
+    throw new CastApiError(response.status, `Failed to get stream info: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+export { CastApiError, getStreamerToken, getWatcherToken, getStreamInfo }

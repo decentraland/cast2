@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { Participant } from 'livekit-client'
+import { Participant, Track } from 'livekit-client'
 import { PeopleSidebarProps } from './PeopleSidebar.type'
 import { useFilteredParticipants } from '../../hooks/usePeopleSidebar'
 import { useProfiles } from '../../hooks/useProfiles'
@@ -113,7 +113,13 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
         // Fallback to display name from metadata
         displayName = getDisplayName(participant)
       }
-      return { displayName, address, profile }
+
+      // Check if participant is sharing screen
+      const isScreenSharing = Array.from(participant.videoTrackPublications.values()).some(
+        pub => pub.source === Track.Source.ScreenShare && pub.track
+      )
+
+      return { displayName, address, profile, isScreenSharing }
     },
     [localParticipant, profiles, t]
   )
@@ -121,46 +127,46 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
   return (
     <SidebarContainer>
       <SidebarHeader>
-        <SidebarTitle>People</SidebarTitle>
+        <SidebarTitle>{t('people.title')}</SidebarTitle>
         <CloseButton onClick={onClose}>
           <CloseIcon />
         </CloseButton>
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Participants Section */}
+        {/* Speakers Section */}
         <Section>
           <SectionCard>
             <SectionHeader>
-              <SectionTitle>Participants</SectionTitle>
+              <SectionTitle>{t('people.speakers')}</SectionTitle>
               <SectionCount>{streamers.length}</SectionCount>
             </SectionHeader>
             <Divider />
             {streamers.length > 0 ? (
               streamers.map(participant => {
-                const { address, profile, displayName } = getParticipantProfile(participant)
+                const { address, profile, displayName, isScreenSharing } = getParticipantProfile(participant)
 
                 return (
                   <ParticipantItem key={participant.sid}>
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus $isStreaming={true}>Streaming</ParticipantStatus>
+                      {isScreenSharing && <ParticipantStatus $isStreaming={true}>{t('people.speaker_status')}</ParticipantStatus>}
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
               })
             ) : (
-              <EmptyState>No streamers yet</EmptyState>
+              <EmptyState>{t('people.no_speakers')}</EmptyState>
             )}
           </SectionCard>
         </Section>
 
-        {/* Watchers Section */}
+        {/* Viewers Section */}
         <Section>
           <SectionCard>
             <SectionHeader>
-              <SectionTitle>Watchers</SectionTitle>
+              <SectionTitle>{t('people.viewers')}</SectionTitle>
               <SectionCount>{watchers.length}</SectionCount>
             </SectionHeader>
             <Divider />
@@ -173,23 +179,23 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus>Watching</ParticipantStatus>
+                      <ParticipantStatus>{t('people.viewer_status')}</ParticipantStatus>
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
               })
             ) : (
-              <EmptyState>No watchers yet</EmptyState>
+              <EmptyState>{t('people.no_viewers')}</EmptyState>
             )}
             {watchers.length > 20 && <EmptyState>and {watchers.length - 20} more...</EmptyState>}
           </SectionCard>
         </Section>
 
-        {/* In World Participants Section */}
+        {/* In-World Participants Section */}
         <Section>
           <SectionCard>
             <SectionHeader>
-              <SectionTitle>In World Participants</SectionTitle>
+              <SectionTitle>{t('people.in_world_participants')}</SectionTitle>
               <SectionCount>{inWorldParticipants.length}</SectionCount>
             </SectionHeader>
             <Divider />
@@ -202,13 +208,13 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus>In World</ParticipantStatus>
+                      <ParticipantStatus>{t('people.in_world_status')}</ParticipantStatus>
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
               })
             ) : (
-              <EmptyState>No in-world participants yet</EmptyState>
+              <EmptyState>{t('people.no_in_world')}</EmptyState>
             )}
             {inWorldParticipants.length > 20 && <EmptyState>and {inWorldParticipants.length - 20} more...</EmptyState>}
           </SectionCard>

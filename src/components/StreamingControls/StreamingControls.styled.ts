@@ -54,7 +54,26 @@ const ControlsRight = styled('div')(({ theme }) => ({
   alignItems: 'center',
   marginLeft: 'auto',
   [theme.breakpoints.down('sm')]: {
-    gap: 8
+    gap: 16,
+    flex: 1,
+    justifyContent: 'space-between'
+  }
+}))
+
+const MobileLeftGroup = styled('div')(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('sm')]: {
+    display: 'flex',
+    gap: 16,
+    alignItems: 'center'
+  }
+}))
+
+const MobileRightGroup = styled('div')(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('sm')]: {
+    display: 'flex',
+    alignItems: 'center'
   }
 }))
 
@@ -184,8 +203,28 @@ const IconButton = styled('button')(({ theme }) => ({
     fontSize: 24
   },
   [theme.breakpoints.down('sm')]: {
+    display: 'none' // Hide desktop chat/people buttons on mobile
+  }
+}))
+
+const MobileIconButton = styled('button')(({ theme }) => ({
+  display: 'none',
+  [theme.breakpoints.down('sm')]: {
+    display: 'flex',
+    position: 'relative',
     width: 40,
     height: 40,
+    borderRadius: '50%',
+    background: 'transparent',
+    border: 'none',
+    color: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'background 0.2s ease',
+    '&:hover': {
+      background: 'rgba(255, 255, 255, 0.1)'
+    },
     '& svg': {
       fontSize: 28
     }
@@ -271,5 +310,8 @@ export {
   DeviceMenuItem,
   EndStreamButton,
   IconButton,
+  MobileIconButton,
+  MobileLeftGroup,
+  MobileRightGroup,
   NotificationBadge
 }

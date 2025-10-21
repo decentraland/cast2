@@ -1,7 +1,7 @@
 import { ErrorModalProps } from './ErrorModal.types'
 import { ExitButton, Message, Modal, Overlay, Title } from './ErrorModal.styled'
 
-export function ErrorModal({ title, message, onExit }: ErrorModalProps) {
+export function ErrorModal({ title, message, onExit, showExitButton = true }: ErrorModalProps) {
   const handleExit = () => {
     if (onExit) {
       onExit()
@@ -13,9 +13,11 @@ export function ErrorModal({ title, message, onExit }: ErrorModalProps) {
       <Modal>
         <Title>{title}</Title>
         <Message>{message}</Message>
-        <ExitButton variant="contained" color="error" onClick={handleExit}>
-          EXIT
-        </ExitButton>
+        {showExitButton && (
+          <ExitButton variant="contained" color="error" onClick={handleExit}>
+            EXIT
+          </ExitButton>
+        )}
       </Modal>
     </Overlay>
   )

@@ -37,6 +37,7 @@
     "start_cam": "Start Cam",
     "stop_share": "Stop Share",
     "share_screen": "Share Screen",
+    "screen_share_mobile_not_supported": "Screen sharing is not available on mobile",
     "leave_stream": "Leave Stream",
     "leave": "Leave",
     "reconnect": "Reconnect",
@@ -52,7 +53,7 @@
     "select_device": "Select {type} Device"
   },
   "chat": {
-    "title": "Chat",
+    "title": "In-World Chat",
     "messages_count": "{count} message",
     "messages_count_plural": "{count} messages",
     "no_messages": "No messages yet. {action}",
@@ -61,7 +62,20 @@
     "sign_in_to_participate": "Sign in to participate.",
     "type_message": "Type a message...",
     "sign_in_prompt": "Sign in to send messages in chat",
-    "connect_wallet_prompt": "Connect your Decentraland wallet to send messages"
+    "connect_wallet_prompt": "Connect your Decentraland wallet to send messages",
+    "footer_text": "Jump into {sceneName} in Decentraland to participate in the chat."
+  },
+  "people": {
+    "title": "Participants",
+    "speakers": "Speakers",
+    "viewers": "Viewers",
+    "in_world_participants": "In-World Participants",
+    "no_speakers": "No speakers yet",
+    "no_viewers": "No viewers yet",
+    "no_in_world": "No in-world participants yet",
+    "speaker_status": "Speaking",
+    "viewer_status": "Watching",
+    "in_world_status": "In World"
   },
   "live_counter": {
     "live": "LIVE",
@@ -89,8 +103,8 @@
     "streamer_action": "Start sharing by clicking Camera or Share Screen below",
     "streamer_disconnected": "You've been disconnected. Click 'Reconnect' below to start streaming again",
     "camera_initializing": "Camera initializing... Please wait",
-    "watcher_title": "Waiting for Stream",
-    "watcher_message": "The stream will start shortly. Please wait while the streamer gets ready.",
+    "watcher_title": "No one is currently casting to this link...",
+    "watcher_message": "This Decentraland Cast may be starting soon or has already ended.",
     "no_video_streams": "No video streams",
     "waiting_participants": "Waiting for participants..."
   },
@@ -117,8 +131,10 @@
     "message": "Preparing your streaming experience..."
   },
   "onboarding": {
-    "ready_to_join": "Ready to Join {streamName} stream?",
-    "participant": "Participant",
+    "speaker_title": "Casting to {streamName}, Decentraland",
+    "speaker_tag": "Speaker",
+    "viewer_title": "Decentraland Cast from {streamName}",
+    "viewer_tag": "Viewer",
     "name_placeholder": "Insert Your Name (Optional)",
     "join_now": "JOIN NOW",
     "joining": "Joining..."
@@ -127,7 +143,11 @@
     "more_participants": "More"
   },
   "error_modal": {
-    "title": "Failed to rejoin to streaming room",
+    "title": "Failed to rejoin cast",
+    "message": "Please use the link for this Cast to rejoin."
+  },
+  "watcher_error_modal": {
+    "title": "Failed to connect to streaming room",
     "message": "Please use the link sent from the Admin Smart Item to rejoin the streaming."
   }
 }

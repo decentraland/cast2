@@ -16,7 +16,18 @@ jest.mock('../ChatProvider/ChatProvider', () => ({
   }))
 }))
 
+// Mock useLiveKitCredentials hook
+jest.mock('../../context/LiveKitContext', () => ({
+  useLiveKitCredentials: jest.fn(() => ({
+    credentials: null,
+    setCredentials: jest.fn(),
+    streamMetadata: null,
+    setStreamMetadata: jest.fn()
+  }))
+}))
+
 const mockUseChatContext = jest.requireMock('../ChatProvider/ChatProvider').useChatContext
+const mockUseLiveKitCredentials = jest.requireMock('../../context/LiveKitContext').useLiveKitCredentials
 
 const renderWithTranslation = (props: Partial<ChatPanelProps> = {}) => {
   const defaultProps: ChatPanelProps = {
@@ -42,13 +53,19 @@ describe('ChatPanel', () => {
       setChatOpen: jest.fn(),
       profiles: new Map()
     })
+    mockUseLiveKitCredentials.mockReturnValue({
+      credentials: null,
+      setCredentials: jest.fn(),
+      streamMetadata: null,
+      setStreamMetadata: jest.fn()
+    })
   })
 
   describe('when there are no messages', () => {
     it('should render chat title', () => {
       renderWithTranslation()
 
-      expect(screen.getByText('Chat')).toBeInTheDocument()
+      expect(screen.getByText('In-World Chat')).toBeInTheDocument()
     })
 
     it('should show empty state', () => {
@@ -57,13 +74,10 @@ describe('ChatPanel', () => {
       expect(screen.getByText(/no.*messages.*yet/i)).toBeInTheDocument()
     })
 
-    it('should show footer with Decentraland App link', () => {
+    it('should show footer text', () => {
       renderWithTranslation()
 
-      const link = screen.getByRole('link', { name: /decentraland app/i })
-      expect(link).toBeInTheDocument()
-      expect(link).toHaveAttribute('href', 'https://decentraland.org/download')
-      expect(link).toHaveAttribute('target', '_blank')
+      expect(screen.getByText(/jump into.*in decentraland to participate/i)).toBeInTheDocument()
     })
   })
 
@@ -114,11 +128,10 @@ describe('ChatPanel', () => {
       expect(screen.queryByText('No messages yet')).not.toBeInTheDocument()
     })
 
-    it('should show footer with Decentraland App link', () => {
+    it('should show footer text', () => {
       renderWithTranslation({ chatMessages: mockMessages })
 
-      const link = screen.getByRole('link', { name: /decentraland app/i })
-      expect(link).toBeInTheDocument()
+      expect(screen.getByText(/jump into.*in decentraland to participate/i)).toBeInTheDocument()
     })
   })
 
