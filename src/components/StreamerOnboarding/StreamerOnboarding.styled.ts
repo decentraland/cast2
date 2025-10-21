@@ -77,8 +77,6 @@ const Title = styled(Typography)(({ theme }) => ({
   marginTop: theme.spacing(1),
   maxWidth: '100%',
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
   [theme.breakpoints.down('sm')]: {
     fontSize: '1.25rem',
     whiteSpace: 'normal',

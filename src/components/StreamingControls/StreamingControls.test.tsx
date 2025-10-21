@@ -90,7 +90,9 @@ describe('StreamingControls', () => {
     })
     mockUseLiveKitCredentials.mockReturnValue({
       credentials: { token: 'mock-token', url: 'ws://mock-url' },
-      setCredentials: jest.fn()
+      setCredentials: jest.fn(),
+      streamMetadata: null,
+      setStreamMetadata: jest.fn()
     })
     mockUseRemoteParticipants.mockReturnValue([])
   })

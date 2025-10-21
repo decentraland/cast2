@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLocalParticipant, useRemoteParticipants } from '@livekit/components-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { Participant } from 'livekit-client'
+import { Participant, Track } from 'livekit-client'
 import { PeopleSidebarProps } from './PeopleSidebar.type'
 import { useFilteredParticipants } from '../../hooks/usePeopleSidebar'
 import { useProfiles } from '../../hooks/useProfiles'
@@ -113,7 +113,13 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
         // Fallback to display name from metadata
         displayName = getDisplayName(participant)
       }
-      return { displayName, address, profile }
+
+      // Check if participant is sharing screen
+      const isScreenSharing = Array.from(participant.videoTrackPublications.values()).some(
+        pub => pub.source === Track.Source.ScreenShare && pub.track
+      )
+
+      return { displayName, address, profile, isScreenSharing }
     },
     [localParticipant, profiles, t]
   )
@@ -138,14 +144,14 @@ export function PeopleSidebar({ onClose }: PeopleSidebarProps) {
             <Divider />
             {streamers.length > 0 ? (
               streamers.map(participant => {
-                const { address, profile, displayName } = getParticipantProfile(participant)
+                const { address, profile, displayName, isScreenSharing } = getParticipantProfile(participant)
 
                 return (
                   <ParticipantItem key={participant.sid}>
                     <Avatar profile={profile} address={address} size={40} />
                     <ParticipantInfo>
                       <ParticipantName>{displayName}</ParticipantName>
-                      <ParticipantStatus $isStreaming={true}>{t('people.speaker_status')}</ParticipantStatus>
+                      {isScreenSharing && <ParticipantStatus $isStreaming={true}>{t('people.speaker_status')}</ParticipantStatus>}
                     </ParticipantInfo>
                   </ParticipantItem>
                 )
