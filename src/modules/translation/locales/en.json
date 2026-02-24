@@ -146,6 +146,14 @@
     "title": "Failed to rejoin cast",
     "message": "Please use the link for this Cast to rejoin."
   },
+  "scene_selector": {
+    "title": "Select a Scene",
+    "placeholder": "Choose a scene to watch",
+    "watch": "WATCH",
+    "back": "BACK",
+    "no_scenes": "No scenes found in this world",
+    "loading": "Loading world scenes..."
+  },
   "watcher_error_modal": {
     "title": "Failed to connect to streaming room",
     "message": "Please use the link sent from the Admin Smart Item to rejoin the streaming."

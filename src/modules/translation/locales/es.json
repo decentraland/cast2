@@ -146,6 +146,14 @@
     "title": "Error al reingresar al cast",
     "message": "Por favor usa el enlace de este Cast para reingresar."
   },
+  "scene_selector": {
+    "title": "Seleccionar una Escena",
+    "placeholder": "Elige una escena para ver",
+    "watch": "VER",
+    "back": "VOLVER",
+    "no_scenes": "No se encontraron escenas en este mundo",
+    "loading": "Cargando escenas del mundo..."
+  },
   "watcher_error_modal": {
     "title": "Error al conectarse a la sala de transmisión",
     "message": "Por favor usa el enlace enviado desde el Admin Smart Item para reingresar a la transmisión."
