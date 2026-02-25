@@ -146,6 +146,14 @@
     "title": "重新加入Cast失败",
     "message": "请使用此Cast的链接重新加入。"
   },
+  "scene_selector": {
+    "title": "选择场景",
+    "placeholder": "选择要观看的场景",
+    "watch": "观看",
+    "back": "返回",
+    "no_scenes": "此世界中未找到场景",
+    "loading": "加载世界场景中..."
+  },
   "watcher_error_modal": {
     "title": "连接直播室失败",
     "message": "请使用从Admin Smart Item发送的链接重新加入直播。"

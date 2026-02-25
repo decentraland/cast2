@@ -1,6 +1,7 @@
 {
   "GATEKEEPER_URL": "https://comms-gatekeeper.decentraland.zone",
   "PEER_URL": "https://peer-testing.decentraland.org",
+  "WORLDS_CONTENT_URL": "https://worlds-content-server.decentraland.zone",
   "ENVIRONMENT": "staging",
   "ANALYTICS_ENABLED": true,
   "DEBUG_MODE": false

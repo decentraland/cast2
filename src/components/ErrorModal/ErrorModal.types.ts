@@ -3,4 +3,5 @@ export interface ErrorModalProps {
   message: string
   onExit?: () => void
   showExitButton?: boolean
+  exitButtonText?: string
 }

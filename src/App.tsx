@@ -35,6 +35,7 @@ const App = () => {
             {/* Main routes for Cast 2.0 */}
             <Route path="/cast/s/:token" element={<StreamerView />} />
             <Route path="/cast/s/streaming" element={<StreamerView />} />
+            <Route path="/cast/w/:worldName/parcel/:parcel" element={<WatcherView />} />
             <Route path="/cast/w/:location" element={<WatcherView />} />
 
             {/* Root redirects to home/invalid route handler */}

@@ -11,6 +11,34 @@ class CastApiError extends Error {
   }
 }
 
+interface WorldSceneEntity {
+  id: string
+  type: string
+  timestamp: number
+  pointers: string[]
+  metadata?: {
+    display?: {
+      title?: string
+    }
+    scene?: {
+      base?: string
+      parcels?: string[]
+    }
+  }
+}
+
+interface WorldScene {
+  worldName: string
+  entityId: string
+  entity: WorldSceneEntity
+  parcels: string[]
+}
+
+interface WorldScenesResponse {
+  scenes: WorldScene[]
+  total: number
+}
+
 /**
  * Fetches streamer token from gatekeeper
  * @param token - The streaming token
@@ -37,19 +65,47 @@ async function getStreamerToken(token: string, identity: string): Promise<LiveKi
  * Fetches watcher token for viewing
  * @param location - The location (parcel coordinates like "20,-4" or world name like "goerliplaza.dcl.eth")
  * @param identity - The identity/display name for the watcher (required)
+ * @param parcel - The parcel coordinate for world streams (e.g. "1,4")
  */
-async function getWatcherToken(location: string, identity: string): Promise<LiveKitCredentials> {
+async function getWatcherToken(location: string, identity: string, parcel?: string): Promise<LiveKitCredentials> {
   const baseUrl = config.get('GATEKEEPER_URL')
+  const body: Record<string, string> = { location, identity }
+  if (parcel) {
+    body.parcel = parcel
+  }
   const response = await fetch(`${baseUrl}/cast/watcher-token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({ location, identity })
+    body: JSON.stringify(body)
   })
 
   if (!response.ok) {
-    throw new CastApiError(response.status, `Failed to get watcher token: ${response.statusText}`)
+    let errorMessage = 'Unknown error'
+    try {
+      const errorBody = await response.json()
+      if (errorBody.error) {
+        errorMessage = errorBody.error
+      }
+    } catch {
+      // Response wasn't JSON
+    }
+    throw new CastApiError(response.status, errorMessage)
+  }
+
+  return response.json()
+}
+
+/**
+ * Fetches the list of scenes deployed in a world from the worlds content server
+ */
+async function getWorldScenes(worldName: string): Promise<WorldScenesResponse> {
+  const baseUrl = config.get('WORLDS_CONTENT_URL')
+  const response = await fetch(`${baseUrl}/world/${encodeURIComponent(worldName.toLowerCase())}/scenes`)
+
+  if (!response.ok) {
+    throw new CastApiError(response.status, `Failed to get world scenes: ${response.statusText}`)
   }
 
   return response.json()
@@ -72,4 +128,5 @@ async function getStreamInfo(streamingKey: string): Promise<{ placeName: string;
   return response.json()
 }
 
-export { CastApiError, getStreamerToken, getWatcherToken, getStreamInfo }
+export { CastApiError, getStreamerToken, getWatcherToken, getWorldScenes, getStreamInfo }
+export type { WorldScene, WorldSceneEntity, WorldScenesResponse }
