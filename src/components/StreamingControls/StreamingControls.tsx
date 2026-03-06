@@ -218,7 +218,7 @@ export function StreamingControls({
         }
 
         console.log('[StreamingControls] Starting screen share')
-        await localParticipant.setScreenShareEnabled(true)
+        await localParticipant.setScreenShareEnabled(true, { audio: true })
         setIsScreenSharing(true)
         console.log('[StreamingControls] Screen share started successfully')
       } catch (error) {
