@@ -142,7 +142,7 @@ describe('StreamingControls', () => {
         fireEvent.click(screenShareButton!)
 
         await waitFor(() => {
-          expect(mockSetScreenShareEnabled).toHaveBeenCalledWith(true)
+          expect(mockSetScreenShareEnabled).toHaveBeenCalledWith(true, { audio: true })
         })
       })
     })
