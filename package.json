@@ -21,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/decentraland/dapps-template.git"
+    "url": "git+ssh://git@github.com/decentraland/cast2"
   },
   "author": "Decentraland",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/decentraland/dapps-template/issues"
+    "url": "https://github.com/decentraland/cast2/issues"
   },
   "homepage": "",
   "engines": {

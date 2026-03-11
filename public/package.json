@@ -1,7 +1,7 @@
 {
   "name": "@dcl/cast2-site",
   "version": "0.1.0",
-  "description": "Starter template for Decentraland dApps Repositories",
+  "description": "Decentraland Cast 2.0 - Browser-native streaming with sub-second latency",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/decentraland/dapps-template.git"
+    "url": "git+ssh://git@github.com/decentraland/cast2"
   },
   "homepage": ""
 }
