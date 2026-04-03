@@ -7,12 +7,16 @@ import MicIcon from '@mui/icons-material/Mic'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import PeopleIcon from '@mui/icons-material/People'
 import ScreenShareIcon from '@mui/icons-material/ScreenShare'
+import SlideshowIcon from '@mui/icons-material/Slideshow'
+import StopIcon from '@mui/icons-material/Stop'
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
+import { usePresentationOptional } from '../../context/PresentationContext'
 import { useTranslation } from '../../modules/translation'
+import { SharePresentationModal } from '../SharePresentationModal/SharePresentationModal'
 import { StreamingControlsProps } from './StreamingControls.types'
 import {
   ButtonWithMenu,
@@ -31,7 +35,9 @@ import {
   MobileIconButton,
   MobileLeftGroup,
   MobileRightGroup,
-  NotificationBadge
+  NotificationBadge,
+  ShareMenu,
+  ShareMenuItem
 } from './StreamingControls.styled'
 
 export function StreamingControls({
@@ -45,7 +51,6 @@ export function StreamingControls({
   const room = useRoomContext()
   const { localParticipant } = useLocalParticipant()
   const remoteParticipants = useRemoteParticipants()
-  console.log('remoteParticipants', remoteParticipants)
   const connectionState = useConnectionState()
   const [isScreenSharing, setIsScreenSharing] = useState(false)
   const [showAudioMenu, setShowAudioMenu] = useState(false)
@@ -54,6 +59,42 @@ export function StreamingControls({
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedAudioDevice, setSelectedAudioDevice] = useState<string>('')
   const [selectedVideoDevice, setSelectedVideoDevice] = useState<string>('')
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showPresentationModal, setShowPresentationModal] = useState(false)
+
+  const presentationContext = usePresentationOptional()
+  const isPresentationActive = presentationContext?.isPresentationActive ?? false
+  const isSharingAnything = isScreenSharing || isPresentationActive
+
+  const handleShareScreenClick = () => {
+    setShowShareMenu(false)
+    handleScreenShare()
+  }
+
+  const handleSharePresentationClick = () => {
+    setShowShareMenu(false)
+    setShowPresentationModal(true)
+  }
+
+  const handleStopPresentation = () => {
+    setShowShareMenu(false)
+    presentationContext?.stopPresentation()
+  }
+
+  const handleShareButtonClick = () => {
+    if (isScreenSharing) {
+      handleScreenShare() // stops screen share
+    } else if (isPresentationActive) {
+      setShowShareMenu(!showShareMenu)
+    } else {
+      setShowShareMenu(!showShareMenu)
+    }
+  }
+
+  const handlePresentationFileSelected = async (file: File) => {
+    if (!presentationContext) return
+    await presentationContext.startPresentation(file)
+  }
 
   const { enabled: isMicEnabled } = useTrackToggle({
     source: Track.Source.Microphone
@@ -115,6 +156,7 @@ export function StreamingControls({
       if (!target.closest('[data-dropdown-menu]') && !target.closest('[data-dropdown-button]')) {
         setShowAudioMenu(false)
         setShowVideoMenu(false)
+        setShowShareMenu(false)
       }
     }
 
@@ -331,6 +373,7 @@ export function StreamingControls({
   }
 
   return (
+    <>
     <ControlsContainer>
       {/* Mobile Left Controls: Media controls (visible only on mobile) */}
       <ControlsLeft>
@@ -384,9 +427,39 @@ export function StreamingControls({
           </ButtonWithMenu>
         )}
 
-        {/* Screen Share - Only for streamer */}
+        {/* Share (Screen / Presentation) - Only for streamer */}
         {isStreamer && (
-          <CircleButton onClick={handleScreenShare}>{isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}</CircleButton>
+          <ButtonWithMenu>
+            <CircleButton onClick={handleShareButtonClick} data-dropdown-button>
+              {isPresentationActive ? <SlideshowIcon /> : isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+            </CircleButton>
+            {!isScreenSharing && (
+              <ChevronButton data-dropdown-button onClick={() => setShowShareMenu(!showShareMenu)}>
+                <ExpandMoreIcon />
+              </ChevronButton>
+            )}
+            {showShareMenu && (
+              <ShareMenu data-dropdown-menu>
+                {isPresentationActive ? (
+                  <ShareMenuItem onClick={handleStopPresentation}>
+                    <StopIcon />
+                    Stop Presentation
+                  </ShareMenuItem>
+                ) : (
+                  <>
+                    <ShareMenuItem onClick={handleShareScreenClick}>
+                      <ScreenShareIcon />
+                      Share Screen
+                    </ShareMenuItem>
+                    <ShareMenuItem onClick={handleSharePresentationClick}>
+                      <SlideshowIcon />
+                      Share Presentation
+                    </ShareMenuItem>
+                  </>
+                )}
+              </ShareMenu>
+            )}
+          </ButtonWithMenu>
         )}
       </ControlsLeft>
 
@@ -439,7 +512,38 @@ export function StreamingControls({
               )}
             </ButtonWithMenu>
 
-            <CircleButton onClick={handleScreenShare}>{isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}</CircleButton>
+            {/* Share (Screen / Presentation) dropdown */}
+            <ButtonWithMenu>
+              <CircleButton onClick={handleShareButtonClick} data-dropdown-button>
+                {isPresentationActive ? <SlideshowIcon /> : isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+              </CircleButton>
+              {!isScreenSharing && (
+                <ChevronButton data-dropdown-button onClick={() => setShowShareMenu(!showShareMenu)}>
+                  <ExpandMoreIcon />
+                </ChevronButton>
+              )}
+              {showShareMenu && (
+                <ShareMenu data-dropdown-menu>
+                  {isPresentationActive ? (
+                    <ShareMenuItem onClick={handleStopPresentation}>
+                      <StopIcon />
+                      Stop Presentation
+                    </ShareMenuItem>
+                  ) : (
+                    <>
+                      <ShareMenuItem onClick={handleShareScreenClick}>
+                        <ScreenShareIcon />
+                        Share Screen
+                      </ShareMenuItem>
+                      <ShareMenuItem onClick={handleSharePresentationClick}>
+                        <SlideshowIcon />
+                        Share Presentation
+                      </ShareMenuItem>
+                    </>
+                  )}
+                </ShareMenu>
+              )}
+            </ButtonWithMenu>
 
             {/* Leave/Hang-up button - Desktop only, positioned after media controls */}
             {isDisconnected ? (
@@ -514,5 +618,13 @@ export function StreamingControls({
         </MobileRightGroup>
       </ControlsRight>
     </ControlsContainer>
+
+    {showPresentationModal && (
+      <SharePresentationModal
+        onClose={() => setShowPresentationModal(false)}
+        onFileSelected={handlePresentationFileSelected}
+      />
+    )}
+    </>
   )
 }

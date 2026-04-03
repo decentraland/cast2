@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
@@ -53,6 +53,23 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     [filteredTracks]
   )
 
+  // Auto-expand presentation bot tile when it appears, reset when it leaves
+  useEffect(() => {
+    const presentationTrack = finalTracks.find(t => isPresentationBot(t.participant))
+    if (presentationTrack) {
+      const trackKey = presentationTrack.participant.sid + presentationTrack.source
+      if (expandedTrackSid !== trackKey) {
+        setExpandedTrackSid(trackKey)
+      }
+    } else if (expandedTrackSid) {
+      // If the expanded track no longer exists (bot left), reset to default layout
+      const expandedStillExists = finalTracks.some(t => t.participant.sid + t.source === expandedTrackSid)
+      if (!expandedStillExists) {
+        setExpandedTrackSid(null)
+      }
+    }
+  }, [finalTracks, expandedTrackSid])
+
   const participantCount = finalTracks.length
   const isFullscreen = participantCount === 1
   const hasMultipleParticipants = participantCount >= 2
@@ -100,6 +117,7 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   if (hasMultipleParticipants && expandedTrackSid) {
     const expandedTrack = finalTracks.find(t => t.participant.sid + t.source === expandedTrackSid)
     const otherTracks = finalTracks.filter(t => t.participant.sid + t.source !== expandedTrackSid)
+    const isPresentationExpanded = expandedTrack ? isPresentationBot(expandedTrack.participant) : false
 
     // Check if we have more thumbnails than MAX_THUMBNAILS
     // Only show overflow card if there are at least 2 more participants (+2 minimum)
@@ -114,11 +132,11 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
           <ParticipantTile
             trackRef={expandedTrack}
             isFullscreen={true}
-            onClick={() => handleTileClick(expandedTrack.participant.sid + expandedTrack.source)}
+            onClick={isPresentationExpanded ? undefined : () => handleTileClick(expandedTrack.participant.sid + expandedTrack.source)}
           />
         )}
-        {/* Show other tracks in vertical thumbnail grid */}
-        {otherTracks.length === 1 ? (
+        {/* Hide participant thumbnails during presentation — slides are the focus */}
+        {isPresentationExpanded ? null : otherTracks.length === 1 ? (
           // Single floating video
           <FloatingVideoContainer>
             <ParticipantTile
@@ -180,6 +198,15 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   )
 }
 
+function isPresentationBot(participant: TrackReferenceOrPlaceholder['participant']): boolean {
+  try {
+    const metadata = participant.metadata ? JSON.parse(participant.metadata) : null
+    return metadata?.role === 'presentation'
+  } catch {
+    return false
+  }
+}
+
 function ParticipantTile({
   trackRef,
   isFullscreen = false,
@@ -191,9 +218,10 @@ function ParticipantTile({
 }) {
   const { participant, source, publication } = trackRef
   const isScreenShare = source === Track.Source.ScreenShare
+  const isPresentation = isPresentationBot(participant)
 
-  // Only apply speaking indicator to camera, not screen share
-  const isSpeaking = useIsSpeaking(participant) && !isScreenShare
+  // Only apply speaking indicator to camera, not screen share or presentation bot
+  const isSpeaking = useIsSpeaking(participant) && !isScreenShare && !isPresentation
 
   // Get audio track for speaking indicator and muted state
   const audioTrackRefs = useTracks([Track.Source.Microphone], {
@@ -224,8 +252,8 @@ function ParticipantTile({
     return null
   }
 
-  // Get display name with " - screen" suffix for screen share
-  const displayName = isScreenShare ? `${getDisplayName(participant)} - screen` : getDisplayName(participant)
+  // Get display name: "Presentation" for bot, " - screen" suffix for screen share
+  const displayName = isPresentation ? 'Presentation' : isScreenShare ? `${getDisplayName(participant)} - screen` : getDisplayName(participant)
 
   return (
     <ParticipantTileContainer
@@ -248,13 +276,13 @@ function ParticipantTile({
         </AvatarFallback>
       )}
 
-      {!isScreenShare && (
+      {!isScreenShare && !isPresentation && (
         <SpeakingIndicatorWrapper>
           <SpeakingIndicator participant={participant} trackRef={participantAudioTrack} />
         </SpeakingIndicatorWrapper>
       )}
 
-      {isMuted && !isScreenShare && (
+      {isMuted && !isScreenShare && !isPresentation && (
         <MutedIndicator>
           <MicOffIcon />
         </MutedIndicator>

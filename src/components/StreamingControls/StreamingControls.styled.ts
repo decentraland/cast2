@@ -296,6 +296,40 @@ const CircleEndButton = styled('button')(({ theme }) => ({
   }
 }))
 
+const ShareMenuItem = styled('div')({
+  padding: '10px 16px',
+  color: '#16141a',
+  cursor: 'pointer',
+  fontSize: 14,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  transition: 'background 0.15s ease',
+  whiteSpace: 'nowrap',
+  '&:hover': {
+    background: 'rgba(0, 0, 0, 0.05)'
+  },
+  '& svg': {
+    fontSize: 20,
+    color: '#666'
+  }
+})
+
+const ShareMenu = styled('div')({
+  position: 'absolute',
+  bottom: '100%',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  marginBottom: 8,
+  background: 'white',
+  borderRadius: 8,
+  border: '1px solid rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  padding: '4px 0',
+  minWidth: 200,
+  zIndex: 1
+})
+
 export {
   ButtonWithMenu,
   ChevronButton,
@@ -313,5 +347,7 @@ export {
   MobileIconButton,
   MobileLeftGroup,
   MobileRightGroup,
-  NotificationBadge
+  NotificationBadge,
+  ShareMenu,
+  ShareMenuItem
 }
