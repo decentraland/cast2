@@ -258,6 +258,25 @@ async function stopPresentation(id: string): Promise<void> {
   }
 }
 
+async function uploadPresentationFromUrl(
+  url: string,
+  livekitToken: string,
+  livekitUrl: string
+): Promise<PresentationInfo> {
+  const presenterUrl = config.get('PRESENTER_SERVER_URL')
+  const response = await fetch(`${presenterUrl}/presentations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, livekitToken, livekitUrl })
+  })
+
+  if (!response.ok) {
+    throw new CastApiError(response.status, `Failed to upload presentation from URL: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
 export {
   CastApiError,
   getStreamerToken,
@@ -266,6 +285,7 @@ export {
   getStreamInfo,
   getPresentationBotToken,
   uploadPresentation,
+  uploadPresentationFromUrl,
   navigatePresentation,
   getPresentationState,
   playPresentationVideo,

@@ -4,6 +4,7 @@ import { RoomEvent } from 'livekit-client'
 import {
   getPresentationBotToken,
   uploadPresentation,
+  uploadPresentationFromUrl,
   SlideVideoInfo
 } from '../utils/api'
 import { getStreamerToken as getStoredToken } from '../utils/localStorage'
@@ -22,6 +23,7 @@ interface PresentationState {
 interface PresentationContextValue {
   state: PresentationState
   startPresentation: (file: File) => Promise<void>
+  startPresentationFromUrl: (url: string) => Promise<void>
   navigateSlide: (action: 'next' | 'prev') => Promise<void>
   goToSlide: (index: number) => Promise<void>
   playVideo: (videoIndex: number) => Promise<void>
@@ -171,6 +173,37 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const startPresentationFromUrl = useCallback(async (url: string) => {
+    setState(prev => ({ ...prev, status: 'uploading', error: null }))
+
+    try {
+      const streamingKey = getStoredToken()
+      if (!streamingKey) {
+        throw new Error('No streaming key available')
+      }
+
+      const botToken = await getPresentationBotToken(streamingKey)
+      const info = await uploadPresentationFromUrl(url, botToken.token, botToken.url)
+
+      setState({
+        id: info.id,
+        slideCount: info.slideCount,
+        currentSlide: 0,
+        fileType: info.fileType,
+        status: 'active',
+        error: null,
+        slideVideos: [],
+        videoState: 'idle'
+      })
+    } catch (err) {
+      setState(prev => ({
+        ...prev,
+        status: 'error',
+        error: err instanceof Error ? err.message : 'Failed to start presentation from URL'
+      }))
+    }
+  }, [])
+
   const navigateSlide = useCallback(async (action: 'next' | 'prev') => {
     if (!state.id) return
     await sendCommand({ type: 'presentation:navigate', action })
@@ -210,6 +243,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       value={{
         state,
         startPresentation,
+        startPresentationFromUrl,
         navigateSlide,
         goToSlide,
         playVideo,

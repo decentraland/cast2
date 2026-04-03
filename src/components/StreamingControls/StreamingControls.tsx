@@ -96,6 +96,11 @@ export function StreamingControls({
     await presentationContext.startPresentation(file)
   }
 
+  const handlePresentationUrlSubmitted = async (url: string) => {
+    if (!presentationContext) return
+    await presentationContext.startPresentationFromUrl(url)
+  }
+
   const { enabled: isMicEnabled } = useTrackToggle({
     source: Track.Source.Microphone
   })
@@ -623,6 +628,7 @@ export function StreamingControls({
       <SharePresentationModal
         onClose={() => setShowPresentationModal(false)}
         onFileSelected={handlePresentationFileSelected}
+        onUrlSubmitted={handlePresentationUrlSubmitted}
       />
     )}
     </>

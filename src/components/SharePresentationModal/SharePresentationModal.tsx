@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import {
   BrowseButton,
@@ -6,17 +6,22 @@ import {
   Divider,
   Modal,
   Overlay,
+  ShareButton,
   SupportedFormats,
-  Title
+  Title,
+  UrlInput,
+  UrlRow
 } from './SharePresentationModal.styled'
 
 interface SharePresentationModalProps {
   onClose: () => void
   onFileSelected: (file: File) => void
+  onUrlSubmitted: (url: string) => void
 }
 
-export function SharePresentationModal({ onClose, onFileSelected }: SharePresentationModalProps) {
+export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted }: SharePresentationModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [url, setUrl] = useState('')
 
   const handleBrowse = () => {
     fileInputRef.current?.click()
@@ -29,6 +34,19 @@ export function SharePresentationModal({ onClose, onFileSelected }: SharePresent
       onClose()
     }
     event.target.value = ''
+  }
+
+  const handleShareUrl = () => {
+    const trimmed = url.trim()
+    if (!trimmed) return
+    onUrlSubmitted(trimmed)
+    onClose()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleShareUrl()
+    }
   }
 
   const handleOverlayClick = (event: React.MouseEvent) => {
@@ -46,12 +64,22 @@ export function SharePresentationModal({ onClose, onFileSelected }: SharePresent
 
         <Title>Share Presentation</Title>
 
-        <Divider>Browse a file from your computer</Divider>
+        <UrlRow>
+          <UrlInput
+            placeholder="Paste your presentation URL"
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <ShareButton onClick={handleShareUrl} disabled={!url.trim()}>Share</ShareButton>
+        </UrlRow>
+
+        <Divider>or</Divider>
 
         <BrowseButton onClick={handleBrowse}>Browse your local files</BrowseButton>
-        <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={handleFileChange} />
+        <input ref={fileInputRef} type="file" accept=".pdf,.pptx" style={{ display: 'none' }} onChange={handleFileChange} />
 
-        <SupportedFormats>Supported formats: PDF</SupportedFormats>
+        <SupportedFormats>Supported formats: gslides (Google Slides) and PDF.</SupportedFormats>
       </Modal>
     </Overlay>
   )
