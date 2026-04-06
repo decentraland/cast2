@@ -1,3 +1,5 @@
+# Cast2
+
 # Decentraland dApp template
 
 ![Decentraland Cover](https://decentraland.org/og.jpg)
