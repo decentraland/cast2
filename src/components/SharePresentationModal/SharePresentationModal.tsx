@@ -77,9 +77,9 @@ export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted
         <Divider>or</Divider>
 
         <BrowseButton onClick={handleBrowse}>Browse your local files</BrowseButton>
-        <input ref={fileInputRef} type="file" accept=".pdf,.pptx" style={{ display: 'none' }} onChange={handleFileChange} />
+        <input ref={fileInputRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={handleFileChange} />
 
-        <SupportedFormats>Supported formats: gslides (Google Slides) and PDF.</SupportedFormats>
+        <SupportedFormats>Supported format: PDF.</SupportedFormats>
       </Modal>
     </Overlay>
   )
