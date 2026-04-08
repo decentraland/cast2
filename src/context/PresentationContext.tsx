@@ -7,6 +7,7 @@ import {
   uploadPresentationFromUrl,
   SlideVideoInfo
 } from '../utils/api'
+import { encodeCommsPacket, decodeCommsPacket } from '../utils/commsProtocol'
 import { getStreamerToken as getStoredToken } from '../utils/localStorage'
 
 interface PresentationState {
@@ -33,6 +34,8 @@ interface PresentationContextValue {
   presentationParticipantIdentity: string | null
 }
 
+const PRESENTATION_TOPIC = 'presentation'
+
 const initialState: PresentationState = {
   id: null,
   slideCount: 0,
@@ -53,8 +56,8 @@ function PresentationProvider({ children }: { children: ReactNode }) {
 
   const sendCommand = useCallback(async (command: Record<string, unknown>) => {
     if (!room?.localParticipant) return
-    const data = new TextEncoder().encode(JSON.stringify(command))
-    await room.localParticipant.publishData(data, { reliable: true, topic: 'presentation' })
+    const packet = encodeCommsPacket(PRESENTATION_TOPIC, command)
+    await room.localParticipant.publishData(packet, { reliable: true })
   }, [room])
 
   // Find the presentation bot among remote participants and read its metadata
@@ -115,25 +118,26 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   // Listen for state broadcasts from the bot via data channel
   useEffect(() => {
     if (!room) return
-    const handleData = (payload: Uint8Array, _participant?: any, _kind?: any, topic?: string) => {
-      if (topic !== 'presentation') return
-      try {
-        const message = JSON.parse(new TextDecoder().decode(payload))
-        if (message.type === 'presentation:state') {
-          setState({
-            id: message.id,
-            slideCount: message.slideCount,
-            currentSlide: message.currentSlide,
-            fileType: message.fileType,
-            status: 'active',
-            error: null,
-            slideVideos: message.slideVideos || [],
-            videoState: message.videoState || 'idle'
-          })
-        } else if (message.type === 'presentation:stopped') {
-          setState(initialState)
-        }
-      } catch { /* ignore malformed messages */ }
+    const handleData = (payload: Uint8Array) => {
+      const decoded = decodeCommsPacket(payload)
+      if (!decoded || decoded.topic !== PRESENTATION_TOPIC) return
+
+      const message = decoded.data as Record<string, unknown>
+
+      if (message.type === 'presentation:state') {
+        setState({
+          id: message.id as string,
+          slideCount: message.slideCount as number,
+          currentSlide: message.currentSlide as number,
+          fileType: message.fileType as 'pdf' | 'pptx',
+          status: 'active',
+          error: null,
+          slideVideos: (message.slideVideos as SlideVideoInfo[]) || [],
+          videoState: (message.videoState as PresentationState['videoState']) || 'idle'
+        })
+      } else if (message.type === 'presentation:stopped') {
+        setState(initialState)
+      }
     }
     room.on(RoomEvent.DataReceived, handleData)
     return () => { room.off(RoomEvent.DataReceived, handleData) }
