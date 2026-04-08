@@ -24,11 +24,9 @@ export function encodeCommsPacket(topic: string, data: unknown): Uint8Array {
 
 /**
  * Decodes a raw LiveKit payload into a CommsData message.
- * Returns { topic, sender, data } or null if the payload is not a valid CommsData packet.
- * Includes a raw JSON fallback for backward compatibility.
+ * Returns { topic, data } or null if the payload is not a valid CommsData packet.
  */
 export function decodeCommsPacket(payload: Uint8Array): { topic: string; data: unknown } | null {
-  // Try protobuf decode first.
   try {
     const packet = Packet.decode(payload)
     if (packet.message?.$case === 'scene') {
@@ -43,17 +41,7 @@ export function decodeCommsPacket(payload: Uint8Array): { topic: string; data: u
       }
     }
   } catch {
-    // Not a valid protobuf packet — try raw JSON fallback.
-  }
-
-  // Fallback: raw JSON for backward compatibility during migration.
-  try {
-    const data = JSON.parse(new TextDecoder().decode(payload))
-    if (typeof data?.type === 'string') {
-      return { topic: '', data }
-    }
-  } catch {
-    // Ignore malformed payloads.
+    // Not a valid protobuf packet — ignore.
   }
 
   return null

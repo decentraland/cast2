@@ -23,9 +23,7 @@ function useChat() {
     const messages: ReceivedChatMessage[] = []
 
     // Listen for data messages
-    const handleDataReceived = (payload: Uint8Array, participant?: Participant, _kind?: any, topic?: string) => {
-      // Skip messages with a topic — those are handled by their own listeners (e.g. presentation)
-      if (topic) return
+    const handleDataReceived = (payload: Uint8Array, participant?: Participant) => {
       try {
         // Decode Decentraland protocol message (protobuf)
         const packet = Packet.decode(payload)
