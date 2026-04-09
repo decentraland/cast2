@@ -43,7 +43,9 @@
     "reconnect": "Reconnect",
     "disconnected": "Disconnected",
     "connecting": "Connecting...",
-    "connected": "Connected"
+    "connected": "Connected",
+    "mute_cast": "Mute this Cast audio while you're in World",
+    "unmute_cast": "Unmute Cast audio"
   },
   "device_selector": {
     "audio_input": "Audio Input",

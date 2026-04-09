@@ -4,6 +4,8 @@ interface StreamingControlsProps {
   isStreamer?: boolean
   onLeave?: () => void
   unreadMessagesCount?: number
+  isTabMuted?: boolean
+  onToggleTabMute?: () => void
 }
 
 export type { StreamingControlsProps }

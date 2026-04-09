@@ -12,6 +12,8 @@ import StopIcon from '@mui/icons-material/Stop'
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
+import VolumeOffIcon from '@mui/icons-material/VolumeOff'
+import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { usePresentationOptional } from '../../context/PresentationContext'
@@ -45,7 +47,9 @@ export function StreamingControls({
   onTogglePeople,
   isStreamer = false,
   onLeave,
-  unreadMessagesCount = 0
+  unreadMessagesCount = 0,
+  isTabMuted = false,
+  onToggleTabMute
 }: StreamingControlsProps) {
   const { t } = useTranslation()
   const room = useRoomContext()
@@ -578,6 +582,12 @@ export function StreamingControls({
       {/* Right Controls: Chat + People buttons */}
       <ControlsRight>
         {/* Desktop buttons */}
+        {onToggleTabMute && (
+          <IconButton onClick={onToggleTabMute} title={isTabMuted ? t('streaming_controls.unmute_cast') : t('streaming_controls.mute_cast')}>
+            {isTabMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+          </IconButton>
+        )}
+
         {onToggleChat && (
           <IconButton onClick={onToggleChat}>
             <ChatBubbleOutlineIcon />
@@ -594,6 +604,12 @@ export function StreamingControls({
 
         {/* Mobile: Chat and People on the left */}
         <MobileLeftGroup>
+          {onToggleTabMute && (
+            <MobileIconButton onClick={onToggleTabMute}>
+              {isTabMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+            </MobileIconButton>
+          )}
+
           {onToggleChat && (
             <MobileIconButton onClick={onToggleChat}>
               <ChatBubbleOutlineIcon />

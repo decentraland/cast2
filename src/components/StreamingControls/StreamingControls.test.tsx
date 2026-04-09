@@ -221,6 +221,40 @@ describe('StreamingControls', () => {
     })
   })
 
+  describe('mute tab audio button', () => {
+    it('should render volume button when onToggleTabMute is provided', () => {
+      renderWithProviders(<StreamingControls isStreamer={true} onToggleTabMute={jest.fn()} />)
+
+      const volumeIcons = screen.getAllByTestId('VolumeUpIcon')
+      expect(volumeIcons.length).toBeGreaterThan(0)
+    })
+
+    it('should show VolumeOffIcon when tab is muted', () => {
+      renderWithProviders(<StreamingControls isStreamer={true} isTabMuted={true} onToggleTabMute={jest.fn()} />)
+
+      const volumeOffIcons = screen.getAllByTestId('VolumeOffIcon')
+      expect(volumeOffIcons.length).toBeGreaterThan(0)
+      expect(screen.queryByTestId('VolumeUpIcon')).not.toBeInTheDocument()
+    })
+
+    it('should call onToggleTabMute when clicked', () => {
+      const mockOnToggleTabMute = jest.fn()
+      renderWithProviders(<StreamingControls isStreamer={true} onToggleTabMute={mockOnToggleTabMute} />)
+
+      const volumeButton = screen.getAllByTestId('VolumeUpIcon')[0].closest('button')
+      fireEvent.click(volumeButton!)
+
+      expect(mockOnToggleTabMute).toHaveBeenCalled()
+    })
+
+    it('should not render volume button when onToggleTabMute is not provided', () => {
+      renderWithProviders(<StreamingControls isStreamer={true} />)
+
+      expect(screen.queryByTestId('VolumeUpIcon')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('VolumeOffIcon')).not.toBeInTheDocument()
+    })
+  })
+
   describe('when disconnected', () => {
     beforeEach(() => {
       mockUseConnectionState.mockReturnValue(ConnectionState.Disconnected)

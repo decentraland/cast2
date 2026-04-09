@@ -43,7 +43,9 @@
     "reconnect": "重新连接",
     "disconnected": "已断开",
     "connecting": "连接中...",
-    "connected": "已连接"
+    "connected": "已连接",
+    "mute_cast": "在世界中时静音此Cast音频",
+    "unmute_cast": "取消静音Cast音频"
   },
   "device_selector": {
     "audio_input": "音频输入",

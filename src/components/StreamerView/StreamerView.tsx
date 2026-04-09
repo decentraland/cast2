@@ -27,6 +27,7 @@ export function StreamerView() {
   const [activeToken, setActiveToken] = useState<string | null>(null)
   const [placeName, setPlaceName] = useState<string | null>(null)
   const [loadingPlaceInfo, setLoadingPlaceInfo] = useState(false)
+  const [isTabMuted, setIsTabMuted] = useState(false)
 
   // Determine which token to use and handle URL cleanup
   const determineToken = useCallback(() => {
@@ -163,10 +164,10 @@ export function StreamerView() {
         screen={false}
       >
         <ChatProvider>
-          <StreamerViewWithChat onLeave={handleLeaveRoom} />
+          <StreamerViewWithChat onLeave={handleLeaveRoom} isTabMuted={isTabMuted} onToggleTabMute={() => setIsTabMuted(prev => !prev)} />
         </ChatProvider>
 
-        <RoomAudioRenderer />
+        <RoomAudioRenderer volume={isTabMuted ? 0 : 1} />
         <ConnectionStateToast />
       </LiveKitRoom>
     </StreamerContainer>

@@ -9,9 +9,11 @@ import { StreamingControls } from '../StreamingControls/StreamingControls'
 
 interface WatcherViewWithChatProps {
   onLeave: () => void
+  isTabMuted: boolean
+  onToggleTabMute: () => void
 }
 
-export function WatcherViewWithChat({ onLeave }: WatcherViewWithChatProps) {
+export function WatcherViewWithChat({ onLeave, isTabMuted, onToggleTabMute }: WatcherViewWithChatProps) {
   const [peopleOpen, setPeopleOpen] = useState(false)
   const { chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, setChatOpen } = useChatContext()
 
@@ -49,6 +51,8 @@ export function WatcherViewWithChat({ onLeave }: WatcherViewWithChatProps) {
               isStreamer={false}
               onLeave={onLeave}
               unreadMessagesCount={unreadMessagesCount}
+              isTabMuted={isTabMuted}
+              onToggleTabMute={onToggleTabMute}
             />
           </ControlsArea>
         </MainContent>
