@@ -29,6 +29,7 @@ interface PresentationContextValue {
   goToSlide: (index: number) => Promise<void>
   playVideo: (videoIndex: number) => Promise<void>
   pauseVideo: () => Promise<void>
+  stopVideo: () => Promise<void>
   stopPresentation: () => Promise<void>
   isPresentationActive: boolean
   presentationParticipantIdentity: string | null
@@ -228,6 +229,11 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     await sendCommand({ type: 'presentation:video:pause' })
   }, [state.id, sendCommand])
 
+  const stopVideo = useCallback(async () => {
+    if (!state.id) return
+    await sendCommand({ type: 'presentation:video:stop' })
+  }, [state.id, sendCommand])
+
   const stopPresentationHandler = useCallback(async () => {
     if (!state.id) return
     await sendCommand({ type: 'presentation:stop' })
@@ -252,6 +258,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
         goToSlide,
         playVideo,
         pauseVideo,
+        stopVideo,
         stopPresentation: stopPresentationHandler,
         isPresentationActive: state.status === 'active',
         presentationParticipantIdentity

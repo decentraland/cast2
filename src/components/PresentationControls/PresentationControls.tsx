@@ -4,11 +4,12 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
+import StopIcon from '@mui/icons-material/Stop'
 import { usePresentation } from '../../context/PresentationContext'
 import { Divider, NavButton, PresentationControlsOverlay, SlideInfo, UploadingOverlay, VideoButton } from './PresentationControls.styled'
 
 export function PresentationControls() {
-  const { state, navigateSlide, playVideo, pauseVideo } = usePresentation()
+  const { state, navigateSlide, playVideo, pauseVideo, stopVideo } = usePresentation()
 
   const isActive = state.status === 'active'
   const isFirstSlide = state.currentSlide === 0
@@ -25,6 +26,11 @@ export function PresentationControls() {
       playVideo(0)
     }
   }, [isVideoLoading, isVideoPlaying, pauseVideo, playVideo])
+
+  const handleStopVideo = useCallback(() => {
+    if (isVideoLoading) return
+    stopVideo()
+  }, [isVideoLoading, stopVideo])
 
   // Keyboard shortcuts: arrows for navigation, space for video play/pause
   useEffect(() => {
@@ -83,6 +89,13 @@ export function PresentationControls() {
         style={{ visibility: hasVideos ? 'visible' : 'hidden' }}
       >
         {isVideoLoading ? <HourglassEmptyIcon /> : isVideoPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+      </VideoButton>
+      <VideoButton
+        onClick={handleStopVideo}
+        disabled={isVideoLoading || state.videoState === 'idle'}
+        style={{ visibility: hasVideos ? 'visible' : 'hidden' }}
+      >
+        <StopIcon />
       </VideoButton>
     </PresentationControlsOverlay>
   )
