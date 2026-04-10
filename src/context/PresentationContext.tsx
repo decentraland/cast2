@@ -1,12 +1,7 @@
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RoomEvent } from 'livekit-client'
-import {
-  getPresentationBotToken,
-  uploadPresentation,
-  uploadPresentationFromUrl,
-  SlideVideoInfo
-} from '../utils/api'
+import { getPresentationBotToken, uploadPresentation, uploadPresentationFromUrl, SlideVideoInfo } from '../utils/api'
 import { encodeCommsPacket, decodeCommsPacket } from '../utils/commsProtocol'
 import { getStreamerToken as getStoredToken } from '../utils/localStorage'
 
@@ -55,11 +50,14 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   const remoteParticipants = useRemoteParticipants()
   const room = useRoomContext()
 
-  const sendCommand = useCallback(async (command: Record<string, unknown>) => {
-    if (!room?.localParticipant) return
-    const packet = encodeCommsPacket(PRESENTATION_TOPIC, command)
-    await room.localParticipant.publishData(packet, { reliable: true })
-  }, [room])
+  const sendCommand = useCallback(
+    async (command: Record<string, unknown>) => {
+      if (!room?.localParticipant) return
+      const packet = encodeCommsPacket(PRESENTATION_TOPIC, command)
+      await room.localParticipant.publishData(packet, { reliable: true })
+    },
+    [room]
+  )
 
   // Find the presentation bot among remote participants and read its metadata
   const { presentationParticipantIdentity, botMetadata } = useMemo(() => {
@@ -91,11 +89,13 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     if (botId) {
       setState(prev => {
         // Skip update if nothing meaningful changed
-        if (prev.status === 'active' &&
-            prev.id === botId &&
-            prev.currentSlide === botCurrentSlide &&
-            prev.slideCount === botSlideCount &&
-            prev.videoState === botVideoState) {
+        if (
+          prev.status === 'active' &&
+          prev.id === botId &&
+          prev.currentSlide === botCurrentSlide &&
+          prev.slideCount === botSlideCount &&
+          prev.videoState === botVideoState
+        ) {
           return prev
         }
         return {
@@ -141,7 +141,9 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       }
     }
     room.on(RoomEvent.DataReceived, handleData)
-    return () => { room.off(RoomEvent.DataReceived, handleData) }
+    return () => {
+      room.off(RoomEvent.DataReceived, handleData)
+    }
   }, [room])
 
   const startPresentation = useCallback(async (file: File) => {
@@ -209,20 +211,29 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const navigateSlide = useCallback(async (action: 'next' | 'prev') => {
-    if (!state.id) return
-    await sendCommand({ type: 'presentation:navigate', action })
-  }, [state.id, sendCommand])
+  const navigateSlide = useCallback(
+    async (action: 'next' | 'prev') => {
+      if (!state.id) return
+      await sendCommand({ type: 'presentation:navigate', action })
+    },
+    [state.id, sendCommand]
+  )
 
-  const goToSlide = useCallback(async (index: number) => {
-    if (!state.id) return
-    await sendCommand({ type: 'presentation:navigate', action: 'goto', slideIndex: index })
-  }, [state.id, sendCommand])
+  const goToSlide = useCallback(
+    async (index: number) => {
+      if (!state.id) return
+      await sendCommand({ type: 'presentation:navigate', action: 'goto', slideIndex: index })
+    },
+    [state.id, sendCommand]
+  )
 
-  const playVideo = useCallback(async (videoIndex: number) => {
-    if (!state.id) return
-    await sendCommand({ type: 'presentation:video:play', videoIndex })
-  }, [state.id, sendCommand])
+  const playVideo = useCallback(
+    async (videoIndex: number) => {
+      if (!state.id) return
+      await sendCommand({ type: 'presentation:video:play', videoIndex })
+    },
+    [state.id, sendCommand]
+  )
 
   const pauseVideo = useCallback(async () => {
     if (!state.id) return

@@ -83,11 +83,7 @@ export function PresentationControls() {
       </NavButton>
 
       <Divider style={{ visibility: hasVideos ? 'visible' : 'hidden' }} />
-      <VideoButton
-        onClick={handleToggleVideo}
-        disabled={isVideoLoading}
-        style={{ visibility: hasVideos ? 'visible' : 'hidden' }}
-      >
+      <VideoButton onClick={handleToggleVideo} disabled={isVideoLoading} style={{ visibility: hasVideos ? 'visible' : 'hidden' }}>
         {isVideoLoading ? <HourglassEmptyIcon /> : isVideoPlaying ? <PauseIcon /> : <PlayArrowIcon />}
       </VideoButton>
       <VideoButton
