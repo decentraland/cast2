@@ -8,13 +8,13 @@ import MicOffIcon from '@mui/icons-material/MicOff'
 import PeopleIcon from '@mui/icons-material/People'
 import ScreenShareIcon from '@mui/icons-material/ScreenShare'
 import SlideshowIcon from '@mui/icons-material/Slideshow'
-import StopIcon from '@mui/icons-material/Stop'
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import VolumeOffIcon from '@mui/icons-material/VolumeOff'
 import VolumeUpIcon from '@mui/icons-material/VolumeUp'
 import { ConnectionState, LocalAudioTrack, LocalVideoTrack, Track } from 'livekit-client'
+import { ShareMenuDropdown } from './ShareMenuDropdown'
 import { useLiveKitCredentials } from '../../context/LiveKitContext'
 import { usePresentationOptional } from '../../context/PresentationContext'
 import { useTranslation } from '../../modules/translation'
@@ -37,9 +37,7 @@ import {
   MobileIconButton,
   MobileLeftGroup,
   MobileRightGroup,
-  NotificationBadge,
-  ShareMenu,
-  ShareMenuItem
+  NotificationBadge
 } from './StreamingControls.styled'
 
 export function StreamingControls({
@@ -68,7 +66,6 @@ export function StreamingControls({
 
   const presentationContext = usePresentationOptional()
   const isPresentationActive = presentationContext?.isPresentationActive ?? false
-  const isSharingAnything = isScreenSharing || isPresentationActive
 
   const handleShareScreenClick = () => {
     setShowShareMenu(false)
@@ -88,10 +85,8 @@ export function StreamingControls({
   const handleShareButtonClick = () => {
     if (isScreenSharing) {
       handleScreenShare() // stops screen share
-    } else if (isPresentationActive) {
-      setShowShareMenu(!showShareMenu)
     } else {
-      setShowShareMenu(!showShareMenu)
+      setShowShareMenu(prev => !prev)
     }
   }
 
@@ -383,100 +378,11 @@ export function StreamingControls({
 
   return (
     <>
-    <ControlsContainer>
-      {/* Mobile Left Controls: Media controls (visible only on mobile) */}
-      <ControlsLeft>
-        {/* Mic Control - Only for streamer */}
-        {isStreamer && (
-          <ButtonWithMenu>
-            <CircleButton onClick={handleToggleMic}>{isMicEnabled ? <MicIcon /> : <MicOffIcon />}</CircleButton>
-            {audioDevices.length > 1 && (
-              <ChevronButton data-dropdown-button onClick={() => setShowAudioMenu(!showAudioMenu)}>
-                <ExpandMoreIcon />
-              </ChevronButton>
-            )}
-            {showAudioMenu && (
-              <DeviceMenu data-dropdown-menu>
-                {audioDevices.map(device => (
-                  <DeviceMenuItem
-                    key={device.deviceId}
-                    $active={device.deviceId === selectedAudioDevice}
-                    onClick={() => handleAudioDeviceSelect(device.deviceId)}
-                  >
-                    {device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
-                  </DeviceMenuItem>
-                ))}
-              </DeviceMenu>
-            )}
-          </ButtonWithMenu>
-        )}
-
-        {/* Camera Control - Only for streamer */}
-        {isStreamer && (
-          <ButtonWithMenu>
-            <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
-            {videoDevices.length > 1 && (
-              <ChevronButton data-dropdown-button onClick={() => setShowVideoMenu(!showVideoMenu)}>
-                <ExpandMoreIcon />
-              </ChevronButton>
-            )}
-            {showVideoMenu && (
-              <DeviceMenu data-dropdown-menu>
-                {videoDevices.map(device => (
-                  <DeviceMenuItem
-                    key={device.deviceId}
-                    $active={device.deviceId === selectedVideoDevice}
-                    onClick={() => handleVideoDeviceSelect(device.deviceId)}
-                  >
-                    {device.label || `Camera ${device.deviceId.slice(0, 5)}`}
-                  </DeviceMenuItem>
-                ))}
-              </DeviceMenu>
-            )}
-          </ButtonWithMenu>
-        )}
-
-        {/* Share (Screen / Presentation) - Only for streamer */}
-        {isStreamer && (
-          <ButtonWithMenu>
-            <CircleButton onClick={handleShareButtonClick} data-dropdown-button>
-              {isPresentationActive ? <SlideshowIcon /> : isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}
-            </CircleButton>
-            {!isScreenSharing && (
-              <ChevronButton data-dropdown-button onClick={() => setShowShareMenu(!showShareMenu)}>
-                <ExpandMoreIcon />
-              </ChevronButton>
-            )}
-            {showShareMenu && (
-              <ShareMenu data-dropdown-menu>
-                {isPresentationActive ? (
-                  <ShareMenuItem onClick={handleStopPresentation}>
-                    <StopIcon />
-                    Stop Presentation
-                  </ShareMenuItem>
-                ) : (
-                  <>
-                    <ShareMenuItem onClick={handleShareScreenClick}>
-                      <ScreenShareIcon />
-                      Share Screen
-                    </ShareMenuItem>
-                    <ShareMenuItem onClick={handleSharePresentationClick}>
-                      <SlideshowIcon />
-                      Share Presentation
-                    </ShareMenuItem>
-                  </>
-                )}
-              </ShareMenu>
-            )}
-          </ButtonWithMenu>
-        )}
-      </ControlsLeft>
-
-      {/* Center Controls: Media controls (desktop) + Chat/People (mobile) */}
-      <ControlsCenter>
-        {/* Media controls - Only for streamer, visible only on desktop */}
-        {isStreamer && (
-          <DesktopMediaControls>
+      <ControlsContainer>
+        {/* Mobile Left Controls: Media controls (visible only on mobile) */}
+        <ControlsLeft>
+          {/* Mic Control - Only for streamer */}
+          {isStreamer && (
             <ButtonWithMenu>
               <CircleButton onClick={handleToggleMic}>{isMicEnabled ? <MicIcon /> : <MicOffIcon />}</CircleButton>
               {audioDevices.length > 1 && (
@@ -498,7 +404,10 @@ export function StreamingControls({
                 </DeviceMenu>
               )}
             </ButtonWithMenu>
+          )}
 
+          {/* Camera Control - Only for streamer */}
+          {isStreamer && (
             <ButtonWithMenu>
               <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
               {videoDevices.length > 1 && (
@@ -520,8 +429,10 @@ export function StreamingControls({
                 </DeviceMenu>
               )}
             </ButtonWithMenu>
+          )}
 
-            {/* Share (Screen / Presentation) dropdown */}
+          {/* Share (Screen / Presentation) - Only for streamer */}
+          {isStreamer && (
             <ButtonWithMenu>
               <CircleButton onClick={handleShareButtonClick} data-dropdown-button>
                 {isPresentationActive ? <SlideshowIcon /> : isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}
@@ -532,121 +443,180 @@ export function StreamingControls({
                 </ChevronButton>
               )}
               {showShareMenu && (
-                <ShareMenu data-dropdown-menu>
-                  {isPresentationActive ? (
-                    <ShareMenuItem onClick={handleStopPresentation}>
-                      <StopIcon />
-                      Stop Presentation
-                    </ShareMenuItem>
-                  ) : (
-                    <>
-                      <ShareMenuItem onClick={handleShareScreenClick}>
-                        <ScreenShareIcon />
-                        Share Screen
-                      </ShareMenuItem>
-                      <ShareMenuItem onClick={handleSharePresentationClick}>
-                        <SlideshowIcon />
-                        Share Presentation
-                      </ShareMenuItem>
-                    </>
-                  )}
-                </ShareMenu>
+                <ShareMenuDropdown
+                  isPresentationActive={isPresentationActive}
+                  onShareScreen={handleShareScreenClick}
+                  onSharePresentation={handleSharePresentationClick}
+                  onStopPresentation={handleStopPresentation}
+                />
               )}
             </ButtonWithMenu>
+          )}
+        </ControlsLeft>
 
-            {/* Leave/Hang-up button - Desktop only, positioned after media controls */}
-            {isDisconnected ? (
-              <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
-            ) : (
-              <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
-                {isStreamer ? t('streaming_controls.leave_stream') : t('streaming_controls.leave')}
-              </EndStreamButton>
-            )}
-          </DesktopMediaControls>
-        )}
+        {/* Center Controls: Media controls (desktop) + Chat/People (mobile) */}
+        <ControlsCenter>
+          {/* Media controls - Only for streamer, visible only on desktop */}
+          {isStreamer && (
+            <DesktopMediaControls>
+              <ButtonWithMenu>
+                <CircleButton onClick={handleToggleMic}>{isMicEnabled ? <MicIcon /> : <MicOffIcon />}</CircleButton>
+                {audioDevices.length > 1 && (
+                  <ChevronButton data-dropdown-button onClick={() => setShowAudioMenu(!showAudioMenu)}>
+                    <ExpandMoreIcon />
+                  </ChevronButton>
+                )}
+                {showAudioMenu && (
+                  <DeviceMenu data-dropdown-menu>
+                    {audioDevices.map(device => (
+                      <DeviceMenuItem
+                        key={device.deviceId}
+                        $active={device.deviceId === selectedAudioDevice}
+                        onClick={() => handleAudioDeviceSelect(device.deviceId)}
+                      >
+                        {device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
+                      </DeviceMenuItem>
+                    ))}
+                  </DeviceMenu>
+                )}
+              </ButtonWithMenu>
 
-        {/* Leave button for watchers (centered) */}
-        {!isStreamer && (
-          <>
-            {isDisconnected ? (
-              <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
-            ) : (
-              <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
-                {t('streaming_controls.leave')}
-              </EndStreamButton>
-            )}
-          </>
-        )}
-      </ControlsCenter>
+              <ButtonWithMenu>
+                <CircleButton onClick={handleToggleCamera}>{isCameraEnabled ? <VideocamIcon /> : <VideocamOffIcon />}</CircleButton>
+                {videoDevices.length > 1 && (
+                  <ChevronButton data-dropdown-button onClick={() => setShowVideoMenu(!showVideoMenu)}>
+                    <ExpandMoreIcon />
+                  </ChevronButton>
+                )}
+                {showVideoMenu && (
+                  <DeviceMenu data-dropdown-menu>
+                    {videoDevices.map(device => (
+                      <DeviceMenuItem
+                        key={device.deviceId}
+                        $active={device.deviceId === selectedVideoDevice}
+                        onClick={() => handleVideoDeviceSelect(device.deviceId)}
+                      >
+                        {device.label || `Camera ${device.deviceId.slice(0, 5)}`}
+                      </DeviceMenuItem>
+                    ))}
+                  </DeviceMenu>
+                )}
+              </ButtonWithMenu>
 
-      {/* Right Controls: Chat + People buttons */}
-      <ControlsRight>
-        {/* Desktop buttons */}
-        {onToggleTabMute && (
-          <IconButton onClick={onToggleTabMute} title={isTabMuted ? t('streaming_controls.unmute_cast') : t('streaming_controls.mute_cast')}>
-            {isTabMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-          </IconButton>
-        )}
+              {/* Share (Screen / Presentation) dropdown */}
+              <ButtonWithMenu>
+                <CircleButton onClick={handleShareButtonClick} data-dropdown-button>
+                  {isPresentationActive ? <SlideshowIcon /> : isScreenSharing ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+                </CircleButton>
+                {!isScreenSharing && (
+                  <ChevronButton data-dropdown-button onClick={() => setShowShareMenu(!showShareMenu)}>
+                    <ExpandMoreIcon />
+                  </ChevronButton>
+                )}
+                {showShareMenu && (
+                  <ShareMenuDropdown
+                    isPresentationActive={isPresentationActive}
+                    onShareScreen={handleShareScreenClick}
+                    onSharePresentation={handleSharePresentationClick}
+                    onStopPresentation={handleStopPresentation}
+                  />
+                )}
+              </ButtonWithMenu>
 
-        {onToggleChat && (
-          <IconButton onClick={onToggleChat}>
-            <ChatBubbleOutlineIcon />
-            {unreadMessagesCount > 0 && <NotificationBadge>{unreadMessagesCount}</NotificationBadge>}
-          </IconButton>
-        )}
+              {/* Leave/Hang-up button - Desktop only, positioned after media controls */}
+              {isDisconnected ? (
+                <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
+              ) : (
+                <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
+                  {isStreamer ? t('streaming_controls.leave_stream') : t('streaming_controls.leave')}
+                </EndStreamButton>
+              )}
+            </DesktopMediaControls>
+          )}
 
-        {onTogglePeople && (
-          <IconButton onClick={onTogglePeople}>
-            <PeopleIcon />
-            <NotificationBadge>{totalParticipants}</NotificationBadge>
-          </IconButton>
-        )}
+          {/* Leave button for watchers (centered) */}
+          {!isStreamer && (
+            <>
+              {isDisconnected ? (
+                <EndStreamButton onClick={handleReconnect}>{t('streaming_controls.reconnect')}</EndStreamButton>
+              ) : (
+                <EndStreamButton onClick={handleLeave} startIcon={<CallEndIcon />}>
+                  {t('streaming_controls.leave')}
+                </EndStreamButton>
+              )}
+            </>
+          )}
+        </ControlsCenter>
 
-        {/* Mobile: Chat and People on the left */}
-        <MobileLeftGroup>
+        {/* Right Controls: Chat + People buttons */}
+        <ControlsRight>
+          {/* Desktop buttons */}
           {onToggleTabMute && (
-            <MobileIconButton onClick={onToggleTabMute}>
+            <IconButton
+              onClick={onToggleTabMute}
+              title={isTabMuted ? t('streaming_controls.unmute_cast') : t('streaming_controls.mute_cast')}
+            >
               {isTabMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-            </MobileIconButton>
+            </IconButton>
           )}
 
           {onToggleChat && (
-            <MobileIconButton onClick={onToggleChat}>
+            <IconButton onClick={onToggleChat}>
               <ChatBubbleOutlineIcon />
               {unreadMessagesCount > 0 && <NotificationBadge>{unreadMessagesCount}</NotificationBadge>}
-            </MobileIconButton>
+            </IconButton>
           )}
 
           {onTogglePeople && (
-            <MobileIconButton onClick={onTogglePeople}>
+            <IconButton onClick={onTogglePeople}>
               <PeopleIcon />
               <NotificationBadge>{totalParticipants}</NotificationBadge>
-            </MobileIconButton>
+            </IconButton>
           )}
-        </MobileLeftGroup>
 
-        {/* Mobile: End Call on the right */}
-        <MobileRightGroup>
-          {isDisconnected ? (
-            <CircleEndButton onClick={handleReconnect}>
-              <CallEndIcon />
-            </CircleEndButton>
-          ) : (
-            <CircleEndButton onClick={handleLeave}>
-              <CallEndIcon />
-            </CircleEndButton>
-          )}
-        </MobileRightGroup>
-      </ControlsRight>
-    </ControlsContainer>
+          {/* Mobile: Chat and People on the left */}
+          <MobileLeftGroup>
+            {onToggleTabMute && (
+              <MobileIconButton onClick={onToggleTabMute}>{isTabMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}</MobileIconButton>
+            )}
 
-    {showPresentationModal && (
-      <SharePresentationModal
-        onClose={() => setShowPresentationModal(false)}
-        onFileSelected={handlePresentationFileSelected}
-        onUrlSubmitted={handlePresentationUrlSubmitted}
-      />
-    )}
+            {onToggleChat && (
+              <MobileIconButton onClick={onToggleChat}>
+                <ChatBubbleOutlineIcon />
+                {unreadMessagesCount > 0 && <NotificationBadge>{unreadMessagesCount}</NotificationBadge>}
+              </MobileIconButton>
+            )}
+
+            {onTogglePeople && (
+              <MobileIconButton onClick={onTogglePeople}>
+                <PeopleIcon />
+                <NotificationBadge>{totalParticipants}</NotificationBadge>
+              </MobileIconButton>
+            )}
+          </MobileLeftGroup>
+
+          {/* Mobile: End Call on the right */}
+          <MobileRightGroup>
+            {isDisconnected ? (
+              <CircleEndButton onClick={handleReconnect}>
+                <CallEndIcon />
+              </CircleEndButton>
+            ) : (
+              <CircleEndButton onClick={handleLeave}>
+                <CallEndIcon />
+              </CircleEndButton>
+            )}
+          </MobileRightGroup>
+        </ControlsRight>
+      </ControlsContainer>
+
+      {showPresentationModal && (
+        <SharePresentationModal
+          onClose={() => setShowPresentationModal(false)}
+          onFileSelected={handlePresentationFileSelected}
+          onUrlSubmitted={handlePresentationUrlSubmitted}
+        />
+      )}
     </>
   )
 }

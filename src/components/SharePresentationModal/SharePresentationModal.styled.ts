@@ -1,6 +1,6 @@
 import { Button, styled } from 'decentraland-ui2'
 
-export const Overlay = styled('div')({
+const Overlay = styled('div')({
   position: 'fixed',
   top: 0,
   left: 0,
@@ -13,7 +13,7 @@ export const Overlay = styled('div')({
   zIndex: 9999
 })
 
-export const Modal = styled('div')(({ theme }) => ({
+const Modal = styled('div')(({ theme }) => ({
   backgroundColor: 'white',
   borderRadius: 12,
   padding: '32px 40px',
@@ -29,7 +29,7 @@ export const Modal = styled('div')(({ theme }) => ({
   }
 }))
 
-export const CloseButton = styled('button')({
+const CloseButton = styled('button')({
   position: 'absolute',
   top: 16,
   right: 16,
@@ -49,21 +49,21 @@ export const CloseButton = styled('button')({
   }
 })
 
-export const Title = styled('h2')({
+const Title = styled('h2')({
   margin: 0,
   fontSize: 20,
   fontWeight: 600,
   color: '#16141a'
 })
 
-export const UrlRow = styled('div')({
+const UrlRow = styled('div')({
   display: 'flex',
   width: '100%',
   gap: 8,
   alignItems: 'center'
 })
 
-export const UrlInput = styled('input')({
+const UrlInput = styled('input')({
   flex: 1,
   padding: '10px 14px',
   border: '1px solid #ccc',
@@ -79,7 +79,7 @@ export const UrlInput = styled('input')({
   }
 })
 
-export const ShareButton = styled(Button)({
+const ShareButton = styled(Button)({
   background: '#ff2d55',
   color: 'white',
   fontWeight: 600,
@@ -93,13 +93,13 @@ export const ShareButton = styled(Button)({
   }
 })
 
-export const Divider = styled('div')({
+const Divider = styled('div')({
   color: '#999',
   fontSize: 14,
   textAlign: 'center'
 })
 
-export const BrowseButton = styled(Button)({
+const BrowseButton = styled(Button)({
   background: '#ff2d55',
   color: 'white',
   fontWeight: 600,
@@ -112,8 +112,18 @@ export const BrowseButton = styled(Button)({
   }
 })
 
-export const SupportedFormats = styled('div')({
+const SupportedFormats = styled('div')({
   color: '#999',
   fontSize: 12,
   textAlign: 'center'
 })
+
+const ErrorText = styled('div')({
+  color: '#ff2d55',
+  fontSize: 12,
+  width: '100%',
+  textAlign: 'left',
+  marginTop: -12
+})
+
+export { Overlay, Modal, CloseButton, Title, UrlRow, UrlInput, ShareButton, Divider, BrowseButton, SupportedFormats, ErrorText }

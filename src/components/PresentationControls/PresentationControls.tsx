@@ -6,9 +6,11 @@ import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import StopIcon from '@mui/icons-material/Stop'
 import { usePresentation } from '../../context/PresentationContext'
+import { useTranslation } from '../../modules/translation'
 import { Divider, NavButton, PresentationControlsOverlay, SlideInfo, UploadingOverlay, VideoButton } from './PresentationControls.styled'
 
 export function PresentationControls() {
+  const { t } = useTranslation()
   const { state, navigateSlide, playVideo, pauseVideo, stopVideo } = usePresentation()
 
   const isActive = state.status === 'active'
@@ -61,7 +63,7 @@ export function PresentationControls() {
   }, [isActive, isFirstSlide, isLastSlide, hasVideos, navigateSlide, handleToggleVideo])
 
   if (state.status === 'uploading') {
-    return <UploadingOverlay>Uploading presentation...</UploadingOverlay>
+    return <UploadingOverlay>{t('streaming_controls.uploading_presentation')}</UploadingOverlay>
   }
 
   if (!isActive) {

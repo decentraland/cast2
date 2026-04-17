@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
+import { useTranslation } from '../../modules/translation'
 import {
   BrowseButton,
   CloseButton,
   Divider,
+  ErrorText,
   Modal,
   Overlay,
   ShareButton,
@@ -20,8 +22,10 @@ interface SharePresentationModalProps {
 }
 
 export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted }: SharePresentationModalProps) {
+  const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [url, setUrl] = useState('')
+  const [urlError, setUrlError] = useState<string | null>(null)
 
   const handleBrowse = () => {
     fileInputRef.current?.click()
@@ -39,8 +43,25 @@ export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted
   const handleShareUrl = () => {
     const trimmed = url.trim()
     if (!trimmed) return
+    let parsed: URL
+    try {
+      parsed = new URL(trimmed)
+    } catch {
+      setUrlError(t('streaming_controls.url_invalid'))
+      return
+    }
+    if (parsed.protocol !== 'https:') {
+      setUrlError(t('streaming_controls.url_https_required'))
+      return
+    }
+    setUrlError(null)
     onUrlSubmitted(trimmed)
     onClose()
+  }
+
+  const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUrl(event.target.value)
+    if (urlError) setUrlError(null)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -62,24 +83,28 @@ export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted
           <CloseIcon />
         </CloseButton>
 
-        <Title>Share Presentation</Title>
+        <Title>{t('streaming_controls.share_presentation')}</Title>
 
         <UrlRow>
           <UrlInput
-            placeholder="Paste your presentation URL"
+            placeholder={t('streaming_controls.paste_presentation_url')}
             value={url}
-            onChange={e => setUrl(e.target.value)}
+            onChange={handleUrlChange}
             onKeyDown={handleKeyDown}
           />
-          <ShareButton onClick={handleShareUrl} disabled={!url.trim()}>Share</ShareButton>
+          <ShareButton onClick={handleShareUrl} disabled={!url.trim()}>
+            {t('streaming_controls.share')}
+          </ShareButton>
         </UrlRow>
 
-        <Divider>or</Divider>
+        {urlError && <ErrorText>{urlError}</ErrorText>}
 
-        <BrowseButton onClick={handleBrowse}>Browse your local files</BrowseButton>
+        <Divider>{t('streaming_controls.or')}</Divider>
+
+        <BrowseButton onClick={handleBrowse}>{t('streaming_controls.browse_local_files')}</BrowseButton>
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx" style={{ display: 'none' }} onChange={handleFileChange} />
 
-        <SupportedFormats>Supported formats: PDF, PPTX.</SupportedFormats>
+        <SupportedFormats>{t('streaming_controls.supported_formats')}</SupportedFormats>
       </Modal>
     </Overlay>
   )

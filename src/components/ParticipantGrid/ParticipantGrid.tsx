@@ -6,6 +6,7 @@ import { Track } from 'livekit-client'
 import avatarImage from '../../assets/images/avatar.png'
 import { useTranslation } from '../../modules/translation'
 import { getDisplayName } from '../../utils/displayName'
+import { isPresentationBot } from '../../utils/participant'
 import { SpeakingIndicator } from '../LiveKitEnhancements/SpeakingIndicator'
 import { ParticipantGridProps } from './ParticipantGrid.types'
 import {
@@ -198,15 +199,6 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
   )
 }
 
-function isPresentationBot(participant: TrackReferenceOrPlaceholder['participant']): boolean {
-  try {
-    const metadata = participant.metadata ? JSON.parse(participant.metadata) : null
-    return metadata?.role === 'presentation'
-  } catch {
-    return false
-  }
-}
-
 function ParticipantTile({
   trackRef,
   isFullscreen = false,
@@ -216,6 +208,7 @@ function ParticipantTile({
   isFullscreen?: boolean
   onClick?: () => void
 }) {
+  const { t } = useTranslation()
   const { participant, source, publication } = trackRef
   const isScreenShare = source === Track.Source.ScreenShare
   const isPresentation = isPresentationBot(participant)
@@ -252,8 +245,12 @@ function ParticipantTile({
     return null
   }
 
-  // Get display name: "Presentation" for bot, " - screen" suffix for screen share
-  const displayName = isPresentation ? 'Presentation' : isScreenShare ? `${getDisplayName(participant)} - screen` : getDisplayName(participant)
+  // Get display name: translated "Presentation" for bot, " - screen" suffix for screen share
+  const displayName = isPresentation
+    ? t('streaming_controls.presentation')
+    : isScreenShare
+      ? `${getDisplayName(participant)} - screen`
+      : getDisplayName(participant)
 
   return (
     <ParticipantTileContainer
@@ -266,7 +263,7 @@ function ParticipantTile({
       {isTrackInitializing ? (
         <AvatarFallback>
           <LoadingSpinner />
-          <LoadingText>Initializing video...</LoadingText>
+          <LoadingText>{t('streaming_controls.initializing_video')}</LoadingText>
         </AvatarFallback>
       ) : hasActiveVideo ? (
         <VideoTrack trackRef={trackRef} />

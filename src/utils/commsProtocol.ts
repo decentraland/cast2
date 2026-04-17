@@ -1,12 +1,13 @@
 import { Packet } from '@dcl/protocol/out-js/decentraland/kernel/comms/rfc4/comms.gen'
 
+// Matches MsgType.CommsData in Decentraland RFC4 (dcl-protocol kernel/comms/rfc4/comms.proto)
 const MSG_TYPE_COMMS_DATA = 3
 
 /**
  * Encodes a JSON-serializable message into a protobuf Packet with the CommsData wire format.
  * Wire format inside Scene.data: [MsgType.CommsData=3][topicLen 2 bytes LE][topic UTF-8][data UTF-8].
  */
-export function encodeCommsPacket(topic: string, data: unknown): Uint8Array {
+function encodeCommsPacket(topic: string, data: unknown): Uint8Array {
   const topicBytes = new TextEncoder().encode(topic)
   const dataBytes = new TextEncoder().encode(JSON.stringify(data))
 
@@ -26,7 +27,7 @@ export function encodeCommsPacket(topic: string, data: unknown): Uint8Array {
  * Decodes a raw LiveKit payload into a CommsData message.
  * Returns { topic, data } or null if the payload is not a valid CommsData packet.
  */
-export function decodeCommsPacket(payload: Uint8Array): { topic: string; data: unknown } | null {
+function decodeCommsPacket(payload: Uint8Array): { topic: string; data: unknown } | null {
   try {
     const packet = Packet.decode(payload)
     if (packet.message?.$case === 'scene') {
@@ -46,3 +47,5 @@ export function decodeCommsPacket(payload: Uint8Array): { topic: string; data: u
 
   return null
 }
+
+export { encodeCommsPacket, decodeCommsPacket }

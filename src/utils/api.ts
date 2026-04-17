@@ -146,15 +146,6 @@ interface SlideVideoInfo {
   geometry: { x: number; y: number; width: number; height: number }
 }
 
-interface PresentationState {
-  id: string
-  slideCount: number
-  currentSlide: number
-  fileType: 'pdf' | 'pptx'
-  slideVideos: SlideVideoInfo[]
-  videoState: 'idle' | 'playing' | 'paused'
-}
-
 async function getPresentationBotToken(streamingKey: string): Promise<PresentationBotTokenResponse> {
   const baseUrl = config.get('GATEKEEPER_URL')
   const response = await fetch(`${baseUrl}/cast/presentation-bot-token`, {
@@ -170,11 +161,7 @@ async function getPresentationBotToken(streamingKey: string): Promise<Presentati
   return response.json()
 }
 
-async function uploadPresentation(
-  file: File,
-  livekitToken: string,
-  livekitUrl: string
-): Promise<PresentationInfo> {
+async function uploadPresentation(file: File, livekitToken: string, livekitUrl: string): Promise<PresentationInfo> {
   const presenterUrl = config.get('PRESENTER_SERVER_URL')
   const formData = new FormData()
   formData.append('file', file)
@@ -193,76 +180,7 @@ async function uploadPresentation(
   return response.json()
 }
 
-async function navigatePresentation(
-  id: string,
-  action: 'next' | 'prev' | 'goto',
-  slideIndex?: number
-): Promise<PresentationState> {
-  const presenterUrl = config.get('PRESENTER_SERVER_URL')
-  const response = await fetch(`${presenterUrl}/presentations/${id}/navigate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, slideIndex })
-  })
-
-  if (!response.ok) {
-    throw new CastApiError(response.status, `Failed to navigate presentation: ${response.statusText}`)
-  }
-
-  return response.json()
-}
-
-async function getPresentationState(id: string): Promise<PresentationState> {
-  const presenterUrl = config.get('PRESENTER_SERVER_URL')
-  const response = await fetch(`${presenterUrl}/presentations/${id}`)
-
-  if (!response.ok) {
-    throw new CastApiError(response.status, `Failed to get presentation state: ${response.statusText}`)
-  }
-
-  return response.json()
-}
-
-async function playPresentationVideo(id: string, videoIndex: number): Promise<void> {
-  const presenterUrl = config.get('PRESENTER_SERVER_URL')
-  const response = await fetch(`${presenterUrl}/presentations/${id}/video/play`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ videoIndex })
-  })
-
-  if (!response.ok) {
-    throw new CastApiError(response.status, `Failed to play video: ${response.statusText}`)
-  }
-}
-
-async function pausePresentationVideo(id: string): Promise<void> {
-  const presenterUrl = config.get('PRESENTER_SERVER_URL')
-  const response = await fetch(`${presenterUrl}/presentations/${id}/video/pause`, {
-    method: 'POST'
-  })
-
-  if (!response.ok) {
-    throw new CastApiError(response.status, `Failed to pause video: ${response.statusText}`)
-  }
-}
-
-async function stopPresentation(id: string): Promise<void> {
-  const presenterUrl = config.get('PRESENTER_SERVER_URL')
-  const response = await fetch(`${presenterUrl}/presentations/${id}`, {
-    method: 'DELETE'
-  })
-
-  if (!response.ok) {
-    throw new CastApiError(response.status, `Failed to stop presentation: ${response.statusText}`)
-  }
-}
-
-async function uploadPresentationFromUrl(
-  url: string,
-  livekitToken: string,
-  livekitUrl: string
-): Promise<PresentationInfo> {
+async function uploadPresentationFromUrl(url: string, livekitToken: string, livekitUrl: string): Promise<PresentationInfo> {
   const presenterUrl = config.get('PRESENTER_SERVER_URL')
   const response = await fetch(`${presenterUrl}/presentations`, {
     method: 'POST',
@@ -285,11 +203,6 @@ export {
   getStreamInfo,
   getPresentationBotToken,
   uploadPresentation,
-  uploadPresentationFromUrl,
-  navigatePresentation,
-  getPresentationState,
-  playPresentationVideo,
-  pausePresentationVideo,
-  stopPresentation
+  uploadPresentationFromUrl
 }
-export type { WorldScene, WorldSceneEntity, WorldScenesResponse, PresentationInfo, PresentationState, SlideVideoInfo }
+export type { WorldScene, WorldSceneEntity, WorldScenesResponse, PresentationInfo, SlideVideoInfo }

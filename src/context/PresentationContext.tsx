@@ -1,9 +1,10 @@
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
-import { RoomEvent } from 'livekit-client'
-import { getPresentationBotToken, uploadPresentation, uploadPresentationFromUrl, SlideVideoInfo } from '../utils/api'
-import { encodeCommsPacket, decodeCommsPacket } from '../utils/commsProtocol'
+import { RemoteParticipant, RoomEvent } from 'livekit-client'
+import { PresentationInfo, SlideVideoInfo, getPresentationBotToken, uploadPresentation, uploadPresentationFromUrl } from '../utils/api'
+import { decodeCommsPacket, encodeCommsPacket } from '../utils/commsProtocol'
 import { getStreamerToken as getStoredToken } from '../utils/localStorage'
+import { isPresentationBot, parseParticipantMetadata } from '../utils/participant'
 
 interface PresentationState {
   id: string | null
@@ -31,6 +32,16 @@ interface PresentationContextValue {
 }
 
 const PRESENTATION_TOPIC = 'presentation'
+
+interface PresentationBotMetadata {
+  role: 'presentation'
+  id?: string
+  slideCount?: number
+  currentSlide?: number
+  fileType?: 'pdf' | 'pptx'
+  videoState?: PresentationState['videoState']
+  slideVideos?: SlideVideoInfo[]
+}
 
 const initialState: PresentationState = {
   id: null,
@@ -60,15 +71,14 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   )
 
   // Find the presentation bot among remote participants and read its metadata
-  const { presentationParticipantIdentity, botMetadata } = useMemo(() => {
+  const { presentationParticipantIdentity, botMetadata } = useMemo<{
+    presentationParticipantIdentity: string | null
+    botMetadata: PresentationBotMetadata | null
+  }>(() => {
     for (const p of remoteParticipants) {
-      try {
-        const metadata = p.metadata ? JSON.parse(p.metadata) : null
-        if (metadata?.role === 'presentation') {
-          return { presentationParticipantIdentity: p.identity, botMetadata: metadata }
-        }
-      } catch {
-        // ignore parse errors
+      const metadata = parseParticipantMetadata<PresentationBotMetadata>(p)
+      if (metadata?.role === 'presentation') {
+        return { presentationParticipantIdentity: p.identity, botMetadata: metadata }
       }
     }
     return { presentationParticipantIdentity: null, botMetadata: null }
@@ -80,7 +90,9 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   const botCurrentSlide = botMetadata?.currentSlide ?? 0
   const botFileType = botMetadata?.fileType ?? null
   const botVideoState = botMetadata?.videoState ?? 'idle'
-  const botSlideVideos = botMetadata?.slideVideos
+  // JSON.parse re-allocates slideVideos every time metadata updates, so we stringify
+  // to get reference-stable equality for the effect deps and skip-guard below.
+  const botSlideVideosJson = useMemo(() => JSON.stringify(botMetadata?.slideVideos ?? []), [botMetadata])
 
   // When bot is discovered (e.g. late joiner) or its metadata changes, sync state
   useEffect(() => {
@@ -94,7 +106,9 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           prev.id === botId &&
           prev.currentSlide === botCurrentSlide &&
           prev.slideCount === botSlideCount &&
-          prev.videoState === botVideoState
+          prev.fileType === botFileType &&
+          prev.videoState === botVideoState &&
+          JSON.stringify(prev.slideVideos) === botSlideVideosJson
         ) {
           return prev
         }
@@ -105,7 +119,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           fileType: botFileType,
           status: 'active',
           error: null,
-          slideVideos: botSlideVideos ?? [],
+          slideVideos: JSON.parse(botSlideVideosJson),
           videoState: botVideoState
         }
       })
@@ -114,12 +128,15 @@ function PresentationProvider({ children }: { children: ReactNode }) {
 
     // Bot exists but metadata lacks id — request state via data channel
     sendCommand({ type: 'presentation:get-state' })
-  }, [botMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideos, sendCommand])
+  }, [botMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideosJson, sendCommand])
 
   // Listen for state broadcasts from the bot via data channel
   useEffect(() => {
     if (!room) return
-    const handleData = (payload: Uint8Array) => {
+    const handleData = (payload: Uint8Array, participant?: RemoteParticipant) => {
+      // Only accept presentation messages from the bot — reject any other sender to prevent spoofing.
+      if (!participant || !isPresentationBot(participant)) return
+
       const decoded = decodeCommsPacket(payload)
       if (!decoded || decoded.topic !== PRESENTATION_TOPIC) return
 
@@ -146,70 +163,50 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     }
   }, [room])
 
-  const startPresentation = useCallback(async (file: File) => {
-    setState(prev => ({ ...prev, status: 'uploading', error: null }))
+  const runPresentationUpload = useCallback(
+    async (upload: (livekitToken: string, livekitUrl: string) => Promise<PresentationInfo>, errorLabel: string) => {
+      setState(prev => ({ ...prev, status: 'uploading', error: null }))
 
-    try {
-      const streamingKey = getStoredToken()
-      if (!streamingKey) {
-        throw new Error('No streaming key available')
+      try {
+        const streamingKey = getStoredToken()
+        if (!streamingKey) {
+          throw new Error('No streaming key available')
+        }
+
+        const botToken = await getPresentationBotToken(streamingKey)
+        const info = await upload(botToken.token, botToken.url)
+
+        setState({
+          id: info.id,
+          slideCount: info.slideCount,
+          currentSlide: 0,
+          fileType: info.fileType,
+          status: 'active',
+          error: null,
+          slideVideos: [],
+          videoState: 'idle'
+        })
+      } catch (err) {
+        setState(prev => ({
+          ...prev,
+          status: 'error',
+          error: err instanceof Error ? err.message : errorLabel
+        }))
       }
+    },
+    []
+  )
 
-      // Step 1: Get bot token from Gatekeeper
-      const botToken = await getPresentationBotToken(streamingKey)
+  const startPresentation = useCallback(
+    (file: File) => runPresentationUpload((token, url) => uploadPresentation(file, token, url), 'Failed to start presentation'),
+    [runPresentationUpload]
+  )
 
-      // Step 2: Upload file to presenter server with the bot token
-      const info = await uploadPresentation(file, botToken.token, botToken.url)
-
-      setState({
-        id: info.id,
-        slideCount: info.slideCount,
-        currentSlide: 0,
-        fileType: info.fileType,
-        status: 'active',
-        error: null,
-        slideVideos: [],
-        videoState: 'idle'
-      })
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        status: 'error',
-        error: err instanceof Error ? err.message : 'Failed to start presentation'
-      }))
-    }
-  }, [])
-
-  const startPresentationFromUrl = useCallback(async (url: string) => {
-    setState(prev => ({ ...prev, status: 'uploading', error: null }))
-
-    try {
-      const streamingKey = getStoredToken()
-      if (!streamingKey) {
-        throw new Error('No streaming key available')
-      }
-
-      const botToken = await getPresentationBotToken(streamingKey)
-      const info = await uploadPresentationFromUrl(url, botToken.token, botToken.url)
-
-      setState({
-        id: info.id,
-        slideCount: info.slideCount,
-        currentSlide: 0,
-        fileType: info.fileType,
-        status: 'active',
-        error: null,
-        slideVideos: [],
-        videoState: 'idle'
-      })
-    } catch (err) {
-      setState(prev => ({
-        ...prev,
-        status: 'error',
-        error: err instanceof Error ? err.message : 'Failed to start presentation from URL'
-      }))
-    }
-  }, [])
+  const startPresentationFromUrl = useCallback(
+    (url: string) =>
+      runPresentationUpload((token, botUrl) => uploadPresentationFromUrl(url, token, botUrl), 'Failed to start presentation from URL'),
+    [runPresentationUpload]
+  )
 
   const navigateSlide = useCallback(
     async (action: 'next' | 'prev') => {

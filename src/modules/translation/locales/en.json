@@ -45,7 +45,19 @@
     "connecting": "Connecting...",
     "connected": "Connected",
     "mute_cast": "Mute this Cast audio while you're in World",
-    "unmute_cast": "Unmute Cast audio"
+    "unmute_cast": "Unmute Cast audio",
+    "share_presentation": "Share Presentation",
+    "stop_presentation": "Stop Presentation",
+    "uploading_presentation": "Uploading presentation...",
+    "paste_presentation_url": "Paste your presentation URL",
+    "share": "Share",
+    "or": "or",
+    "browse_local_files": "Browse your local files",
+    "supported_formats": "Supported formats: PDF, PPTX.",
+    "initializing_video": "Initializing video...",
+    "presentation": "Presentation",
+    "url_invalid": "Please enter a valid URL",
+    "url_https_required": "URL must use https://"
   },
   "device_selector": {
     "audio_input": "Audio Input",
