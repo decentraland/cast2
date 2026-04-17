@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RemoteParticipant, RoomEvent } from 'livekit-client'
 import { PresentationInfo, SlideVideoInfo, getPresentationBotToken, uploadPresentation, uploadPresentationFromUrl } from '../utils/api'
@@ -61,6 +61,12 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   const remoteParticipants = useRemoteParticipants()
   const room = useRoomContext()
 
+  // Keep the active presentation id in a ref so command callbacks stay referentially
+  // stable across state changes — state replaces on every slide nav, which would
+  // otherwise re-create every callback and re-render every consumer.
+  const idRef = useRef<string | null>(null)
+  idRef.current = state.id
+
   const sendCommand = useCallback(
     async (command: Record<string, unknown>) => {
       if (!room?.localParticipant) return
@@ -94,9 +100,14 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   // to get reference-stable equality for the effect deps and skip-guard below.
   const botSlideVideosJson = useMemo(() => JSON.stringify(botMetadata?.slideVideos ?? []), [botMetadata])
 
+  // Whether the bot is present in the room at all — stable across metadata
+  // object identity changes, so it can live in the effect dep array without
+  // re-firing the sync when only the object reference turned over.
+  const hasBotMetadata = botMetadata !== null
+
   // When bot is discovered (e.g. late joiner) or its metadata changes, sync state
   useEffect(() => {
-    if (!botMetadata) return
+    if (!hasBotMetadata) return
 
     if (botId) {
       setState(prev => {
@@ -128,7 +139,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
 
     // Bot exists but metadata lacks id — request state via data channel
     sendCommand({ type: 'presentation:get-state' })
-  }, [botMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideosJson, sendCommand])
+  }, [hasBotMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideosJson, sendCommand])
 
   // Listen for state broadcasts from the bot via data channel
   useEffect(() => {
@@ -210,43 +221,43 @@ function PresentationProvider({ children }: { children: ReactNode }) {
 
   const navigateSlide = useCallback(
     async (action: 'next' | 'prev') => {
-      if (!state.id) return
+      if (!idRef.current) return
       await sendCommand({ type: 'presentation:navigate', action })
     },
-    [state.id, sendCommand]
+    [sendCommand]
   )
 
   const goToSlide = useCallback(
     async (index: number) => {
-      if (!state.id) return
+      if (!idRef.current) return
       await sendCommand({ type: 'presentation:navigate', action: 'goto', slideIndex: index })
     },
-    [state.id, sendCommand]
+    [sendCommand]
   )
 
   const playVideo = useCallback(
     async (videoIndex: number) => {
-      if (!state.id) return
+      if (!idRef.current) return
       await sendCommand({ type: 'presentation:video:play', videoIndex })
     },
-    [state.id, sendCommand]
+    [sendCommand]
   )
 
   const pauseVideo = useCallback(async () => {
-    if (!state.id) return
+    if (!idRef.current) return
     await sendCommand({ type: 'presentation:video:pause' })
-  }, [state.id, sendCommand])
+  }, [sendCommand])
 
   const stopVideo = useCallback(async () => {
-    if (!state.id) return
+    if (!idRef.current) return
     await sendCommand({ type: 'presentation:video:stop' })
-  }, [state.id, sendCommand])
+  }, [sendCommand])
 
   const stopPresentationHandler = useCallback(async () => {
-    if (!state.id) return
+    if (!idRef.current) return
     await sendCommand({ type: 'presentation:stop' })
     setState(initialState)
-  }, [state.id, sendCommand])
+  }, [sendCommand])
 
   // Clean up when bot participant disappears (presentation was stopped externally)
   useEffect(() => {
@@ -256,25 +267,35 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     }
   }, [presentationParticipantIdentity, state.status])
 
-  return (
-    <PresentationContext.Provider
-      value={{
-        state,
-        startPresentation,
-        startPresentationFromUrl,
-        navigateSlide,
-        goToSlide,
-        playVideo,
-        pauseVideo,
-        stopVideo,
-        stopPresentation: stopPresentationHandler,
-        isPresentationActive: state.status === 'active',
-        presentationParticipantIdentity
-      }}
-    >
-      {children}
-    </PresentationContext.Provider>
+  const value = useMemo<PresentationContextValue>(
+    () => ({
+      state,
+      startPresentation,
+      startPresentationFromUrl,
+      navigateSlide,
+      goToSlide,
+      playVideo,
+      pauseVideo,
+      stopVideo,
+      stopPresentation: stopPresentationHandler,
+      isPresentationActive: state.status === 'active',
+      presentationParticipantIdentity
+    }),
+    [
+      state,
+      startPresentation,
+      startPresentationFromUrl,
+      navigateSlide,
+      goToSlide,
+      playVideo,
+      pauseVideo,
+      stopVideo,
+      stopPresentationHandler,
+      presentationParticipantIdentity
+    ]
   )
+
+  return <PresentationContext.Provider value={value}>{children}</PresentationContext.Provider>
 }
 
 function usePresentation() {

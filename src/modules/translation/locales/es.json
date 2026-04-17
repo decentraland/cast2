@@ -57,7 +57,8 @@
     "initializing_video": "Inicializando video...",
     "presentation": "Presentación",
     "url_invalid": "Por favor ingresa una URL válida",
-    "url_https_required": "La URL debe usar https://"
+    "url_https_required": "La URL debe usar https://",
+    "file_too_large": "El archivo es demasiado grande. Tamaño máximo {maxMb}MB."
   },
   "device_selector": {
     "audio_input": "Entrada de Audio",

@@ -21,11 +21,15 @@ interface SharePresentationModalProps {
   onUrlSubmitted: (url: string) => void
 }
 
+const MAX_FILE_SIZE_MB = 100
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+
 export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted }: SharePresentationModalProps) {
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [url, setUrl] = useState('')
   const [urlError, setUrlError] = useState<string | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
 
   const handleBrowse = () => {
     fileInputRef.current?.click()
@@ -33,11 +37,15 @@ export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file) {
-      onFileSelected(file)
-      onClose()
-    }
     event.target.value = ''
+    if (!file) return
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setFileError(t('streaming_controls.file_too_large', { maxMb: String(MAX_FILE_SIZE_MB) }))
+      return
+    }
+    setFileError(null)
+    onFileSelected(file)
+    onClose()
   }
 
   const handleShareUrl = () => {
@@ -103,6 +111,8 @@ export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted
 
         <BrowseButton onClick={handleBrowse}>{t('streaming_controls.browse_local_files')}</BrowseButton>
         <input ref={fileInputRef} type="file" accept=".pdf,.pptx" style={{ display: 'none' }} onChange={handleFileChange} />
+
+        {fileError && <ErrorText>{fileError}</ErrorText>}
 
         <SupportedFormats>{t('streaming_controls.supported_formats')}</SupportedFormats>
       </Modal>

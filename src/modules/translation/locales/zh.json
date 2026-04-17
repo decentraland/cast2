@@ -57,7 +57,8 @@
     "initializing_video": "正在初始化视频...",
     "presentation": "演示文稿",
     "url_invalid": "请输入有效的URL",
-    "url_https_required": "URL必须使用https://"
+    "url_https_required": "URL必须使用https://",
+    "file_too_large": "文件过大。最大大小为{maxMb}MB。"
   },
   "device_selector": {
     "audio_input": "音频输入",
