@@ -24,6 +24,12 @@ interface SharePresentationModalProps {
 const MAX_FILE_SIZE_MB = 100
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 
+// Accept by extension *and* MIME (when the browser provides one). Some browsers
+// return an empty `file.type` for .pptx, so extension alone must be sufficient,
+// but a mismatched non-empty MIME is always rejected to block renamed files.
+const VALID_EXT_REGEX = /\.(pdf|pptx)$/i
+const ALLOWED_MIME_TYPES = new Set(['application/pdf', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'])
+
 export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted }: SharePresentationModalProps) {
   const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -41,6 +47,10 @@ export function SharePresentationModal({ onClose, onFileSelected, onUrlSubmitted
     if (!file) return
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setFileError(t('streaming_controls.file_too_large', { maxMb: String(MAX_FILE_SIZE_MB) }))
+      return
+    }
+    if (!VALID_EXT_REGEX.test(file.name) || (file.type && !ALLOWED_MIME_TYPES.has(file.type))) {
+      setFileError(t('streaming_controls.file_invalid_type'))
       return
     }
     setFileError(null)

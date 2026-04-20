@@ -58,7 +58,8 @@
     "presentation": "Presentation",
     "url_invalid": "Please enter a valid URL",
     "url_https_required": "URL must use https://",
-    "file_too_large": "File is too large. Maximum size is {maxMb}MB."
+    "file_too_large": "File is too large. Maximum size is {maxMb}MB.",
+    "file_invalid_type": "Unsupported file type. Please upload a PDF or PPTX file."
   },
   "device_selector": {
     "audio_input": "Audio Input",

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { TrackReferenceOrPlaceholder, VideoTrack, useIsSpeaking, useTracks } from '@livekit/components-react'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
@@ -54,22 +54,20 @@ function ParticipantGrid({ localParticipantVisible = true }: ParticipantGridProp
     [filteredTracks]
   )
 
-  // Auto-expand presentation bot tile when it appears, reset when it leaves
+  // Auto-expand presentation bot tile on its first appearance only, so manual
+  // tile selections by the user aren't snapped back to the bot on every rerender.
+  // The ref latches once per bot-presence cycle and resets when the bot leaves.
+  const autoExpandedRef = useRef(false)
   useEffect(() => {
     const presentationTrack = finalTracks.find(t => isPresentationBot(t.participant))
-    if (presentationTrack) {
-      const trackKey = presentationTrack.participant.sid + presentationTrack.source
-      if (expandedTrackSid !== trackKey) {
-        setExpandedTrackSid(trackKey)
-      }
-    } else if (expandedTrackSid) {
-      // If the expanded track no longer exists (bot left), reset to default layout
-      const expandedStillExists = finalTracks.some(t => t.participant.sid + t.source === expandedTrackSid)
-      if (!expandedStillExists) {
-        setExpandedTrackSid(null)
-      }
+    if (presentationTrack && !autoExpandedRef.current) {
+      setExpandedTrackSid(presentationTrack.participant.sid + presentationTrack.source)
+      autoExpandedRef.current = true
+    } else if (!presentationTrack) {
+      autoExpandedRef.current = false
+      setExpandedTrackSid(prev => (prev && !finalTracks.some(t => t.participant.sid + t.source === prev) ? null : prev))
     }
-  }, [finalTracks, expandedTrackSid])
+  }, [finalTracks])
 
   const participantCount = finalTracks.length
   const isFullscreen = participantCount === 1

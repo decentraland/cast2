@@ -54,6 +54,33 @@ const initialState: PresentationState = {
   videoState: 'idle'
 }
 
+// Runtime type guards for data-channel payloads. `decodeCommsPacket` correctly
+// returns `data: unknown`, so narrow with these before feeding into setState —
+// a spoofed or malformed packet would otherwise write garbage into React state.
+function isPresentationStateMessage(data: unknown): data is {
+  type: 'presentation:state'
+  id: string
+  slideCount: number
+  currentSlide: number
+  fileType: 'pdf' | 'pptx'
+  slideVideos?: SlideVideoInfo[]
+  videoState?: PresentationState['videoState']
+} {
+  if (typeof data !== 'object' || data === null) return false
+  const d = data as Record<string, unknown>
+  return (
+    d.type === 'presentation:state' &&
+    typeof d.id === 'string' &&
+    typeof d.slideCount === 'number' &&
+    typeof d.currentSlide === 'number' &&
+    (d.fileType === 'pdf' || d.fileType === 'pptx')
+  )
+}
+
+function isPresentationStoppedMessage(data: unknown): data is { type: 'presentation:stopped' } {
+  return typeof data === 'object' && data !== null && (data as Record<string, unknown>).type === 'presentation:stopped'
+}
+
 const PresentationContext = createContext<PresentationContextValue | undefined>(undefined)
 
 function PresentationProvider({ children }: { children: ReactNode }) {
@@ -67,11 +94,21 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   const idRef = useRef<string | null>(null)
   idRef.current = state.id
 
+  // Mutex for runPresentationUpload. Using a ref (not state) because the
+  // useCallback below has `[]` deps and would see stale state otherwise.
+  const uploadingRef = useRef(false)
+
   const sendCommand = useCallback(
     async (command: Record<string, unknown>) => {
       if (!room?.localParticipant) return
       const packet = encodeCommsPacket(PRESENTATION_TOPIC, command)
-      await room.localParticipant.publishData(packet, { reliable: true })
+      try {
+        await room.localParticipant.publishData(packet, { reliable: true })
+      } catch (err) {
+        // Swallow transport errors so fire-and-forget call sites (navigateSlide,
+        // playVideo, …) don't produce unhandled promise rejections on disconnect.
+        console.warn('[presentation] publishData failed', err)
+      }
     },
     [room]
   )
@@ -151,20 +188,18 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       const decoded = decodeCommsPacket(payload)
       if (!decoded || decoded.topic !== PRESENTATION_TOPIC) return
 
-      const message = decoded.data as Record<string, unknown>
-
-      if (message.type === 'presentation:state') {
+      if (isPresentationStateMessage(decoded.data)) {
         setState({
-          id: message.id as string,
-          slideCount: message.slideCount as number,
-          currentSlide: message.currentSlide as number,
-          fileType: message.fileType as 'pdf' | 'pptx',
+          id: decoded.data.id,
+          slideCount: decoded.data.slideCount,
+          currentSlide: decoded.data.currentSlide,
+          fileType: decoded.data.fileType,
           status: 'active',
           error: null,
-          slideVideos: (message.slideVideos as SlideVideoInfo[]) || [],
-          videoState: (message.videoState as PresentationState['videoState']) || 'idle'
+          slideVideos: decoded.data.slideVideos ?? [],
+          videoState: decoded.data.videoState ?? 'idle'
         })
-      } else if (message.type === 'presentation:stopped') {
+      } else if (isPresentationStoppedMessage(decoded.data)) {
         setState(initialState)
       }
     }
@@ -176,6 +211,10 @@ function PresentationProvider({ children }: { children: ReactNode }) {
 
   const runPresentationUpload = useCallback(
     async (upload: (livekitToken: string, livekitUrl: string) => Promise<PresentationInfo>, errorLabel: string) => {
+      // Drop concurrent invocations (e.g. double-click): racing two uploads can
+      // orphan a bot when the second-resolving call overwrites the first's state.
+      if (uploadingRef.current) return
+      uploadingRef.current = true
       setState(prev => ({ ...prev, status: 'uploading', error: null }))
 
       try {
@@ -203,6 +242,8 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           status: 'error',
           error: err instanceof Error ? err.message : errorLabel
         }))
+      } finally {
+        uploadingRef.current = false
       }
     },
     []
@@ -255,8 +296,11 @@ function PresentationProvider({ children }: { children: ReactNode }) {
 
   const stopPresentationHandler = useCallback(async () => {
     if (!idRef.current) return
+    // Don't reset state optimistically: the bot's `presentation:stopped`
+    // broadcast (handled above) is the single source of truth. Resetting here
+    // would strand the UI in `idle` if the command failed, and — because
+    // idRef would already be null — retries would no-op.
     await sendCommand({ type: 'presentation:stop' })
-    setState(initialState)
   }, [sendCommand])
 
   // Clean up when bot participant disappears (presentation was stopped externally)

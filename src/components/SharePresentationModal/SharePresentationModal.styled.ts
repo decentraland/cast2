@@ -63,7 +63,7 @@ const UrlRow = styled('div')({
   alignItems: 'center'
 })
 
-const UrlInput = styled('input')({
+const UrlInput = styled('input')(({ theme }) => ({
   flex: 1,
   padding: '10px 14px',
   border: '1px solid #ccc',
@@ -75,12 +75,12 @@ const UrlInput = styled('input')({
     color: '#999'
   },
   '&:focus': {
-    borderColor: '#ff2d55'
+    borderColor: theme.palette.primary.main
   }
-})
+}))
 
-const ShareButton = styled(Button)({
-  background: '#ff2d55',
+const ShareButton = styled(Button)(({ theme }) => ({
+  background: theme.palette.primary.main,
   color: 'white',
   fontWeight: 600,
   fontSize: 14,
@@ -89,9 +89,9 @@ const ShareButton = styled(Button)({
   minWidth: 'unset',
   borderRadius: 6,
   '&:hover': {
-    background: '#e0264b'
+    background: theme.palette.primary.dark
   }
-})
+}))
 
 const Divider = styled('div')({
   color: '#999',
@@ -99,8 +99,8 @@ const Divider = styled('div')({
   textAlign: 'center'
 })
 
-const BrowseButton = styled(Button)({
-  background: '#ff2d55',
+const BrowseButton = styled(Button)(({ theme }) => ({
+  background: theme.palette.primary.main,
   color: 'white',
   fontWeight: 600,
   fontSize: 14,
@@ -108,9 +108,9 @@ const BrowseButton = styled(Button)({
   padding: '10px 24px',
   borderRadius: 6,
   '&:hover': {
-    background: '#e0264b'
+    background: theme.palette.primary.dark
   }
-})
+}))
 
 const SupportedFormats = styled('div')({
   color: '#999',
@@ -118,12 +118,12 @@ const SupportedFormats = styled('div')({
   textAlign: 'center'
 })
 
-const ErrorText = styled('div')({
-  color: '#ff2d55',
+const ErrorText = styled('div')(({ theme }) => ({
+  color: theme.palette.primary.main,
   fontSize: 12,
   width: '100%',
   textAlign: 'left',
   marginTop: -12
-})
+}))
 
 export { Overlay, Modal, CloseButton, Title, UrlRow, UrlInput, ShareButton, Divider, BrowseButton, SupportedFormats, ErrorText }
