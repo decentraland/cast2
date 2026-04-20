@@ -11,7 +11,10 @@ interface PresentationState {
   slideCount: number
   currentSlide: number
   fileType: 'pdf' | 'pptx' | null
-  status: 'idle' | 'uploading' | 'active' | 'error'
+  // 'starting' covers the window between upload completion and the bot joining
+  // the room — without it, the bot-absence cleanup effect below would briefly
+  // snap state back to 'idle' on the render right after upload resolves.
+  status: 'idle' | 'uploading' | 'starting' | 'active' | 'error'
   error: string | null
   slideVideos: SlideVideoInfo[]
   videoState: 'idle' | 'loading' | 'playing' | 'paused'
@@ -81,6 +84,28 @@ function isPresentationStoppedMessage(data: unknown): data is { type: 'presentat
   return typeof data === 'object' && data !== null && (data as Record<string, unknown>).type === 'presentation:stopped'
 }
 
+// Validates participant metadata so we don't let a malformed/spoofed field
+// (e.g. `slideCount: "ten"`) flow into React state via the metadata sync path.
+function isPresentationBotMetadata(data: unknown): data is PresentationBotMetadata {
+  if (typeof data !== 'object' || data === null) return false
+  const d = data as Record<string, unknown>
+  if (d.role !== 'presentation') return false
+  if (d.id !== undefined && typeof d.id !== 'string') return false
+  if (d.slideCount !== undefined && typeof d.slideCount !== 'number') return false
+  if (d.currentSlide !== undefined && typeof d.currentSlide !== 'number') return false
+  if (d.fileType !== undefined && d.fileType !== 'pdf' && d.fileType !== 'pptx') return false
+  if (
+    d.videoState !== undefined &&
+    d.videoState !== 'idle' &&
+    d.videoState !== 'loading' &&
+    d.videoState !== 'playing' &&
+    d.videoState !== 'paused'
+  )
+    return false
+  if (d.slideVideos !== undefined && !Array.isArray(d.slideVideos)) return false
+  return true
+}
+
 const PresentationContext = createContext<PresentationContextValue | undefined>(undefined)
 
 function PresentationProvider({ children }: { children: ReactNode }) {
@@ -113,15 +138,17 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     [room]
   )
 
-  // Find the presentation bot among remote participants and read its metadata
+  // Find the presentation bot among remote participants and read its metadata.
+  // Runtime-validate with `isPresentationBotMetadata` so a malformed field
+  // (e.g. `slideCount: "ten"`) can't leak into state via the metadata sync path.
   const { presentationParticipantIdentity, botMetadata } = useMemo<{
     presentationParticipantIdentity: string | null
     botMetadata: PresentationBotMetadata | null
   }>(() => {
     for (const p of remoteParticipants) {
-      const metadata = parseParticipantMetadata<PresentationBotMetadata>(p)
-      if (metadata?.role === 'presentation') {
-        return { presentationParticipantIdentity: p.identity, botMetadata: metadata }
+      const parsed = parseParticipantMetadata(p)
+      if (isPresentationBotMetadata(parsed)) {
+        return { presentationParticipantIdentity: p.identity, botMetadata: parsed }
       }
     }
     return { presentationParticipantIdentity: null, botMetadata: null }
@@ -226,12 +253,15 @@ function PresentationProvider({ children }: { children: ReactNode }) {
         const botToken = await getPresentationBotToken(streamingKey)
         const info = await upload(botToken.token, botToken.url)
 
+        // 'starting' until the bot actually joins the room. The metadata sync
+        // effect will transition to 'active' once `presentationParticipantIdentity`
+        // is populated — this avoids racing with the bot-absence cleanup effect.
         setState({
           id: info.id,
           slideCount: info.slideCount,
           currentSlide: 0,
           fileType: info.fileType,
-          status: 'active',
+          status: 'starting',
           error: null,
           slideVideos: [],
           videoState: 'idle'
@@ -322,7 +352,9 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentation: stopPresentationHandler,
-      isPresentationActive: state.status === 'active',
+      // Treat 'starting' as active so the UI (share-menu label, icon choice)
+      // doesn't flicker back to "not presenting" during the bot-join window.
+      isPresentationActive: state.status === 'active' || state.status === 'starting',
       presentationParticipantIdentity
     }),
     [

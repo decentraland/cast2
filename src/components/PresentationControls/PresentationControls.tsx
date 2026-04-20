@@ -62,7 +62,9 @@ export function PresentationControls() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isActive, isFirstSlide, isLastSlide, hasVideos, navigateSlide, handleToggleVideo])
 
-  if (state.status === 'uploading') {
+  // 'starting' is the brief window between upload completion and the bot
+  // joining the room — keep the overlay up so the UI doesn't go blank.
+  if (state.status === 'uploading' || state.status === 'starting') {
     return <UploadingOverlay>{t('streaming_controls.uploading_presentation')}</UploadingOverlay>
   }
 

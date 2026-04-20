@@ -111,21 +111,9 @@ export function StreamingControls({
   const getDevices = useCallback(async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices()
-      console.log('[StreamingControls] Found devices:', devices)
       // Keep ALL devices including "default" - let the user choose their system default
       const audioInputs = devices.filter(d => d.kind === 'audioinput')
       const videoInputs = devices.filter(d => d.kind === 'videoinput')
-
-      console.log(
-        '[StreamingControls] Found audio devices:',
-        audioInputs.length,
-        audioInputs.map(d => d.label)
-      )
-      console.log(
-        '[StreamingControls] Found video devices:',
-        videoInputs.length,
-        videoInputs.map(d => d.label)
-      )
 
       setAudioDevices(audioInputs)
       setVideoDevices(videoInputs)
@@ -133,12 +121,10 @@ export function StreamingControls({
       // Auto-select "default" device or first available if none selected
       if (!selectedAudioDevice && audioInputs.length > 0) {
         const defaultDevice = audioInputs.find(d => d.deviceId === 'default') || audioInputs[0]
-        console.log('[StreamingControls] Auto-selecting audio device:', defaultDevice.deviceId, defaultDevice.label)
         setSelectedAudioDevice(defaultDevice.deviceId)
       }
       if (!selectedVideoDevice && videoInputs.length > 0) {
         const defaultDevice = videoInputs.find(d => d.deviceId === 'default') || videoInputs[0]
-        console.log('[StreamingControls] Auto-selecting video device:', defaultDevice.deviceId, defaultDevice.label)
         setSelectedVideoDevice(defaultDevice.deviceId)
       }
     } catch (error) {
@@ -177,7 +163,6 @@ export function StreamingControls({
     // Listen for screen share track ending (e.g., when user stops from Chrome controls)
     if (screenShareTrack?.track) {
       const handleTrackEnded = () => {
-        console.log('[StreamingControls] Screen share track ended (stopped by browser)')
         setIsScreenSharing(false)
       }
 
@@ -195,10 +180,8 @@ export function StreamingControls({
 
     try {
       if (isMicEnabled) {
-        console.log('[StreamingControls] Disabling microphone')
         await localParticipant.setMicrophoneEnabled(false)
       } else {
-        console.log('[StreamingControls] Enabling microphone with device:', selectedAudioDevice)
         // Use "exact" constraint to force the specific device
         await localParticipant.setMicrophoneEnabled(true, selectedAudioDevice ? { deviceId: { exact: selectedAudioDevice } } : undefined)
       }
@@ -212,10 +195,8 @@ export function StreamingControls({
 
     try {
       if (isCameraEnabled) {
-        console.log('[StreamingControls] Disabling camera')
         await localParticipant.setCameraEnabled(false)
       } else {
-        console.log('[StreamingControls] Enabling camera with device:', selectedVideoDevice)
         // Use "exact" constraint to force the specific device
         await localParticipant.setCameraEnabled(true, selectedVideoDevice ? { deviceId: { exact: selectedVideoDevice } } : undefined)
       }
@@ -230,22 +211,13 @@ export function StreamingControls({
       return
     }
 
-    console.log('[StreamingControls] Screen share toggle requested', {
-      currentState: isScreenSharing,
-      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-      userAgent: navigator.userAgent,
-      hasGetDisplayMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)
-    })
-
     if (isScreenSharing) {
-      console.log('[StreamingControls] Stopping screen share')
       const screenShareTrack = Array.from(localParticipant.videoTrackPublications.values()).find(
         pub => pub.source === Track.Source.ScreenShare
       )
       if (screenShareTrack) {
         await localParticipant.unpublishTrack(screenShareTrack.track!)
         setIsScreenSharing(false)
-        console.log('[StreamingControls] Screen share stopped successfully')
       }
     } else {
       try {
@@ -263,23 +235,15 @@ export function StreamingControls({
           return
         }
 
-        console.log('[StreamingControls] Starting screen share')
         await localParticipant.setScreenShareEnabled(true, { audio: true })
         setIsScreenSharing(true)
-        console.log('[StreamingControls] Screen share started successfully')
       } catch (error) {
         console.error('[StreamingControls] Error enabling screen share:', error)
-        console.error('[StreamingControls] Error details:', {
-          name: error instanceof Error ? error.name : 'Unknown',
-          message: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined
-        })
         setIsScreenSharing(false)
 
         // Show user-friendly error message
         if (error instanceof Error) {
           if (error.name === 'NotAllowedError') {
-            console.log('[StreamingControls] User denied screen share permission')
             alert('Permission denied. Please allow screen sharing to continue.')
           } else if (error.name === 'NotSupportedError') {
             alert('Screen sharing is not supported on this device')
@@ -290,13 +254,11 @@ export function StreamingControls({
   }
 
   const handleAudioDeviceSelect = async (deviceId: string) => {
-    console.log('[StreamingControls] Selecting audio device:', deviceId)
     setSelectedAudioDevice(deviceId)
     setShowAudioMenu(false)
 
     // Only switch if mic is currently enabled
     if (!localParticipant || !isMicEnabled) {
-      console.log('[StreamingControls] Device selected. Will use when mic is enabled.')
       return
     }
 
@@ -307,12 +269,9 @@ export function StreamingControls({
 
       if (audioTrack && 'restartTrack' in audioTrack) {
         // Use restartTrack with "exact" constraint (no renegotiation, seamless switch)
-        console.log('[StreamingControls] Restarting track with device:', deviceId)
         await audioTrack.restartTrack({ deviceId: { exact: deviceId } })
-        console.log('[StreamingControls] Audio device switched')
       } else {
         // Fallback: disable then re-enable with exact constraint
-        console.log('[StreamingControls] No track found, using toggle method')
         await localParticipant.setMicrophoneEnabled(false)
         await localParticipant.setMicrophoneEnabled(true, { deviceId: { exact: deviceId } })
       }
@@ -322,13 +281,11 @@ export function StreamingControls({
   }
 
   const handleVideoDeviceSelect = async (deviceId: string) => {
-    console.log('[StreamingControls] Selecting video device:', deviceId)
     setSelectedVideoDevice(deviceId)
     setShowVideoMenu(false)
 
     // Only switch if camera is currently enabled
     if (!localParticipant || !isCameraEnabled) {
-      console.log('[StreamingControls] Device selected. Will use when camera is enabled.')
       return
     }
 
@@ -339,12 +296,9 @@ export function StreamingControls({
 
       if (videoTrack && 'restartTrack' in videoTrack) {
         // Use restartTrack with "exact" constraint (no renegotiation, seamless switch)
-        console.log('[StreamingControls] Restarting track with device:', deviceId)
         await videoTrack.restartTrack({ deviceId: { exact: deviceId } })
-        console.log('[StreamingControls] Video device switched')
       } else {
         // Fallback: disable then re-enable with exact constraint
-        console.log('[StreamingControls] No track found, using toggle method')
         await localParticipant.setCameraEnabled(false)
         await localParticipant.setCameraEnabled(true, { deviceId: { exact: deviceId } })
       }
