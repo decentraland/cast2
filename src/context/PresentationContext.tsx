@@ -30,6 +30,7 @@ interface PresentationContextValue {
   pauseVideo: () => Promise<void>
   stopVideo: () => Promise<void>
   stopPresentation: () => Promise<void>
+  dismissError: () => void
   isPresentationActive: boolean
   presentationParticipantIdentity: string | null
 }
@@ -333,6 +334,12 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     await sendCommand({ type: 'presentation:stop' })
   }, [sendCommand])
 
+  // Dismiss the error overlay and return the state machine to `idle` so the
+  // user can try starting a presentation again.
+  const dismissError = useCallback(() => {
+    setState(prev => (prev.status === 'error' ? initialState : prev))
+  }, [])
+
   // Clean up when bot participant disappears (presentation was stopped externally)
   useEffect(() => {
     if (state.status === 'active' && !presentationParticipantIdentity) {
@@ -352,6 +359,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentation: stopPresentationHandler,
+      dismissError,
       // Treat 'starting' as active so the UI (share-menu label, icon choice)
       // doesn't flicker back to "not presenting" during the bot-join window.
       isPresentationActive: state.status === 'active' || state.status === 'starting',
@@ -367,6 +375,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentationHandler,
+      dismissError,
       presentationParticipantIdentity
     ]
   )

@@ -59,7 +59,9 @@
     "url_invalid": "请输入有效的URL",
     "url_https_required": "URL必须使用https://",
     "file_too_large": "文件过大。最大大小为{maxMb}MB。",
-    "file_invalid_type": "不支持的文件类型。请上传 PDF 或 PPTX 文件。"
+    "file_invalid_type": "不支持的文件类型。请上传 PDF 或 PPTX 文件。",
+    "presentation_error_default": "无法启动演示文稿。",
+    "dismiss_error": "关闭错误"
   },
   "device_selector": {
     "audio_input": "音频输入",

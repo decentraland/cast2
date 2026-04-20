@@ -59,7 +59,9 @@
     "url_invalid": "Por favor ingresa una URL válida",
     "url_https_required": "La URL debe usar https://",
     "file_too_large": "El archivo es demasiado grande. Tamaño máximo {maxMb}MB.",
-    "file_invalid_type": "Tipo de archivo no compatible. Sube un archivo PDF o PPTX."
+    "file_invalid_type": "Tipo de archivo no compatible. Sube un archivo PDF o PPTX.",
+    "presentation_error_default": "No se pudo iniciar la presentación.",
+    "dismiss_error": "Descartar error"
   },
   "device_selector": {
     "audio_input": "Entrada de Audio",
