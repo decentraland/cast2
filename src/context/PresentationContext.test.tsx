@@ -157,7 +157,7 @@ describe('PresentationContext', () => {
       mockUploadPresentation.mockRejectedValueOnce(new Error('upload blew up'))
     })
 
-    it('should transition status to error and expose the error message', async () => {
+    it('should reset status to idle and let the persistent toast carry the error', async () => {
       renderWithProvider(api => {
         latestApi = api
       })
@@ -166,27 +166,16 @@ describe('PresentationContext', () => {
         await latestApi!.ctx.startPresentation(new File(['x'], 'slides.pdf'))
       })
 
-      expect(screen.getByTestId('status').textContent).toBe('error')
-      expect(latestApi?.ctx.state.error).toBe('upload blew up')
-    })
-
-    describe('and dismissError is called', () => {
-      it('should reset status back to idle', async () => {
-        renderWithProvider(api => {
-          latestApi = api
-        })
-
-        await act(async () => {
-          await latestApi!.ctx.startPresentation(new File(['x'], 'slides.pdf'))
-        })
-        expect(screen.getByTestId('status').textContent).toBe('error')
-
-        act(() => {
-          latestApi!.ctx.dismissError()
-        })
-
-        expect(screen.getByTestId('status').textContent).toBe('idle')
-        expect(latestApi?.ctx.state.error).toBeNull()
+      // Status returns to idle so the user can retry immediately.
+      expect(screen.getByTestId('status').textContent).toBe('idle')
+      // The toast carries the error message; it's marked persistent so the
+      // user gets time to read it.
+      const fired = latestApi!.notifications.notifications
+      expect(fired).toHaveLength(1)
+      expect(fired[0]).toMatchObject({
+        variant: 'PresentationDownloadFailed',
+        message: 'upload blew up',
+        persistent: true
       })
     })
   })

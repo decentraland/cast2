@@ -17,8 +17,7 @@ interface PresentationState {
   // 'starting' covers the window between upload completion and the bot joining
   // the room — without it, the bot-absence cleanup effect below would briefly
   // snap state back to 'idle' on the render right after upload resolves.
-  status: 'idle' | 'uploading' | 'starting' | 'active' | 'error'
-  error: string | null
+  status: 'idle' | 'uploading' | 'starting' | 'active'
   slideVideos: SlideVideoInfo[]
   videoState: 'idle' | 'loading' | 'playing' | 'paused'
 }
@@ -33,7 +32,6 @@ interface PresentationContextValue {
   pauseVideo: () => Promise<void>
   stopVideo: () => Promise<void>
   stopPresentation: () => Promise<void>
-  dismissError: () => void
   isPresentationActive: boolean
   presentationParticipantIdentity: string | null
 }
@@ -56,7 +54,6 @@ const initialState: PresentationState = {
   currentSlide: 0,
   fileType: null,
   status: 'idle',
-  error: null,
   slideVideos: [],
   videoState: 'idle'
 }
@@ -219,7 +216,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           currentSlide: botCurrentSlide,
           fileType: botFileType,
           status: 'active',
-          error: null,
           slideVideos: JSON.parse(botSlideVideosJson),
           videoState: botVideoState
         }
@@ -257,7 +253,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           currentSlide: decoded.data.currentSlide,
           fileType: decoded.data.fileType,
           status: 'active',
-          error: null,
           slideVideos: decoded.data.slideVideos ?? [],
           videoState: decoded.data.videoState ?? 'idle'
         })
@@ -291,7 +286,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       // orphan a bot when the second-resolving call overwrites the first's state.
       if (uploadingRef.current) return
       uploadingRef.current = true
-      setState(prev => ({ ...prev, status: 'uploading', error: null }))
+      setState(prev => ({ ...prev, status: 'uploading' }))
 
       try {
         const streamingKey = getStoredToken()
@@ -318,22 +313,17 @@ function PresentationProvider({ children }: { children: ReactNode }) {
                 currentSlide: 0,
                 fileType: info.fileType,
                 status: 'starting',
-                error: null,
                 slideVideos: [],
                 videoState: 'idle'
               }
         )
       } catch (err) {
         const message = err instanceof Error ? err.message : errorLabel
-        setState(prev => ({
-          ...prev,
-          status: 'error',
-          error: message
-        }))
-        // Toast surfaces the failure even if the SharePresentationModal already
-        // closed — the persistent ErrorOverlay alone isn't always in the user's
-        // visual path during the share flow.
-        showNotificationRef.current('PresentationDownloadFailed', { message })
+        // Reset to idle so the UI is ready for the user to try again; the
+        // persistent toast carries the failure message — the user dismisses
+        // it when they've read it.
+        setState(initialState)
+        showNotificationRef.current('PresentationDownloadFailed', { message, persistent: true })
       } finally {
         uploadingRef.current = false
       }
@@ -395,12 +385,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     await sendCommand({ type: 'presentation:stop' })
   }, [sendCommand])
 
-  // Dismiss the error overlay and return the state machine to `idle` so the
-  // user can try starting a presentation again.
-  const dismissError = useCallback(() => {
-    setState(prev => (prev.status === 'error' ? initialState : prev))
-  }, [])
-
   // Clean up when bot participant disappears (presentation was stopped externally)
   useEffect(() => {
     if (state.status === 'active' && !presentationParticipantIdentity) {
@@ -420,7 +404,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentation: stopPresentationHandler,
-      dismissError,
       // Treat 'starting' as active so the UI (share-menu label, icon choice)
       // doesn't flicker back to "not presenting" during the bot-join window.
       isPresentationActive: state.status === 'active' || state.status === 'starting',
@@ -436,7 +419,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentationHandler,
-      dismissError,
       presentationParticipantIdentity
     ]
   )

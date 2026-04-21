@@ -101,6 +101,17 @@ describe('NotificationContext', () => {
     expect(tree.api.notifications).toHaveLength(0)
   })
 
+  it('does NOT auto-dismiss a notification flagged as persistent', () => {
+    const tree = renderWithProvider()
+    act(() => {
+      tree.api.show('PresentationDownloadFailed', { message: 'read me', persistent: true })
+    })
+    act(() => {
+      jest.advanceTimersByTime(60_000)
+    })
+    expect(tree.api.notifications).toHaveLength(1)
+  })
+
   it('does NOT auto-dismiss a notification that carries an action button', () => {
     const tree = renderWithProvider()
     act(() => {

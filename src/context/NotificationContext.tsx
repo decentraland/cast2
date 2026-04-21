@@ -11,6 +11,9 @@ interface NotificationOptions {
   message?: string
   code?: string
   action?: NotificationAction
+  // Opt out of auto-dismiss. Use for errors the user must read (e.g.
+  // a failed upload) where a 6-second window is too short to act on.
+  persistent?: boolean
 }
 
 interface Notification {
@@ -19,6 +22,7 @@ interface Notification {
   message?: string
   code?: string
   action?: NotificationAction
+  persistent?: boolean
 }
 
 interface NotificationContextValue {
@@ -62,11 +66,12 @@ function NotificationProvider({ children }: { children: ReactNode }) {
       variant,
       message: options?.message,
       code: options?.code,
-      action: options?.action
+      action: options?.action,
+      persistent: options?.persistent
     }
     setNotifications(prev => [...prev, notification])
 
-    if (!notification.action) {
+    if (!notification.action && !notification.persistent) {
       const timer = setTimeout(() => {
         timersRef.current.delete(id)
         setNotifications(prev => prev.filter(n => n.id !== id))
