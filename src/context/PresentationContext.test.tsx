@@ -406,6 +406,54 @@ describe('PresentationContext', () => {
     })
   })
 
+  describe('when presentation:state arrives before the upload POST resolves (race)', () => {
+    it('should not revert active status back to starting when the late upload response lands', async () => {
+      // Bot is already in the room (matches what we see with a fast local backend
+      // that publishes state before its own HTTP response returns). This keeps
+      // the bot-absence cleanup effect from firing and masking the race.
+      mockUseRemoteParticipants.mockReturnValue([makeBotParticipant({ role: 'presentation' })])
+
+      // Hang the upload so we can inject a data-channel presentation:state
+      // before the HTTP response resolves, reproducing the local-backend race.
+      let resolveUpload!: (info: PresentationInfo) => void
+      mockUploadPresentation.mockReturnValueOnce(
+        new Promise<PresentationInfo>(res => {
+          resolveUpload = res
+        })
+      )
+
+      renderWithProvider(api => {
+        latestApi = api
+      })
+
+      let uploadCall!: Promise<void>
+      act(() => {
+        uploadCall = latestApi!.ctx.startPresentation(new File(['x'], 'slides.pdf'))
+      })
+      await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('uploading'))
+
+      // Bot broadcasts presentation:state while the POST is still in flight.
+      act(() => {
+        emitFromBot(room, {
+          type: 'presentation:state',
+          id: UPLOAD_INFO.id,
+          slideCount: UPLOAD_INFO.slideCount,
+          currentSlide: 0,
+          fileType: 'pdf'
+        })
+      })
+      expect(screen.getByTestId('status').textContent).toBe('active')
+
+      // Now the POST resolves late. This MUST NOT overwrite 'active' with 'starting'.
+      await act(async () => {
+        resolveUpload(UPLOAD_INFO)
+        await uploadCall
+      })
+
+      expect(screen.getByTestId('status').textContent).toBe('active')
+    })
+  })
+
   describe('when the bot participant disappears while status is active', () => {
     it('should reset state back to idle', async () => {
       // Prime the provider with a bot already present.

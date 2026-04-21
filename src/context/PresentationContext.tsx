@@ -305,16 +305,24 @@ function PresentationProvider({ children }: { children: ReactNode }) {
         // 'starting' until the bot actually joins the room. The metadata sync
         // effect will transition to 'active' once `presentationParticipantIdentity`
         // is populated — this avoids racing with the bot-absence cleanup effect.
-        setState({
-          id: info.id,
-          slideCount: info.slideCount,
-          currentSlide: 0,
-          fileType: info.fileType,
-          status: 'starting',
-          error: null,
-          slideVideos: [],
-          videoState: 'idle'
-        })
+        //
+        // Functional update: a fast backend can broadcast `presentation:state`
+        // (advancing status to 'active') before its own HTTP response lands.
+        // Don't clobber that with a stale 'starting'.
+        setState(prev =>
+          prev.status === 'active'
+            ? prev
+            : {
+                id: info.id,
+                slideCount: info.slideCount,
+                currentSlide: 0,
+                fileType: info.fileType,
+                status: 'starting',
+                error: null,
+                slideVideos: [],
+                videoState: 'idle'
+              }
+        )
       } catch (err) {
         const message = err instanceof Error ? err.message : errorLabel
         setState(prev => ({
