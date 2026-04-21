@@ -1,6 +1,10 @@
 import React from 'react'
 import { act, render, screen, waitFor } from '@testing-library/react'
+import { RoomEvent } from 'livekit-client'
 import type { PresentationInfo } from '../utils/api'
+import { TranslationProvider } from '../modules/translation'
+import { encodeCommsPacket } from '../utils/commsProtocol'
+import { NotificationProvider, useNotifications } from './NotificationContext'
 import { PresentationProvider, usePresentation } from './PresentationContext'
 
 jest.mock('@livekit/components-react', () => ({
@@ -61,22 +65,44 @@ function createRoomStub() {
 
 type ProbeApi = {
   ctx: ReturnType<typeof usePresentation>
+  notifications: ReturnType<typeof useNotifications>
 }
 
 function Probe({ onReady }: { onReady: (api: ProbeApi) => void }) {
   const ctx = usePresentation()
+  const notifications = useNotifications()
   React.useEffect(() => {
-    onReady({ ctx })
+    onReady({ ctx, notifications })
   })
   return <div data-testid="status">{ctx.state.status}</div>
 }
 
 function renderWithProvider(onReady: (api: ProbeApi) => void) {
   return render(
-    <PresentationProvider>
-      <Probe onReady={onReady} />
-    </PresentationProvider>
+    <TranslationProvider>
+      <NotificationProvider>
+        <PresentationProvider>
+          <Probe onReady={onReady} />
+        </PresentationProvider>
+      </NotificationProvider>
+    </TranslationProvider>
   )
+}
+
+function emitFromBot(room: ReturnType<typeof createRoomStub>, message: unknown) {
+  const payload = encodeCommsPacket('presentation', message)
+  room.emit(RoomEvent.DataReceived, payload, {
+    identity: 'presentation-bot-1',
+    metadata: JSON.stringify({ role: 'presentation' })
+  })
+}
+
+function emitFromImposter(room: ReturnType<typeof createRoomStub>, message: unknown) {
+  const payload = encodeCommsPacket('presentation', message)
+  room.emit(RoomEvent.DataReceived, payload, {
+    identity: 'evil-user',
+    metadata: JSON.stringify({ role: 'streamer' })
+  })
 }
 
 describe('PresentationContext', () => {
@@ -197,13 +223,17 @@ describe('PresentationContext', () => {
   describe('when the bot participant appears in the room while status is starting', () => {
     it('should transition status from starting to active', async () => {
       const makeTree = (key: number) => (
-        <PresentationProvider key={key}>
-          <Probe
-            onReady={api => {
-              latestApi = api
-            }}
-          />
-        </PresentationProvider>
+        <TranslationProvider key={key}>
+          <NotificationProvider>
+            <PresentationProvider>
+              <Probe
+                onReady={api => {
+                  latestApi = api
+                }}
+              />
+            </PresentationProvider>
+          </NotificationProvider>
+        </TranslationProvider>
       )
       const { rerender } = render(makeTree(0))
 
@@ -238,6 +268,144 @@ describe('PresentationContext', () => {
     })
   })
 
+  describe('toast notifications for upload + video errors', () => {
+    it('fires a PresentationDownloadFailed toast when the upload throws', async () => {
+      mockUploadPresentation.mockRejectedValueOnce(new Error('URL not publicly accessible'))
+
+      renderWithProvider(api => {
+        latestApi = api
+      })
+
+      await act(async () => {
+        await latestApi!.ctx.startPresentation(new File(['x'], 'slides.pdf'))
+      })
+
+      const fired = latestApi!.notifications.notifications
+      expect(fired).toHaveLength(1)
+      expect(fired[0]).toMatchObject({
+        variant: 'PresentationDownloadFailed',
+        message: 'URL not publicly accessible'
+      })
+    })
+
+    it('fires a VideoPlaybackFailed toast when a presentation:error event arrives over the data channel', async () => {
+      // Prime an active presentation so playVideo (used by the action) is callable.
+      mockUseRemoteParticipants.mockReturnValue([
+        makeBotParticipant({ role: 'presentation', id: 'pres-1', slideCount: 5, currentSlide: 0, fileType: 'pdf' })
+      ])
+      renderWithProvider(api => {
+        latestApi = api
+      })
+      await waitFor(() => expect(latestApi?.ctx.state.status).toBe('active'))
+
+      act(() => {
+        emitFromBot(room, {
+          type: 'presentation:error',
+          code: 'video-invalid-format',
+          message: "We couldn't play that video. The URL points to a Google Drive preview page.",
+          videoIndex: 2,
+          videoUrl: 'https://drive.google.com/file/d/x/preview'
+        })
+      })
+
+      const fired = latestApi!.notifications.notifications
+      expect(fired).toHaveLength(1)
+      expect(fired[0]).toMatchObject({
+        variant: 'VideoPlaybackFailed',
+        code: 'video-invalid-format',
+        message: "We couldn't play that video. The URL points to a Google Drive preview page."
+      })
+      // Non-retryable code → no Retry action.
+      expect(fired[0].action).toBeUndefined()
+    })
+
+    it('attaches a Retry action only when the video error code is retryable', async () => {
+      mockUseRemoteParticipants.mockReturnValue([
+        makeBotParticipant({ role: 'presentation', id: 'pres-1', slideCount: 5, currentSlide: 0, fileType: 'pdf' })
+      ])
+      renderWithProvider(api => {
+        latestApi = api
+      })
+      await waitFor(() => expect(latestApi?.ctx.state.status).toBe('active'))
+
+      act(() => {
+        emitFromBot(room, {
+          type: 'presentation:error',
+          code: 'video-timeout',
+          message: 'Timed out fetching the video.',
+          videoIndex: 3
+        })
+      })
+
+      const fired = latestApi!.notifications.notifications
+      expect(fired).toHaveLength(1)
+      expect(fired[0].action).toBeDefined()
+
+      // Invoking the action should issue a play command for the failed video index.
+      await act(async () => {
+        fired[0].action!.onClick()
+      })
+      expect(room.localParticipant.publishData).toHaveBeenCalledTimes(1)
+    })
+
+    it('omits the Retry action when videoIndex is missing, even on a retryable code', async () => {
+      mockUseRemoteParticipants.mockReturnValue([
+        makeBotParticipant({ role: 'presentation', id: 'pres-1', slideCount: 5, currentSlide: 0, fileType: 'pdf' })
+      ])
+      renderWithProvider(api => {
+        latestApi = api
+      })
+      await waitFor(() => expect(latestApi?.ctx.state.status).toBe('active'))
+
+      act(() => {
+        emitFromBot(room, {
+          type: 'presentation:error',
+          code: 'video-stream-error',
+          message: 'Stream died mid-playback.'
+        })
+      })
+
+      expect(latestApi!.notifications.notifications[0].action).toBeUndefined()
+    })
+
+    it('rejects a presentation:error packet from a non-bot sender (spoofing protection)', async () => {
+      mockUseRemoteParticipants.mockReturnValue([
+        makeBotParticipant({ role: 'presentation', id: 'pres-1', slideCount: 5, currentSlide: 0, fileType: 'pdf' })
+      ])
+      renderWithProvider(api => {
+        latestApi = api
+      })
+      await waitFor(() => expect(latestApi?.ctx.state.status).toBe('active'))
+
+      act(() => {
+        emitFromImposter(room, {
+          type: 'presentation:error',
+          code: 'video-permission-denied',
+          message: 'spoofed message'
+        })
+      })
+
+      expect(latestApi!.notifications.notifications).toHaveLength(0)
+    })
+
+    it('ignores a presentation:error packet missing required fields', async () => {
+      mockUseRemoteParticipants.mockReturnValue([
+        makeBotParticipant({ role: 'presentation', id: 'pres-1', slideCount: 5, currentSlide: 0, fileType: 'pdf' })
+      ])
+      renderWithProvider(api => {
+        latestApi = api
+      })
+      await waitFor(() => expect(latestApi?.ctx.state.status).toBe('active'))
+
+      act(() => {
+        // Missing `message`.
+        emitFromBot(room, { type: 'presentation:error', code: 'video-timeout' })
+      })
+
+      expect(latestApi!.notifications.notifications).toHaveLength(0)
+    })
+  })
+
   describe('when the bot participant disappears while status is active', () => {
     it('should reset state back to idle', async () => {
       // Prime the provider with a bot already present.
@@ -250,29 +418,26 @@ describe('PresentationContext', () => {
           fileType: 'pdf'
         })
       ])
-      const { rerender } = render(
-        <PresentationProvider>
-          <Probe
-            onReady={api => {
-              latestApi = api
-            }}
-          />
-        </PresentationProvider>
+      const buildTree = () => (
+        <TranslationProvider>
+          <NotificationProvider>
+            <PresentationProvider>
+              <Probe
+                onReady={api => {
+                  latestApi = api
+                }}
+              />
+            </PresentationProvider>
+          </NotificationProvider>
+        </TranslationProvider>
       )
+      const { rerender } = render(buildTree())
 
       await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('active'))
 
       // Bot leaves the room.
       mockUseRemoteParticipants.mockReturnValue([])
-      rerender(
-        <PresentationProvider>
-          <Probe
-            onReady={api => {
-              latestApi = api
-            }}
-          />
-        </PresentationProvider>
-      )
+      rerender(buildTree())
 
       await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('idle'))
     })

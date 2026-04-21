@@ -175,5 +175,16 @@
   "watcher_error_modal": {
     "title": "Error al conectarse a la sala de transmisión",
     "message": "Por favor usa el enlace enviado desde el Admin Smart Item para reingresar a la transmisión."
+  },
+  "notifications": {
+    "presentation_download_failed": {
+      "title": "No se pudo cargar la presentación",
+      "default_message": "No pudimos descargar esa URL. Asegúrate de que sea de acceso público e inténtalo de nuevo."
+    },
+    "video_playback_failed": {
+      "title": "El video no se pudo reproducir"
+    },
+    "retry": "Reintentar",
+    "dismiss": "Cerrar"
   }
 }

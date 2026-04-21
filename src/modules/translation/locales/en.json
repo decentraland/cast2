@@ -175,5 +175,16 @@
   "watcher_error_modal": {
     "title": "Failed to connect to streaming room",
     "message": "Please use the link sent from the Admin Smart Item to rejoin the streaming."
+  },
+  "notifications": {
+    "presentation_download_failed": {
+      "title": "Couldn't load the presentation",
+      "default_message": "We couldn't download that URL. Make sure it's publicly accessible and try again."
+    },
+    "video_playback_failed": {
+      "title": "Video couldn't play"
+    },
+    "retry": "Retry",
+    "dismiss": "Dismiss"
   }
 }

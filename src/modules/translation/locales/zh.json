@@ -175,5 +175,16 @@
   "watcher_error_modal": {
     "title": "连接直播室失败",
     "message": "请使用从Admin Smart Item发送的链接重新加入直播。"
+  },
+  "notifications": {
+    "presentation_download_failed": {
+      "title": "无法加载演示文稿",
+      "default_message": "无法下载该URL。请确保该URL可公开访问后重试。"
+    },
+    "video_playback_failed": {
+      "title": "视频无法播放"
+    },
+    "retry": "重试",
+    "dismiss": "关闭"
   }
 }

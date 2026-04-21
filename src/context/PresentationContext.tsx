@@ -1,10 +1,13 @@
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RemoteParticipant, RoomEvent } from 'livekit-client'
+import { useNotifications } from './NotificationContext'
+import { useTranslation } from '../modules/translation'
 import { PresentationInfo, SlideVideoInfo, getPresentationBotToken, uploadPresentation, uploadPresentationFromUrl } from '../utils/api'
 import { decodeCommsPacket, encodeCommsPacket } from '../utils/commsProtocol'
 import { getStreamerToken as getStoredToken } from '../utils/localStorage'
 import { isPresentationBot, parseParticipantMetadata } from '../utils/participant'
+import { isRetryableVideoErrorCode } from '../utils/videoErrorCodes'
 
 interface PresentationState {
   id: string | null
@@ -85,6 +88,26 @@ function isPresentationStoppedMessage(data: unknown): data is { type: 'presentat
   return typeof data === 'object' && data !== null && (data as Record<string, unknown>).type === 'presentation:stopped'
 }
 
+// Per backend contract: `code` is a free-form string (don't validate against the
+// VideoErrorCode union — unknown codes must fall through to displaying `message`).
+// `message` is the source of truth for display text.
+function isPresentationErrorMessage(data: unknown): data is {
+  type: 'presentation:error'
+  code: string
+  message: string
+  videoIndex?: number
+  videoUrl?: string
+} {
+  if (typeof data !== 'object' || data === null) return false
+  const d = data as Record<string, unknown>
+  if (d.type !== 'presentation:error') return false
+  if (typeof d.code !== 'string') return false
+  if (typeof d.message !== 'string') return false
+  if (d.videoIndex !== undefined && typeof d.videoIndex !== 'number') return false
+  if (d.videoUrl !== undefined && typeof d.videoUrl !== 'string') return false
+  return true
+}
+
 // Validates participant metadata so we don't let a malformed/spoofed field
 // (e.g. `slideCount: "ten"`) flow into React state via the metadata sync path.
 function isPresentationBotMetadata(data: unknown): data is PresentationBotMetadata {
@@ -113,6 +136,8 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PresentationState>(initialState)
   const remoteParticipants = useRemoteParticipants()
   const room = useRoomContext()
+  const notifications = useNotifications()
+  const { t } = useTranslation()
 
   // Keep the active presentation id in a ref so command callbacks stay referentially
   // stable across state changes — state replaces on every slide nav, which would
@@ -206,6 +231,15 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     sendCommand({ type: 'presentation:get-state' })
   }, [hasBotMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideosJson, sendCommand])
 
+  // Refs let the data-channel handler call into the latest notification/i18n/command
+  // closures without forcing a re-attach of the LiveKit listener on every render.
+  const showNotificationRef = useRef(notifications.show)
+  showNotificationRef.current = notifications.show
+  const tRef = useRef(t)
+  tRef.current = t
+  const sendCommandRef = useRef(sendCommand)
+  sendCommandRef.current = sendCommand
+
   // Listen for state broadcasts from the bot via data channel
   useEffect(() => {
     if (!room) return
@@ -229,6 +263,20 @@ function PresentationProvider({ children }: { children: ReactNode }) {
         })
       } else if (isPresentationStoppedMessage(decoded.data)) {
         setState(initialState)
+      } else if (isPresentationErrorMessage(decoded.data)) {
+        // Transient per-attempt event — fire a fresh toast every time, even if the
+        // persistent `videoState: 'error'` flag in presentation:state is unchanged.
+        const { code, message, videoIndex } = decoded.data
+        const action =
+          isRetryableVideoErrorCode(code) && typeof videoIndex === 'number'
+            ? {
+                label: tRef.current('notifications.retry'),
+                onClick: () => {
+                  sendCommandRef.current({ type: 'presentation:video:play', videoIndex })
+                }
+              }
+            : undefined
+        showNotificationRef.current('VideoPlaybackFailed', { message, code, action })
       }
     }
     room.on(RoomEvent.DataReceived, handleData)
@@ -268,11 +316,16 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           videoState: 'idle'
         })
       } catch (err) {
+        const message = err instanceof Error ? err.message : errorLabel
         setState(prev => ({
           ...prev,
           status: 'error',
-          error: err instanceof Error ? err.message : errorLabel
+          error: message
         }))
+        // Toast surfaces the failure even if the SharePresentationModal already
+        // closed — the persistent ErrorOverlay alone isn't always in the user's
+        // visual path during the share flow.
+        showNotificationRef.current('PresentationDownloadFailed', { message })
       } finally {
         uploadingRef.current = false
       }
