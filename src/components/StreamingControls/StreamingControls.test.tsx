@@ -133,13 +133,16 @@ describe('StreamingControls', () => {
     })
 
     describe('and the screen share button is clicked', () => {
-      it('should enable screen sharing', async () => {
+      it('should enable screen sharing via share menu', async () => {
         renderWithProviders(<StreamingControls isStreamer={true} onToggleChat={mockOnToggleChat} onTogglePeople={mockOnTogglePeople} />)
 
-        // Find screen share button by ScreenShareIcon (use getAllByTestId as there are desktop and mobile versions)
-        const screenShareButton = screen.getAllByTestId('ScreenShareIcon')[0].closest('button')
+        // Click the share button to open the dropdown menu
+        const shareButton = screen.getAllByTestId('ScreenShareIcon')[0].closest('button')
+        fireEvent.click(shareButton!)
 
-        fireEvent.click(screenShareButton!)
+        // Click "Share Screen" from the dropdown menu (multiple due to mobile/desktop)
+        const shareScreenOption = screen.getAllByText('Share Screen')[0]
+        fireEvent.click(shareScreenOption)
 
         await waitFor(() => {
           expect(mockSetScreenShareEnabled).toHaveBeenCalledWith(true, { audio: true })
@@ -215,6 +218,40 @@ describe('StreamingControls', () => {
         fireEvent.click(leaveButton!)
         expect(mockDisconnect).toHaveBeenCalled()
       })
+    })
+  })
+
+  describe('mute tab audio button', () => {
+    it('should render volume button when onToggleTabMute is provided', () => {
+      renderWithProviders(<StreamingControls isStreamer={true} onToggleTabMute={jest.fn()} />)
+
+      const volumeIcons = screen.getAllByTestId('VolumeUpIcon')
+      expect(volumeIcons.length).toBeGreaterThan(0)
+    })
+
+    it('should show VolumeOffIcon when tab is muted', () => {
+      renderWithProviders(<StreamingControls isStreamer={true} isTabMuted={true} onToggleTabMute={jest.fn()} />)
+
+      const volumeOffIcons = screen.getAllByTestId('VolumeOffIcon')
+      expect(volumeOffIcons.length).toBeGreaterThan(0)
+      expect(screen.queryByTestId('VolumeUpIcon')).not.toBeInTheDocument()
+    })
+
+    it('should call onToggleTabMute when clicked', () => {
+      const mockOnToggleTabMute = jest.fn()
+      renderWithProviders(<StreamingControls isStreamer={true} onToggleTabMute={mockOnToggleTabMute} />)
+
+      const volumeButton = screen.getAllByTestId('VolumeUpIcon')[0].closest('button')
+      fireEvent.click(volumeButton!)
+
+      expect(mockOnToggleTabMute).toHaveBeenCalled()
+    })
+
+    it('should not render volume button when onToggleTabMute is not provided', () => {
+      renderWithProviders(<StreamingControls isStreamer={true} />)
+
+      expect(screen.queryByTestId('VolumeUpIcon')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('VolumeOffIcon')).not.toBeInTheDocument()
     })
   })
 

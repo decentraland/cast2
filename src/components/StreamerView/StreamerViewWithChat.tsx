@@ -11,13 +11,17 @@ import {
   VideoContainer
 } from '../CommonView/CommonView.styled'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
+import { PresentationProvider } from '../../context/PresentationContext'
+import { PresentationControls } from '../PresentationControls/PresentationControls'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
 
 interface StreamerViewWithChatProps {
   onLeave: () => void
+  isTabMuted: boolean
+  onToggleTabMute: () => void
 }
 
-export function StreamerViewWithChat({ onLeave }: StreamerViewWithChatProps) {
+export function StreamerViewWithChat({ onLeave, isTabMuted, onToggleTabMute }: StreamerViewWithChatProps) {
   const [peopleOpen, setPeopleOpen] = useState(false)
   const { chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, setChatOpen } = useChatContext()
 
@@ -34,29 +38,34 @@ export function StreamerViewWithChat({ onLeave }: StreamerViewWithChatProps) {
   }, [isChatOpen, peopleOpen, setChatOpen])
 
   return (
-    <StreamerLayout>
-      <MainContent>
-        <VideoContainer $sidebarOpen={sidebarOpen}>
-          <VideoArea $sidebarOpen={sidebarOpen}>
-            <StreamerViewContent />
-          </VideoArea>
+    <PresentationProvider>
+      <StreamerLayout>
+        <MainContent>
+          <VideoContainer $sidebarOpen={sidebarOpen}>
+            <VideoArea $sidebarOpen={sidebarOpen}>
+              <StreamerViewContent />
+              <PresentationControls />
+            </VideoArea>
 
-          <Sidebar $isOpen={sidebarOpen}>
-            {isChatOpen && <ChatPanel onClose={handleToggleChat} chatMessages={chatMessages} onMessagesRead={markMessagesAsRead} />}
-            {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
-          </Sidebar>
-        </VideoContainer>
+            <Sidebar $isOpen={sidebarOpen}>
+              {isChatOpen && <ChatPanel onClose={handleToggleChat} chatMessages={chatMessages} onMessagesRead={markMessagesAsRead} />}
+              {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
+            </Sidebar>
+          </VideoContainer>
 
-        <ControlsArea>
-          <StreamingControls
-            onToggleChat={handleToggleChat}
-            onTogglePeople={handleTogglePeople}
-            isStreamer
-            onLeave={onLeave}
-            unreadMessagesCount={unreadMessagesCount}
-          />
-        </ControlsArea>
-      </MainContent>
-    </StreamerLayout>
+          <ControlsArea>
+            <StreamingControls
+              onToggleChat={handleToggleChat}
+              onTogglePeople={handleTogglePeople}
+              isStreamer
+              onLeave={onLeave}
+              unreadMessagesCount={unreadMessagesCount}
+              isTabMuted={isTabMuted}
+              onToggleTabMute={onToggleTabMute}
+            />
+          </ControlsArea>
+        </MainContent>
+      </StreamerLayout>
+    </PresentationProvider>
   )
 }

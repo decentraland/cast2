@@ -4,13 +4,16 @@ import { ChatPanel } from '../ChatPanel/ChatPanel'
 import { useChatContext } from '../ChatProvider/ChatProvider'
 import { ControlsArea, MainContent, Sidebar, VideoArea, VideoContainer, ViewLayout as WatcherLayout } from '../CommonView/CommonView.styled'
 import { PeopleSidebar } from '../PeopleSidebar/PeopleSidebar'
+import { PresentationProvider } from '../../context/PresentationContext'
 import { StreamingControls } from '../StreamingControls/StreamingControls'
 
 interface WatcherViewWithChatProps {
   onLeave: () => void
+  isTabMuted: boolean
+  onToggleTabMute: () => void
 }
 
-export function WatcherViewWithChat({ onLeave }: WatcherViewWithChatProps) {
+export function WatcherViewWithChat({ onLeave, isTabMuted, onToggleTabMute }: WatcherViewWithChatProps) {
   const [peopleOpen, setPeopleOpen] = useState(false)
   const { chatMessages, unreadMessagesCount, markMessagesAsRead, isChatOpen, setChatOpen } = useChatContext()
 
@@ -27,29 +30,33 @@ export function WatcherViewWithChat({ onLeave }: WatcherViewWithChatProps) {
   }, [isChatOpen, peopleOpen, setChatOpen])
 
   return (
-    <WatcherLayout>
-      <MainContent>
-        <VideoContainer $sidebarOpen={sidebarOpen}>
-          <VideoArea $sidebarOpen={sidebarOpen}>
-            <WatcherViewContent />
-          </VideoArea>
+    <PresentationProvider>
+      <WatcherLayout>
+        <MainContent>
+          <VideoContainer $sidebarOpen={sidebarOpen}>
+            <VideoArea $sidebarOpen={sidebarOpen}>
+              <WatcherViewContent />
+            </VideoArea>
 
-          <Sidebar $isOpen={sidebarOpen}>
-            {isChatOpen && <ChatPanel onClose={handleToggleChat} chatMessages={chatMessages} onMessagesRead={markMessagesAsRead} />}
-            {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
-          </Sidebar>
-        </VideoContainer>
+            <Sidebar $isOpen={sidebarOpen}>
+              {isChatOpen && <ChatPanel onClose={handleToggleChat} chatMessages={chatMessages} onMessagesRead={markMessagesAsRead} />}
+              {peopleOpen && <PeopleSidebar onClose={handleTogglePeople} />}
+            </Sidebar>
+          </VideoContainer>
 
-        <ControlsArea>
-          <StreamingControls
-            onToggleChat={handleToggleChat}
-            onTogglePeople={handleTogglePeople}
-            isStreamer={false}
-            onLeave={onLeave}
-            unreadMessagesCount={unreadMessagesCount}
-          />
-        </ControlsArea>
-      </MainContent>
-    </WatcherLayout>
+          <ControlsArea>
+            <StreamingControls
+              onToggleChat={handleToggleChat}
+              onTogglePeople={handleTogglePeople}
+              isStreamer={false}
+              onLeave={onLeave}
+              unreadMessagesCount={unreadMessagesCount}
+              isTabMuted={isTabMuted}
+              onToggleTabMute={onToggleTabMute}
+            />
+          </ControlsArea>
+        </MainContent>
+      </WatcherLayout>
+    </PresentationProvider>
   )
 }

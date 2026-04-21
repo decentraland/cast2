@@ -113,6 +113,8 @@ const Sidebar = styled('div')<{ $isOpen: boolean }>(({ theme, $isOpen }) => {
 })
 
 const ControlsArea = styled('div')({
+  position: 'relative',
+  zIndex: 20,
   width: '100%',
   background: 'transparent',
   flexShrink: 0

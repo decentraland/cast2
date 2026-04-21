@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "name": "cast2",
+  "build": {
+    "env": {
+      "VITE_BASE_URL": "/"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}

@@ -128,5 +128,81 @@ async function getStreamInfo(streamingKey: string): Promise<{ placeName: string;
   return response.json()
 }
 
-export { CastApiError, getStreamerToken, getWatcherToken, getWorldScenes, getStreamInfo }
-export type { WorldScene, WorldSceneEntity, WorldScenesResponse }
+interface PresentationBotTokenResponse {
+  url: string
+  token: string
+  roomId: string
+}
+
+interface PresentationInfo {
+  id: string
+  slideCount: number
+  currentSlide: number
+  fileType: 'pdf' | 'pptx'
+}
+
+interface SlideVideoInfo {
+  url: string
+  geometry: { x: number; y: number; width: number; height: number }
+}
+
+async function getPresentationBotToken(streamingKey: string): Promise<PresentationBotTokenResponse> {
+  const baseUrl = config.get('GATEKEEPER_URL')
+  const response = await fetch(`${baseUrl}/cast/presentation-bot-token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ streamingKey })
+  })
+
+  if (!response.ok) {
+    throw new CastApiError(response.status, `Failed to get presentation bot token: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+async function uploadPresentation(file: File, livekitToken: string, livekitUrl: string): Promise<PresentationInfo> {
+  const presenterUrl = config.get('PRESENTER_SERVER_URL')
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('livekitToken', livekitToken)
+  formData.append('livekitUrl', livekitUrl)
+
+  const response = await fetch(`${presenterUrl}/presentations`, {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!response.ok) {
+    throw new CastApiError(response.status, `Failed to upload presentation: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+async function uploadPresentationFromUrl(url: string, livekitToken: string, livekitUrl: string): Promise<PresentationInfo> {
+  const presenterUrl = config.get('PRESENTER_SERVER_URL')
+  const response = await fetch(`${presenterUrl}/presentations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url, livekitToken, livekitUrl })
+  })
+
+  if (!response.ok) {
+    throw new CastApiError(response.status, `Failed to upload presentation from URL: ${response.statusText}`)
+  }
+
+  return response.json()
+}
+
+export {
+  CastApiError,
+  getStreamerToken,
+  getWatcherToken,
+  getWorldScenes,
+  getStreamInfo,
+  getPresentationBotToken,
+  uploadPresentation,
+  uploadPresentationFromUrl
+}
+export type { WorldScene, WorldSceneEntity, WorldScenesResponse, PresentationInfo, SlideVideoInfo }
