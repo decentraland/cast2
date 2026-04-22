@@ -1,10 +1,13 @@
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useRemoteParticipants, useRoomContext } from '@livekit/components-react'
 import { RemoteParticipant, RoomEvent } from 'livekit-client'
+import { useNotifications } from './NotificationContext'
+import { useTranslation } from '../modules/translation'
 import { PresentationInfo, SlideVideoInfo, getPresentationBotToken, uploadPresentation, uploadPresentationFromUrl } from '../utils/api'
 import { decodeCommsPacket, encodeCommsPacket } from '../utils/commsProtocol'
 import { getStreamerToken as getStoredToken } from '../utils/localStorage'
 import { isPresentationBot, parseParticipantMetadata } from '../utils/participant'
+import { isRetryableVideoErrorCode } from '../utils/videoErrorCodes'
 
 interface PresentationState {
   id: string | null
@@ -14,8 +17,7 @@ interface PresentationState {
   // 'starting' covers the window between upload completion and the bot joining
   // the room — without it, the bot-absence cleanup effect below would briefly
   // snap state back to 'idle' on the render right after upload resolves.
-  status: 'idle' | 'uploading' | 'starting' | 'active' | 'error'
-  error: string | null
+  status: 'idle' | 'uploading' | 'starting' | 'active'
   slideVideos: SlideVideoInfo[]
   videoState: 'idle' | 'loading' | 'playing' | 'paused'
 }
@@ -30,7 +32,6 @@ interface PresentationContextValue {
   pauseVideo: () => Promise<void>
   stopVideo: () => Promise<void>
   stopPresentation: () => Promise<void>
-  dismissError: () => void
   isPresentationActive: boolean
   presentationParticipantIdentity: string | null
 }
@@ -53,7 +54,6 @@ const initialState: PresentationState = {
   currentSlide: 0,
   fileType: null,
   status: 'idle',
-  error: null,
   slideVideos: [],
   videoState: 'idle'
 }
@@ -85,6 +85,26 @@ function isPresentationStoppedMessage(data: unknown): data is { type: 'presentat
   return typeof data === 'object' && data !== null && (data as Record<string, unknown>).type === 'presentation:stopped'
 }
 
+// Per backend contract: `code` is a free-form string (don't validate against the
+// VideoErrorCode union — unknown codes must fall through to displaying `message`).
+// `message` is the source of truth for display text.
+function isPresentationErrorMessage(data: unknown): data is {
+  type: 'presentation:error'
+  code: string
+  message: string
+  videoIndex?: number
+  videoUrl?: string
+} {
+  if (typeof data !== 'object' || data === null) return false
+  const d = data as Record<string, unknown>
+  if (d.type !== 'presentation:error') return false
+  if (typeof d.code !== 'string') return false
+  if (typeof d.message !== 'string') return false
+  if (d.videoIndex !== undefined && typeof d.videoIndex !== 'number') return false
+  if (d.videoUrl !== undefined && typeof d.videoUrl !== 'string') return false
+  return true
+}
+
 // Validates participant metadata so we don't let a malformed/spoofed field
 // (e.g. `slideCount: "ten"`) flow into React state via the metadata sync path.
 function isPresentationBotMetadata(data: unknown): data is PresentationBotMetadata {
@@ -113,6 +133,8 @@ function PresentationProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PresentationState>(initialState)
   const remoteParticipants = useRemoteParticipants()
   const room = useRoomContext()
+  const notifications = useNotifications()
+  const { t } = useTranslation()
 
   // Keep the active presentation id in a ref so command callbacks stay referentially
   // stable across state changes — state replaces on every slide nav, which would
@@ -194,7 +216,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           currentSlide: botCurrentSlide,
           fileType: botFileType,
           status: 'active',
-          error: null,
           slideVideos: JSON.parse(botSlideVideosJson),
           videoState: botVideoState
         }
@@ -205,6 +226,15 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     // Bot exists but metadata lacks id — request state via data channel
     sendCommand({ type: 'presentation:get-state' })
   }, [hasBotMetadata, botId, botSlideCount, botCurrentSlide, botFileType, botVideoState, botSlideVideosJson, sendCommand])
+
+  // Refs let the data-channel handler call into the latest notification/i18n/command
+  // closures without forcing a re-attach of the LiveKit listener on every render.
+  const showNotificationRef = useRef(notifications.show)
+  showNotificationRef.current = notifications.show
+  const tRef = useRef(t)
+  tRef.current = t
+  const sendCommandRef = useRef(sendCommand)
+  sendCommandRef.current = sendCommand
 
   // Listen for state broadcasts from the bot via data channel
   useEffect(() => {
@@ -223,12 +253,25 @@ function PresentationProvider({ children }: { children: ReactNode }) {
           currentSlide: decoded.data.currentSlide,
           fileType: decoded.data.fileType,
           status: 'active',
-          error: null,
           slideVideos: decoded.data.slideVideos ?? [],
           videoState: decoded.data.videoState ?? 'idle'
         })
       } else if (isPresentationStoppedMessage(decoded.data)) {
         setState(initialState)
+      } else if (isPresentationErrorMessage(decoded.data)) {
+        // Transient per-attempt event — fire a fresh toast every time, even if the
+        // persistent `videoState: 'error'` flag in presentation:state is unchanged.
+        const { code, message, videoIndex } = decoded.data
+        const action =
+          isRetryableVideoErrorCode(code) && typeof videoIndex === 'number'
+            ? {
+                label: tRef.current('notifications.retry'),
+                onClick: () => {
+                  sendCommandRef.current({ type: 'presentation:video:play', videoIndex })
+                }
+              }
+            : undefined
+        showNotificationRef.current('VideoPlaybackFailed', { message, code, action })
       }
     }
     room.on(RoomEvent.DataReceived, handleData)
@@ -243,7 +286,7 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       // orphan a bot when the second-resolving call overwrites the first's state.
       if (uploadingRef.current) return
       uploadingRef.current = true
-      setState(prev => ({ ...prev, status: 'uploading', error: null }))
+      setState(prev => ({ ...prev, status: 'uploading' }))
 
       try {
         const streamingKey = getStoredToken()
@@ -257,22 +300,30 @@ function PresentationProvider({ children }: { children: ReactNode }) {
         // 'starting' until the bot actually joins the room. The metadata sync
         // effect will transition to 'active' once `presentationParticipantIdentity`
         // is populated — this avoids racing with the bot-absence cleanup effect.
-        setState({
-          id: info.id,
-          slideCount: info.slideCount,
-          currentSlide: 0,
-          fileType: info.fileType,
-          status: 'starting',
-          error: null,
-          slideVideos: [],
-          videoState: 'idle'
-        })
+        //
+        // Functional update: a fast backend can broadcast `presentation:state`
+        // (advancing status to 'active') before its own HTTP response lands.
+        // Don't clobber that with a stale 'starting'.
+        setState(prev =>
+          prev.status === 'active'
+            ? prev
+            : {
+                id: info.id,
+                slideCount: info.slideCount,
+                currentSlide: 0,
+                fileType: info.fileType,
+                status: 'starting',
+                slideVideos: [],
+                videoState: 'idle'
+              }
+        )
       } catch (err) {
-        setState(prev => ({
-          ...prev,
-          status: 'error',
-          error: err instanceof Error ? err.message : errorLabel
-        }))
+        const message = err instanceof Error ? err.message : errorLabel
+        // Reset to idle so the UI is ready for the user to try again; the
+        // persistent toast carries the failure message — the user dismisses
+        // it when they've read it.
+        setState(initialState)
+        showNotificationRef.current('PresentationDownloadFailed', { message, persistent: true })
       } finally {
         uploadingRef.current = false
       }
@@ -334,12 +385,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
     await sendCommand({ type: 'presentation:stop' })
   }, [sendCommand])
 
-  // Dismiss the error overlay and return the state machine to `idle` so the
-  // user can try starting a presentation again.
-  const dismissError = useCallback(() => {
-    setState(prev => (prev.status === 'error' ? initialState : prev))
-  }, [])
-
   // Clean up when bot participant disappears (presentation was stopped externally)
   useEffect(() => {
     if (state.status === 'active' && !presentationParticipantIdentity) {
@@ -359,7 +404,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentation: stopPresentationHandler,
-      dismissError,
       // Treat 'starting' as active so the UI (share-menu label, icon choice)
       // doesn't flicker back to "not presenting" during the bot-join window.
       isPresentationActive: state.status === 'active' || state.status === 'starting',
@@ -375,7 +419,6 @@ function PresentationProvider({ children }: { children: ReactNode }) {
       pauseVideo,
       stopVideo,
       stopPresentationHandler,
-      dismissError,
       presentationParticipantIdentity
     ]
   )

@@ -1,28 +1,17 @@
 import { useCallback, useEffect } from 'react'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import CloseIcon from '@mui/icons-material/Close'
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import StopIcon from '@mui/icons-material/Stop'
 import { usePresentation } from '../../context/PresentationContext'
 import { useTranslation } from '../../modules/translation'
-import {
-  Divider,
-  ErrorDismissButton,
-  ErrorMessage,
-  ErrorOverlay,
-  NavButton,
-  PresentationControlsOverlay,
-  SlideInfo,
-  UploadingOverlay,
-  VideoButton
-} from './PresentationControls.styled'
+import { Divider, NavButton, PresentationControlsOverlay, SlideInfo, UploadingOverlay, VideoButton } from './PresentationControls.styled'
 
 export function PresentationControls() {
   const { t } = useTranslation()
-  const { state, navigateSlide, playVideo, pauseVideo, stopVideo, dismissError } = usePresentation()
+  const { state, navigateSlide, playVideo, pauseVideo, stopVideo } = usePresentation()
 
   const isActive = state.status === 'active'
   const isFirstSlide = state.currentSlide === 0
@@ -77,17 +66,6 @@ export function PresentationControls() {
   // joining the room — keep the overlay up so the UI doesn't go blank.
   if (state.status === 'uploading' || state.status === 'starting') {
     return <UploadingOverlay>{t('streaming_controls.uploading_presentation')}</UploadingOverlay>
-  }
-
-  if (state.status === 'error') {
-    return (
-      <ErrorOverlay>
-        <ErrorMessage title={state.error ?? undefined}>{state.error ?? t('streaming_controls.presentation_error_default')}</ErrorMessage>
-        <ErrorDismissButton onClick={dismissError} aria-label={t('streaming_controls.dismiss_error')}>
-          <CloseIcon />
-        </ErrorDismissButton>
-      </ErrorOverlay>
-    )
   }
 
   if (!isActive) {

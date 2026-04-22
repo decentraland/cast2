@@ -2,9 +2,11 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import MenuBookIcon from '@mui/icons-material/MenuBook'
 import { Box, Typography } from 'decentraland-ui2'
 import { NotFound } from './components/NotFound/NotFound'
+import { NotificationStack } from './components/NotificationStack/NotificationStack'
 import { StreamerView } from './components/StreamerView/StreamerView'
 import { WatcherView } from './components/WatcherView/WatcherView'
 import { LiveKitProvider } from './context/LiveKitContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { useTranslation } from './modules/translation'
 import { AppContainer, StyledLink } from './App.styled'
 
@@ -29,23 +31,26 @@ const HomePage = () => {
 const App = () => {
   return (
     <Router>
-      <LiveKitProvider>
-        <AppContainer>
-          <Routes>
-            {/* Main routes for Cast 2.0 */}
-            <Route path="/cast/s/:token" element={<StreamerView />} />
-            <Route path="/cast/s/streaming" element={<StreamerView />} />
-            <Route path="/cast/w/:worldName/parcel/:parcel" element={<WatcherView />} />
-            <Route path="/cast/w/:location" element={<WatcherView />} />
+      <NotificationProvider>
+        <LiveKitProvider>
+          <AppContainer>
+            <Routes>
+              {/* Main routes for Cast 2.0 */}
+              <Route path="/cast/s/:token" element={<StreamerView />} />
+              <Route path="/cast/s/streaming" element={<StreamerView />} />
+              <Route path="/cast/w/:worldName/parcel/:parcel" element={<WatcherView />} />
+              <Route path="/cast/w/:location" element={<WatcherView />} />
 
-            {/* Root redirects to home/invalid route handler */}
-            <Route path="/" element={<HomePage />} />
+              {/* Root redirects to home/invalid route handler */}
+              <Route path="/" element={<HomePage />} />
 
-            {/* 404 handler */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppContainer>
-      </LiveKitProvider>
+              {/* 404 handler */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppContainer>
+          <NotificationStack />
+        </LiveKitProvider>
+      </NotificationProvider>
     </Router>
   )
 }
